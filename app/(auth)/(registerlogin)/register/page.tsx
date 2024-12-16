@@ -4,7 +4,7 @@ import EmailInput from "@/app/components/ui/inputs/email-input";
 import PhoneNumberInput from "@/app/components/ui/inputs/phone-number-input";
 import SelectDropdown from "@/app/components/ui/inputs/select-dropdown";
 import { Countries } from "@/constants/constants-enums";
-import { ActivityLevel, GenderType } from "../../../../models/client";
+import { ActivityLevel, GenderType } from "@/models/Client";
 import Link from "next/link";
 import { useState } from "react";
 import { useFormState } from "react-dom";
