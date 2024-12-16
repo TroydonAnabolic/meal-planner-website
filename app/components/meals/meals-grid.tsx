@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { PlusIcon } from "@heroicons/react/24/outline"; //
 import { DayOfTheWeek, UrlAction } from "@/constants/constants-enums";
-import { IMealInterface } from "@/models/interfaces/meal/meal";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import { crudReducer } from "@/util/state-management";
 import ToggleInput from "../ui/inputs/toggle-input";
 import { FormActionType } from "@/models/interfaces/types";

@@ -1,7 +1,7 @@
 // components/meal/SelectedFoodCard.tsx
 
 import React, { useState } from "react";
-import { IMealIngredient } from "@/models/interfaces/meal/meal";
+import { IMealIngredient } from "@/models/interfaces/meal/Meal";
 import {
   UnitOfMeasure,
   getMeasureDescription,

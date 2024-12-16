@@ -5,7 +5,7 @@ import {
   DIETAPI_BASE,
 } from "@/constants/constants-urls";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
-import { IMealInterface } from "@/models/interfaces/meal/meal";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import { mapRecipeToMeal } from "@/util/mappers";
 import {

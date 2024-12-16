@@ -1,7 +1,7 @@
 // components/ui/MealSearchResultsGrid.tsx
 
 import React from "react";
-import { IMealInterface } from "@/models/interfaces/meal/meal";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import Image from "next/image";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 

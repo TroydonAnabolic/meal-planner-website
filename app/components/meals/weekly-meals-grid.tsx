@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import { addDays, format } from "date-fns";
 import { MealNumber, MealTimeRanges } from "@/constants/constants-enums";
-import { IMealInterface } from "@/models/interfaces/meal/meal";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import MealCard from "./meal-card";
 import { getMealNumberFromMealTypeKey } from "@/util/mappers";
 import FullCardScrollContainer from "../ui/scrolls/horizontal-card-scroll-container/card-scroll-container";

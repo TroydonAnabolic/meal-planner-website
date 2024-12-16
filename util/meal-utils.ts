@@ -1,7 +1,7 @@
 // utils/mealUtils.ts
 
 import { addDays, startOfWeek, endOfWeek } from "date-fns";
-import { IMealInterface } from "@/models/interfaces/meal/meal";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 
 export const groupMealsByWeek = (
   meals: IMealInterface[],

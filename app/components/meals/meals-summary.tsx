@@ -1,7 +1,7 @@
 // components/meal-plan/MealsSummary.tsx
 
 import React from "react";
-import { IMealInterface } from "@/models/interfaces/meal/meal";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import { Nutrients } from "@/constants/constants-enums";
 
 type MealsSummaryProps = {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 
-import { IMealInterface } from "@/models/interfaces/meal/meal";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import { fetchEdamamRecipes } from "@/lib/edamam";
 import TabsWithPills from "../ui/tabs-in-pills";
 import FormModal from "../ui/modals/form-modal";

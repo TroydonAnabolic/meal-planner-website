@@ -10,7 +10,7 @@ import {
 } from "@/constants/constants-urls";
 import axios from "@/axiosConfig";
 import { getDayOfWeek } from "@/util/date-util";
-import { IMealInterface } from "@/models/interfaces/meal/meal";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 
 function dateTransformer(data: any, headers?: any): any {
   if (data instanceof Date) {

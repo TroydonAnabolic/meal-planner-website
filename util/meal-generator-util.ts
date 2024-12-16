@@ -9,7 +9,7 @@ import {
 import { transformLabel } from "./generic-utils";
 import { DayOfTheWeek, MealType } from "@/constants/constants-enums";
 import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
-import { IMealInterface } from "@/models/interfaces/meal/meal";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import dayjs, { Dayjs } from "dayjs";
 import { mapRecipeToMeal } from "./mappers";

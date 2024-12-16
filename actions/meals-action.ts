@@ -6,7 +6,7 @@ import {
   deleteMeal as removeMeal,
   updateMeal as update,
 } from "@/lib/meal";
-import { IMealInterface } from "@/models/interfaces/meal/meal";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import { FormResult } from "@/types/form";
 import { getDayOfWeek } from "@/util/date-util";
 import { revalidatePath } from "next/cache";

@@ -17,7 +17,7 @@ import {
 } from "@/constants/constants-enums";
 import SelectDropdown from "../ui/inputs/select-dropdown";
 import Image from "next/image";
-import { IMealIngredient } from "@/models/interfaces/meal/meal";
+import { IMealIngredient } from "@/models/interfaces/meal/Meal";
 
 interface MealIngredientSearchProps {
   mealId?: number;

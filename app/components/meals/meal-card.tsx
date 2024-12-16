@@ -1,6 +1,6 @@
 // components/meal-plan/meal-card.tsx
 
-import { IMealInterface } from "@/models/interfaces/meal/meal";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import { macros } from "@/util/nutrients";
 import Image from "next/image";
 import Link from "next/link";

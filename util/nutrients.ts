@@ -5,7 +5,7 @@ import {
   IFoodNutrients,
   IFoodNutrientsResponse,
 } from "@/models/interfaces/edamam/food/nutrients-response";
-import { IMealInterface } from "@/models/interfaces/meal/meal";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import {
   IRecipeInterface,
   RecipeNutrient,

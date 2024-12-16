@@ -3,7 +3,7 @@
 import React, { useRef } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { IFoodIngredient } from "@/models/interfaces/edamam/food/nutrients-request";
-import { IMealIngredient } from "@/models/interfaces/meal/meal";
+import { IMealIngredient } from "@/models/interfaces/meal/Meal";
 import SelectedMealFoodCard from "./selected-meal-food-card";
 
 interface MealIngredientsGalleryProps {

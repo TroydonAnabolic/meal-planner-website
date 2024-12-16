@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 
-import { IMealIngredient, IMealInterface } from "@/models/interfaces/meal/meal";
+import { IMealIngredient, IMealInterface } from "@/models/interfaces/meal/Meal";
 import { getAllFoodNutrition } from "@/lib/nutrients";
 import Image from "next/image";
 import ImageUploadLabel from "../ui/inputs/image-upload";

@@ -4,7 +4,7 @@ import {
   IRecipeInterface,
   RecipeNutrient,
 } from "@/models/interfaces/recipe/recipe";
-import { IMealInterface, IMealNutrient } from "@/models/interfaces/meal/meal";
+import { IMealInterface, IMealNutrient } from "@/models/interfaces/meal/Meal";
 import { MealNumber, MealType } from "@/constants/constants-enums";
 
 /**
