@@ -13,9 +13,9 @@ type Props = {};
 
 // Temporary data for testing initial values
 const tempData = {
-  email: "bobtroybo@gmail.com",
-  password: "Password123!",
-  confirmPassword: "Password123!",
+  email: "",
+  password: "",
+  confirmPassword: "",
   givenName: "John",
   familyName: "Doe",
   address: "123 Main St",
