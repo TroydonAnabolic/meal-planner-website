@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { GenderType, ActivityLevel } from "@/models/client";
+import { GenderType, ActivityLevel } from "@/models/Client";
 import { IClientInterface } from "@/models/interfaces/client/client";
 import TextInput from "../../ui/inputs/text-input";
 import SelectDropdown from "../../ui/inputs/select-dropdown";

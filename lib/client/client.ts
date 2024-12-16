@@ -4,7 +4,7 @@ import {
   APIM_HEADERS,
   BACKEND_URL_LIVE,
 } from "@/constants/constants-urls";
-import Client from "@/models/client";
+import Client from "@/models/Client";
 import { IClientInterface } from "@/models/interfaces/client/client";
 import { constructClientObjectFromResponse } from "@/util/client-util";
 

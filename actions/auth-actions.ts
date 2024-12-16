@@ -8,7 +8,7 @@ import {
   prepareAttributes,
 } from "../util/cognito-util";
 import { auth, signIn, signOut, unstable_update as update } from "@/auth";
-import { ActivityLevel, GenderType } from "@/models/client";
+import { ActivityLevel, GenderType } from "@/models/Client";
 import { isRedirectError } from "next/dist/client/components/redirect";
 import {
   registerSchema,
