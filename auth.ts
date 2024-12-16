@@ -14,9 +14,6 @@ import {
 } from "@aws-sdk/client-cognito-identity-provider";
 import { getClientUnsafe } from "./lib/client/client-side/client";
 
-//import jwt from "jsonwebtoken";
-//var jwt = require("jsonwebtoken");
-
 const cognitoConfig: CognitoIdentityProviderClientConfig = {
   region: process.env.NEXT_PUBLIC_COGNITO_REGION, // Your AWS region
 };
@@ -198,7 +195,7 @@ const config: NextAuthConfig = {
     signIn: "/login",
     newUser: "/register", // New users will be directed here on first sign in (leave the property out if not of interest)
   },
-  secret: process.env.SECRET,
+  secret: process.env.JWT_SECRET,
 };
 
 export const { auth, handlers, signIn, signOut, unstable_update } =
