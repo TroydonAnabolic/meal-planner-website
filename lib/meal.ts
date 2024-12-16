@@ -8,9 +8,9 @@ import {
   BACKEND_URL_LIVE,
   DIETAPI_BASE,
 } from "@/constants/constants-urls";
-import { IMealInterface } from "@/models/interfaces/meal/meal";
 import axios from "@/axiosConfig";
 import { getDayOfWeek } from "@/util/date-util";
+import { IMealInterface } from "@/models/interfaces/meal/meal";
 
 function dateTransformer(data: any, headers?: any): any {
   if (data instanceof Date) {
