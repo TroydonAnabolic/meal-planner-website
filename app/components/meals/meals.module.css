@@ -1,0 +1,11 @@
+/* Ensure the table is scrollable on small screens */
+.table-auto {
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+}

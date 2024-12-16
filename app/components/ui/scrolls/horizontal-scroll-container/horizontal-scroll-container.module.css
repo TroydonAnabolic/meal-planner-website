@@ -1,0 +1,15 @@
+.scroll-snap {
+  scroll-snap-type: x mandatory;
+}
+
+.scroll-snap-child {
+  scroll-snap-align: start;
+}
+/* Add these classes to your CSS or as utility classes */
+.fade-in {
+  @apply opacity-100 transition-opacity duration-300;
+}
+
+.fade-out {
+  @apply opacity-0 transition-opacity duration-300;
+}
