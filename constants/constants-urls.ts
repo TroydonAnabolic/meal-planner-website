@@ -17,6 +17,14 @@ export const APIM_HEADERS: CustomHeaders = {
   Connection: "keep-alive",
 };
 
+export const APIM_HEADERS_PUBLIC: CustomHeaders = {
+  "Ocp-Apim-Subscription-Key": process.env.NEXT_PUBLIC_OPIM_SUBSCRIPTION_KEY as
+    | string
+    | "",
+  "Ocp-Apim-Trace": "true",
+  Connection: "keep-alive",
+};
+
 type CustomHeaders = {
   [key: string]: string;
 };

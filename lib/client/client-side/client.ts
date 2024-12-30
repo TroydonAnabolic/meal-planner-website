@@ -1,6 +1,6 @@
 import {
   ACCOUNTAPI_BASE,
-  APIM_HEADERS,
+  APIM_HEADERS_PUBLIC,
   BACKEND_URL_LIVE,
 } from "@/constants/constants-urls";
 import { IClientInterface } from "@/models/interfaces/client/client";
@@ -9,7 +9,7 @@ import axios from "axios";
 
 const instance = axios.create({
   baseURL: BACKEND_URL_LIVE,
-  headers: APIM_HEADERS,
+  headers: APIM_HEADERS_PUBLIC,
 });
 
 export async function getClientUnsafe(userID: string) {

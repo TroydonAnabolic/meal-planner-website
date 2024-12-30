@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const response = await exponentialBackoffFetch(() =>
-      fetch(`${recipeURI}&app_id=${appId}&app_key=${appKey}`, {
+      fetch(`${recipeURI}?app_id=${appId}&app_key=${appKey}`, {
         method: "GET",
       })
     );

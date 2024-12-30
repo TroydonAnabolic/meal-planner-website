@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
   }
 
   const opimSubScriptionKey = process.env.OPIM_SUBSCRIPTION_KEY;
+
   const headers = {
     "Ocp-Apim-Subscription-Key": opimSubScriptionKey,
     "Ocp-Apim-Trace": "true",
