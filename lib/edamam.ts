@@ -95,16 +95,6 @@ export async function fetchEdamamRecipes(
       },
     })
   );
-  // const recipeResponse3 = await exponentialBackoffFetch(
-  //   () =>
-  //     fetch(`/api/edamam/recipe/fetch-recipe?query=${query}`, {
-  //       method: "GET",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //     }),
-  //   20
-  // );
 
   if (!recipeResponse.ok) {
     throw new Error("Failed to get recipes");
