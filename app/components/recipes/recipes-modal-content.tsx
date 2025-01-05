@@ -11,6 +11,10 @@ import { MealType, UrlAction } from "@/constants/constants-enums";
 import { FormActionType } from "@/models/interfaces/types";
 import { usePathname, useSearchParams } from "next/navigation";
 import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import { parseDate } from "@/util/date-util";
+
+dayjs.extend(customParseFormat);
 
 type RecipeModalContentProps = {
   action: FormActionType | "Search";
@@ -128,7 +132,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
       }
 
       if (timeScheduledParam) {
-        updatedRecipe.timeScheduled = dayjs(timeScheduledParam).toDate();
+        updatedRecipe.timeScheduled = parseDate(timeScheduledParam);
       }
 
       if (mealPlanIdParam) {
@@ -205,7 +209,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     }
 
     if (timeScheduledParam) {
-      recipe.timeScheduled = dayjs(timeScheduledParam).toDate();
+      recipe.timeScheduled = parseDate(timeScheduledParam);
     }
 
     if (mealPlanIdParam) {
@@ -312,7 +316,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
       }
 
       if (timeScheduledParam) {
-        recipeToAdd.timeScheduled = dayjs(timeScheduledParam).toDate();
+        recipeToAdd.timeScheduled = parseDate(timeScheduledParam);
       }
 
       if (mealPlanIdParam) {

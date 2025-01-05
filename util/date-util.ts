@@ -15,6 +15,14 @@ export function calculateAge(birthday: Date): number {
   return age;
 }
 
+export const parseDate = (
+  dateString: string,
+  format: string = "DD/MM/YYYY"
+) => {
+  const parsedDate = dayjs(dateString, format);
+  return parsedDate.isValid() ? parsedDate.toDate() : undefined;
+};
+
 export const formatDate = (date: string | Date | null) => {
   if (!date) return "";
   const dateObj = typeof date === "string" ? new Date(date) : date;
@@ -36,6 +44,7 @@ export const formatDateTimeLocal = (date: Date): string => {
 // util/dateUtils.ts
 
 import { DayOfTheWeek } from "@/constants/constants-enums";
+import dayjs from "dayjs";
 
 export const getDayOfWeek = (date: Date): DayOfTheWeek => {
   const dayIndex = date.getDay(); // 0 (Sunday) to 6 (Saturday)

@@ -20,6 +20,7 @@ import { exponentialBackoffFetch } from "@/lib/http/exponential-back-off";
 import LabelDropdown from "../../ui/inputs/label-dropdown";
 import { IClientInterface } from "@/models/interfaces/client/client";
 import { generateEmptySelections } from "@/util/meal-plan-utils";
+import GlowyBanner from "../../ui/banner/banner-with-glow";
 
 type MealPlanSectionSectionProps = {
   mealPlanData: IMealPlan[] | undefined;
@@ -63,6 +64,7 @@ const MealPlanSection: React.FC<MealPlanSectionSectionProps> = ({
   const [formResult, setFormResult] = useState<FormResult | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [isPending, setIsPending] = useState<boolean>(false);
+  const [isBannedOpen, setIsBannedOpen] = useState<boolean>(true);
   const [recipes, setRecipes] = useState<IRecipeInterface[]>(recipesData || []);
   const [recipesLoading, setRecipesLoading] = useState<boolean>(false);
   const [recipesError, setRecipesError] = useState<string | null>(null);
@@ -189,6 +191,17 @@ const MealPlanSection: React.FC<MealPlanSectionSectionProps> = ({
 
   return (
     <div className="md:max-w-screen-xl lg:max-w-screen-2xl mx-auto p-6">
+      {isBannedOpen && (
+        <div className="mb-2">
+          <GlowyBanner
+            title={"Warning"}
+            subtitle={
+              "Existing bug - when you refresh the page you have to close browser and reopen, and clear your browser cache."
+            }
+            onDismiss={() => setIsBannedOpen(false)}
+          />
+        </div>
+      )}
       {/* Meal Plan Selector */}
       <div className="mb-6 w-1/3 max-w-xs">
         <LabelDropdown

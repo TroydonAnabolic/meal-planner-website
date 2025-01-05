@@ -8,7 +8,7 @@ import { MealNumber } from "@/constants/constants-enums";
 import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
 import { v4 as uuidv4 } from "uuid"; // Ensure uuid is installed: npm install uuid
 import { macros } from "@/util/nutrients";
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import {
   extractRecipeIdFromHref,
   extractRecipeIdFromUri,
@@ -224,18 +224,24 @@ const RecipeList: React.FC<RecipeListProps> = ({
                         // identify how to map recipe.timeScheduled maps to dayIndex and only assign when match
                         const recipeMissing = value as IRecipeInterface;
                         const currentScheduledTime = days[dayIndex]?.date;
-                        const recipeScheduledTime =
-                          recipeMissing.timeScheduled?.toLocaleDateString();
-
-                        const currentMealType = [mealType] as string[];
+                        const recipeScheduledTime = recipeMissing.timeScheduled
+                          ? dayjs(recipeMissing.timeScheduled).format(
+                              "DD/MM/YYYY"
+                            )
+                          : null;
+                        const currentMealType = [
+                          mealType.toLocaleLowerCase(),
+                        ] as string[];
 
                         if (
-                          recipeMissing.mealType == currentMealType &&
+                          recipeMissing.mealTypeKey.some((k) =>
+                            currentMealType.includes(k)
+                          ) &&
                           recipeScheduledTime == currentScheduledTime
                         ) {
+                          recipe = value;
+                          break;
                         }
-                        recipe = value;
-                        break;
                       }
                     }
                   }
