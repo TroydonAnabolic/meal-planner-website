@@ -7,10 +7,10 @@ import { generateMealsForPlan } from "@/util/meal-generator-util";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
 import { addMealPlan, updateMealPlan } from "@/lib/meal-plan";
 import { addMealPlanMeals, updateMealPlanMeals } from "@/lib/meal";
-import { IShoppingListResult } from "@/models/interfaces/edamam/meal-planner/shopping-list-response";
 import { addMealPlanRecipes, updateMealPlanRecipes } from "@/lib/recipe";
 import { getEnumKeyByValue, getEnumKeysByValues } from "@/util/enum-util";
 import { MealType } from "@/constants/constants-enums";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 
 /**
  * Creates a meal plan based on the provided recipes, generator response, and other parameters.
@@ -41,25 +41,7 @@ export async function createMealPlan(
       resultMealPlan = await addMealPlan(mealPlan);
     }
 
-    if (resultMealPlan) {
-      recipes.forEach(async (recipe) => {
-        recipe.mealPlanId = resultMealPlan?.id;
-        recipe.image = "/aiimages/food/default-food.svg";
-        recipe.clientId = mealPlan.clientId;
-        recipe.mealTypeKey = getEnumKeysByValues(
-          MealType,
-          recipe.mealType as MealType[]
-        );
-      });
-      meals.forEach(async (meal) => {
-        meal.mealPlanId = resultMealPlan?.id;
-        meal.image = "/aiimages/food/default-food.svg";
-        meal.clientId = mealPlan.clientId;
-      });
-
-      await addMealPlanRecipes(recipes);
-      await addMealPlanMeals(meals);
-    }
+    await fillMealPlanRecipesAndMeals(resultMealPlan, recipes, mealPlan, meals);
 
     if (!resultMealPlan) {
       errors.general = "Error adding or updating meal plan.";
@@ -73,5 +55,32 @@ export async function createMealPlan(
     }
     errors.general = "Error generating meals.";
     return { success: false, errors };
+  }
+}
+
+async function fillMealPlanRecipesAndMeals(
+  resultMealPlan: IMealPlan | undefined,
+  recipes: IRecipeInterface[],
+  mealPlan: IMealPlan,
+  meals: IMealInterface[]
+) {
+  if (resultMealPlan) {
+    recipes.forEach(async (recipe) => {
+      recipe.mealPlanId = resultMealPlan?.id;
+      recipe.image = "/aiimages/food/default-food.svg";
+      recipe.clientId = mealPlan.clientId;
+      recipe.mealTypeKey = getEnumKeysByValues(
+        MealType,
+        recipe.mealType as MealType[]
+      );
+    });
+    meals.forEach(async (meal) => {
+      meal.mealPlanId = resultMealPlan?.id;
+      meal.image = "/aiimages/food/default-food.svg";
+      meal.clientId = mealPlan.clientId;
+    });
+
+    await addMealPlanRecipes(recipes);
+    await addMealPlanMeals(meals);
   }
 }

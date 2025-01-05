@@ -140,20 +140,6 @@ const MealPlanSection: React.FC<MealPlanSectionSectionProps> = ({
     fetchRecipes();
   }, [selectedMealPlan.id]);
 
-  const handleStartDateChange = (date: Dayjs | null) => {
-    setSelectedMealPlan({
-      ...selectedMealPlan,
-      startDate: dayjs(date).toISOString(),
-    });
-  };
-
-  const handleEndDateChange = (date: Dayjs | null) => {
-    setSelectedMealPlan({
-      ...selectedMealPlan,
-      endDate: dayjs(date).toISOString(),
-    });
-  };
-
   // extract start and end date from selected option and then set selected meal plan
   const handleMealPlanChange = (selectedId: string) => {
     if (selectedId === "new") {
@@ -175,8 +161,13 @@ const MealPlanSection: React.FC<MealPlanSectionSectionProps> = ({
 
   // Handle form submission using formAction
   async function formAction(formData: FormData) {
+    const mealPlanId = formData.get("mealPlan") as unknown as number;
+
+    selectedMealPlan.id =
+      selectedMealPlan.id > 0 ? selectedMealPlan.id : mealPlanId;
+
     setLoading(true);
-    const result = await submitMealPlan(formData, selectedMealPlan.clientId);
+    const result = await submitMealPlan(initialMealPlan, selectedMealPlan);
     setFormResult(result);
     setLoading(false);
   }
@@ -231,16 +222,16 @@ const MealPlanSection: React.FC<MealPlanSectionSectionProps> = ({
               label="Start Date"
               className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={dayjs(selectedMealPlan.startDate)}
-              onChange={handleStartDateChange}
+              disabled
+              // onChange={handleStartDateChange}
             />
             <DatePicker
               format="DD/MM/YYYY"
               label="End Date"
               className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={dayjs(selectedMealPlan.endDate)}
-              onChange={handleEndDateChange}
-              disabled={selectedMealPlan.startDate === null}
-              minDate={dayjs(selectedMealPlan.startDate)}
+              // onChange={handleEndDateChange}
+              disabled
             />
           </LocalizationProvider>
         </div>
@@ -281,9 +272,57 @@ const MealPlanSection: React.FC<MealPlanSectionSectionProps> = ({
         <div className="flex justify-end">
           <button
             type="submit"
-            className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-60 px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
           >
             Save Meal Plan
+          </button>
+        </div>
+      </form>
+
+      <form>
+        {/* Delete Meal Plan Button */}
+        <div className="flex justify-end mt-4">
+          <button
+            type="button"
+            onClick={() =>
+              setConfirmModalProps({
+                open: true,
+                title: "Delete Meal Plan",
+                message: `Are you sure you want to delete the meal plan "${selectedLabel}"? This action cannot be undone.`,
+                confirmText: "Delete",
+                cancelText: "Cancel",
+                colorScheme: "danger",
+                onConfirm: async () => {
+                  try {
+                    setLoading(true);
+                    const response = await fetch(
+                      `/api/meal-plans/delete/${selectedMealPlan.id}`,
+                      {
+                        method: "DELETE",
+                      }
+                    );
+                    if (!response.ok) {
+                      throw new Error("Failed to delete the meal plan.");
+                    }
+                    setMealPlans((prev) =>
+                      prev.filter((plan) => plan.id !== selectedMealPlan.id)
+                    );
+                    setSelectedMealPlan(defaultMealPlan);
+                    setSelectedLabel("New Meal Plan");
+                  } catch (error) {
+                    console.error(error);
+                    alert("Error deleting the meal plan.");
+                  } finally {
+                    setLoading(false);
+                    closeConfirmModal();
+                  }
+                },
+                onClose: closeConfirmModal,
+              })
+            }
+            className="w-60 px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            Delete Meal Plan
           </button>
         </div>
       </form>

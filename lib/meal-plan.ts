@@ -118,3 +118,9 @@ export const generateMealsFromMealPlan = async (
   });
   return meals;
 };
+
+export async function deleteMealPlan(id: number) {
+  return await instance.delete(`${BACKEND_URL_LIVE}/${DIETAPI_BASE}/mealPlan`, {
+    params: { id: id },
+  });
+}

@@ -52,17 +52,28 @@ const RecipeList: React.FC<RecipeListProps> = ({
   const currentSelection = mealPlan.selection.slice(startIdx, endIdx);
 
   // Create a map of extracted recipe IDs to recipe objects
+  // const recipeMap = useMemo(() => {
+  //   const map = new Map<string, IRecipeInterface>();
+  //   recipes.forEach((recipe) => {
+  //     const recipeId = extractRecipeIdFromUri(recipe.uri);
+  //     if (recipeId) {
+  //       // Handle duplicates by appending a GUID
+  //       if ([...map.keys()].some((key) => key.startsWith(recipeId))) {
+  //         map.set(`${recipeId}-${uuidv4()}`, recipe);
+  //       } else {
+  //         map.set(recipeId, recipe);
+  //       }
+  //     }
+  //   });
+  //   return map;
+  // }, [recipes]);
+
   const recipeMap = useMemo(() => {
     const map = new Map<string, IRecipeInterface>();
     recipes.forEach((recipe) => {
       const recipeId = extractRecipeIdFromUri(recipe.uri);
-      if (recipeId) {
-        // Handle duplicates by appending a GUID
-        if ([...map.keys()].some((key) => key.startsWith(recipeId))) {
-          map.set(`${recipeId}-${uuidv4()}`, recipe);
-        } else {
-          map.set(recipeId, recipe);
-        }
+      if (recipeId && !map.has(recipeId)) {
+        map.set(recipeId, recipe);
       }
     });
     return map;

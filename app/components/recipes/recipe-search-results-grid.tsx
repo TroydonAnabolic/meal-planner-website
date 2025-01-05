@@ -43,7 +43,7 @@ const RecipeSearchResultsGrid: React.FC<RecipeSearchResultsGridProps> = ({
             <div className="mt-4 flex items-center justify-between">
               {/* Add Recipe Button */}
               <button
-                type="submit"
+                type="button"
                 onClick={() => onAddRecipe(recipe)}
                 className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 aria-label={`Add ${recipe.label} to your recipes`}

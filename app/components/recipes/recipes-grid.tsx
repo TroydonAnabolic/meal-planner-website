@@ -417,7 +417,11 @@ const RecipesGrid: React.FC<RecipesGridProps> = ({ recipesData, clientId }) => {
           page={currentPage}
           open={modalOpen}
           setOpen={setModalOpen}
-          recipeAction={action === "Add" ? handleAddRecipe : handleUpdateRecipe}
+          recipeAction={
+            action === "Add" || action === "Search"
+              ? handleAddRecipe
+              : handleUpdateRecipe
+          }
           recipe={selectedRecipe}
           setRecipe={setSelectedRecipe}
           deleteButtonText={
