@@ -2,7 +2,7 @@
 
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import Image from "next/image";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import CenteredPageNumbers from "../../ui/pagination/centered-page-numbers";
 import { MealNumber } from "@/constants/constants-enums";
 import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
@@ -68,6 +68,27 @@ const RecipeList: React.FC<RecipeListProps> = ({
     return map;
   }, [recipes]);
 
+  // Extract all used recipe IDs from mealPlan
+  const usedRecipeIds = useMemo(() => {
+    const ids = new Set<string>();
+    mealPlan.selection.forEach((selectionItem) => {
+      Object.values(selectionItem.sections).forEach((section) => {
+        const sectionId = extractRecipeIdFromHref(section._links.self.href);
+        if (sectionId) {
+          ids.add(sectionId);
+        }
+      });
+    });
+    return ids;
+  }, [mealPlan]);
+
+  // Find missing recipes
+  const missingRecipes = useMemo(() => {
+    return Array.from(recipeMap.entries())
+      .filter(([id]) => !usedRecipeIds.has(id))
+      .map(([, recipe]) => recipe);
+  }, [recipeMap, usedRecipeIds]);
+
   // Determine which mealTypes are present across all days
   const availableMealTypes = useMemo(() => {
     const mealTypeSet = new Set<string>();
@@ -97,6 +118,8 @@ const RecipeList: React.FC<RecipeListProps> = ({
     }
     return daysArray.slice(startIdx, endIdx);
   }, [startDate, endDate, startIdx, endIdx]);
+
+  const usedRecipeIdsByGroup = useRef<Map<string, Set<string>>>(new Map());
 
   const createQueryString = useCallback(
     (params: { [key: string]: string | string[] }) => {
@@ -179,6 +202,29 @@ const RecipeList: React.FC<RecipeListProps> = ({
                           recipe = recipeMap.get(key) || null;
                           break;
                         }
+                      }
+                    }
+                  }
+
+                  // If no recipe is found, assign a missing recipe
+                  if (!recipe) {
+                    for (let [key, value] of recipeMap.entries()) {
+                      if (![...usedRecipeIds].includes(key)) {
+                        // identify how to map recipe.timeScheduled maps to dayIndex and only assign when match
+                        const recipeMissing = value as IRecipeInterface;
+                        const currentScheduledTime = days[dayIndex]?.date;
+                        const recipeScheduledTime =
+                          recipeMissing.timeScheduled?.toLocaleDateString();
+
+                        const currentMealType = [mealType] as string[];
+
+                        if (
+                          recipeMissing.mealType == currentMealType &&
+                          recipeScheduledTime == currentScheduledTime
+                        ) {
+                        }
+                        recipe = value;
+                        break;
                       }
                     }
                   }
