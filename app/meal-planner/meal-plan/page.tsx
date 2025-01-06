@@ -1,6 +1,5 @@
-import MealPlanSection from "@/app/components/meal-plan/meal-planning/meal-plan";
+import MealPlan from "@/app/components/meal-plan/meal-planning/meal-plan";
 import { auth } from "@/auth";
-import { getClient } from "@/lib/client/client";
 import { getMealPlansByClientId } from "@/lib/meal-plan";
 import { getRecipesByMealPlanId } from "@/lib/recipe";
 import { Metadata } from "next";
@@ -23,7 +22,11 @@ const MealPlansPage = async (props: MealPlanSectionPageProps) => {
 
   return (
     <>
-      <MealPlanSection mealPlanData={mealPlans} recipesData={recipesData} clientId={clientId} />
+      <MealPlan
+        mealPlanData={mealPlans}
+        recipesData={recipesData}
+        clientId={clientId}
+      />
     </>
   );
 };
