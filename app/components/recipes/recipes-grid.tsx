@@ -15,7 +15,11 @@ import {
 } from "@/actions/recipes.action";
 import CardsWithDetailsContainer from "../ui/cards-with-details";
 import RecipeModalContent from "./recipes-modal-content";
-import { deleteImageFromS3, saveImageToS3 } from "@/lib/s3-client";
+import {
+  deleteImageFromS3,
+  saveImageToS3,
+  uploadImageToS3FromBuffer,
+} from "@/lib/s3-client";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import ToggleInput from "../ui/inputs/toggle-input";
 import ConfirmActionModal from "../ui/modals/confirm-action-modal";
@@ -27,6 +31,8 @@ import { UrlAction } from "@/constants/constants-enums";
 import usePagination from "@/hooks/use-pagination";
 import CenteredPageNumbers from "../ui/pagination/centered-page-numbers";
 import { hostname } from "@/constants/constant-strings";
+import { fetchImageAndConvertToBuffer } from "@/lib/image";
+import GlowyBanner from "../ui/banner/banner-with-glow";
 
 type RecipesGridProps = {
   recipesData: IRecipeInterface[] | undefined; // Recipes data fetched from API
@@ -38,7 +44,7 @@ const RecipesGrid: React.FC<RecipesGridProps> = ({ recipesData, clientId }) => {
 
   // State to control the visibility of the Add Recipe Drawer
   const [modalOpen, setModalOpen] = useState(false);
-
+  const [isBannedOpen, setIsBannedOpen] = useState<boolean>(true);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   // State to hold the currently selected recipe for viewing details
   const [selectedRecipe, setSelectedRecipe] = useState<
@@ -196,17 +202,37 @@ const RecipesGrid: React.FC<RecipesGridProps> = ({ recipesData, clientId }) => {
 
         // Extract file information
         let objectUrl = recipe.image;
-        if (
-          recipe.image &&
-          recipe.image.startsWith("data:image") &&
-          !recipe.image.includes("edamam")
-        ) {
+
+        if (recipe.image && recipe.image.startsWith("data:image")) {
           objectUrl =
-            (await saveImageToS3(recipe.image, "recipes/")) || recipe.image;
+            (await saveImageToS3(recipe.image, "recipes/")) ||
+            "/aiimages/food/default-food.svg";
           if (!objectUrl) {
             throw new Error("Failed to upload the image to S3");
           }
+        } else if (recipe.image.includes("edamam")) {
+          const buffer = await fetchImageAndConvertToBuffer(recipe.image);
+
+          if (buffer) {
+            const contentType = "image/jpeg"; // Adjust content type based on image type
+            // Upload the buffer to S3
+            const s3Url = await uploadImageToS3FromBuffer(
+              buffer,
+              "recipes/",
+              `${Date.now()}.jpg`,
+              contentType
+            );
+            if (s3Url) {
+              objectUrl = s3Url; // Use the S3 URL if upload is successful
+            } else {
+              console.error("Failed to upload image to S3.");
+              objectUrl = "/aiimages/food/default-food.svg"; // Fallback to default if upload fails
+            }
+          } else {
+            objectUrl = recipe.image; // Fallback if fetching the image fails
+          }
         }
+
         // Update the recipe image URL to the S3 URL
         const updatedRecipe = {
           ...recipe,
@@ -272,7 +298,9 @@ const RecipesGrid: React.FC<RecipesGridProps> = ({ recipesData, clientId }) => {
             (r) => r.id === recipe.id
           )?.image;
 
-          const newImageUrl = await saveImageToS3(recipe.image, "recipes/");
+          const newImageUrl =
+            (await saveImageToS3(recipe.image, "recipes/")) ||
+            "/aiimages/food/default-food.svg";
           if (newImageUrl) {
             recipe.image = newImageUrl;
           } else {
@@ -348,7 +376,7 @@ const RecipesGrid: React.FC<RecipesGridProps> = ({ recipesData, clientId }) => {
   );
 
   const handleClickAdd = useCallback(() => {
-    setAction("Add");
+    setAction("Search");
     setSelectedRecipe(defaultRecipe);
     setModalOpen(true);
 
@@ -362,6 +390,18 @@ const RecipesGrid: React.FC<RecipesGridProps> = ({ recipesData, clientId }) => {
 
   return (
     <div className="flex flex-col min-h-full">
+      {isBannedOpen && (
+        <div className="mb-2">
+          <GlowyBanner
+            title={"Warning"}
+            subtitle={
+              "Recipe images used from search recipes will only be temporarily available for 1 hour. Use the edit feature to use your own image."
+            }
+            onDismiss={() => setIsBannedOpen(false)}
+          />
+        </div>
+      )}
+
       {/* Filter Toggle */}
       <div className="flex justify-end p-4 mt-4 space-x-4">
         <ToggleInput

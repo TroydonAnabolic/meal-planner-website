@@ -71,6 +71,38 @@ export const saveImageToS3 = async (
   return objectUrl;
 };
 
+export const uploadImageToS3FromBuffer = async (
+  buffer: Buffer,
+  path: string,
+  filename: string,
+  contentType: string
+): Promise<string | null> => {
+  try {
+    // Create a FormData object to send the buffer as raw binary data
+    const formData = new FormData();
+    formData.append("path", path);
+    formData.append("filename", filename);
+    formData.append("contentType", contentType);
+    formData.append("file", new Blob([buffer], { type: contentType }));
+
+    // Call the new API endpoint to upload the buffer
+    const response = await fetch("/api/s3/uploadImageToS3FromBuffer", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to upload image to S3");
+    }
+
+    const data = await response.json();
+    return data.objectUrl; // Return the object URL from S3
+  } catch (error) {
+    console.error("Error uploading image to S3 from buffer:", error);
+    return null;
+  }
+};
+
 /**
  * Deletes an image from S3 by calling the server-side API route.
  *

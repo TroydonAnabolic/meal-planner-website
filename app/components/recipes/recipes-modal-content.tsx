@@ -200,7 +200,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     recipe.baseTotalDaily = recipe.totalDaily;
     recipe.baseTotalNutrients = recipe.totalNutrients;
     recipe.baseTotalWeight = recipe.totalWeight;
-    recipe.image = "/aiimages/food/default-food.svg";
+    // recipe.image = "/aiimages/food/default-food.svg";
 
     if (mealTypeParam) {
       recipe.mealTypeKey = mealTypeParam
@@ -327,7 +327,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
         ...recipeToAdd,
         isCustom: false,
         clientId: recipe.clientId,
-        image: "/aiimages/food/default-food.svg",
+        // image: "/aiimages/food/default-food.svg",
       };
       if (recipeAction) {
         await recipeAction(updatedRecipe);

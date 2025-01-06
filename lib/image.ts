@@ -1,15 +1,20 @@
-import { Buffer } from "buffer"; // Node.js Buffer module
+import axios from "axios"; // or you can use node-fetch
+import { Buffer } from "buffer"; // to convert the image data into a buffer
 
-const fetchImageAsBuffer = async (imageUrl: string): Promise<Buffer | null> => {
+export const fetchImageAndConvertToBuffer = async (
+  imageUrl: string
+): Promise<Buffer | null> => {
   try {
-    const response = await fetch(imageUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch image: ${response.statusText}`);
-    }
-    const arrayBuffer = await response.arrayBuffer();
-    return Buffer.from(arrayBuffer);
+    // Fetch the image from the temporary URL
+    const response = await axios.get(imageUrl, {
+      responseType: "arraybuffer", // To get the response as a binary buffer
+    });
+
+    // Convert the response data into a buffer
+    const buffer = Buffer.from(response.data);
+    return buffer;
   } catch (error) {
-    console.error("Error fetching image as buffer:", error);
+    console.error("Error fetching or converting the image to a buffer:", error);
     return null;
   }
 };
