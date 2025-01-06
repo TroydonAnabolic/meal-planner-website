@@ -20,6 +20,7 @@ import { exponentialBackoffFetch } from "@/lib/http/exponential-back-off";
 import LabelDropdown from "../../ui/inputs/label-dropdown";
 import { generateEmptySelections } from "@/util/meal-plan-utils";
 import GlowyBanner from "../../ui/banner/banner-with-glow";
+import { useSession } from "next-auth/react";
 
 type MealPlanSectionProps = {
   mealPlanData: IMealPlan[] | undefined;
@@ -31,7 +32,7 @@ type MealPlanSectionProps = {
 const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
   ({ mealPlanData, recipesData, clientId }, ref) => {
     // const contentRef = useRef<HTMLDivElement>(null);
-
+    const { data: session, status } = useSession();
     const [mealPlans, setMealPlans] = useState<IMealPlan[]>(mealPlanData || []);
     const [selectedLabel, setSelectedLabel] =
       useState<string>("Choose a meal plan");
@@ -179,9 +180,26 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
       setLoading(false);
     }
 
-    const handleEmailMealPlan = React.useCallback(() => {
-      console.log("`onBeforePrint` called");
-      return Promise.resolve();
+    const handleEmailMealPlan = React.useCallback(async () => {
+      {
+        const response = await fetch("/api/email/meal-plan", {
+          method: "POST",
+          body: JSON.stringify({
+            mealPlanData,
+            recipesData,
+            clientId,
+            toEmail: session?.user.email,
+            givenName: session?.user.givenName,
+          }),
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (response.ok) {
+          alert("Meal plan emailed successfully!");
+        } else {
+          alert("Failed to email meal plan.");
+        }
+      }
     }, []);
 
     if (loading || isPending) {
@@ -242,6 +260,14 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
           >
             Email Meal Plan
           </button>
+
+          {/* <button
+            type="button"
+            onClick={async () => handleEmailMealPlan()}
+            className="w-60 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Email Meal Plan
+          </button> */}
 
           {/* Print Button */}
 

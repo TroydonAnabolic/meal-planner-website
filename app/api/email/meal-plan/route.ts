@@ -6,7 +6,8 @@ import { renderMealPlanToHTML } from "@/util/renderMealPlan";
 // API route: POST handler for sending email
 export async function POST(req: NextRequest) {
   try {
-    const { mealPlanData, recipesData, clientId } = await req.json();
+    const { mealPlanData, recipesData, clientId, toEmail, givenName } =
+      await req.json();
 
     // Generate Static HTML
     const componentHTML = renderMealPlanToHTML(
@@ -20,9 +21,11 @@ export async function POST(req: NextRequest) {
       const browser = await puppeteer.launch();
       const page = await browser.newPage();
       await page.setContent(htmlContent);
-      const pdfBuffer = await page.pdf({ format: "A4" });
+      const pdfUint8Array = await page.pdf({ format: "A4" }); // Uint8Array
       await browser.close();
-      return pdfBuffer;
+
+      // Convert Uint8Array to Buffer
+      return Buffer.from(pdfUint8Array);
     };
 
     const pdfBuffer = await generatePDF(componentHTML);
@@ -31,20 +34,20 @@ export async function POST(req: NextRequest) {
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
-        user: "your-email@gmail.com",
-        pass: "your-email-password", // Use environment variables for sensitive data
+        user: process.env.MEAL_PLANNER_SEND_EMAIL,
+        pass: process.env.MEAL_PLANNER_SEND_PASSWORD, // Use environment variables for sensitive data
       },
     });
 
     // Email Options
     const mailOptions = {
-      from: "your-email@gmail.com",
-      to: "recipient-email@gmail.com",
-      subject: "Meal Plan",
+      from: process.env.MEAL_PLANNER_SEND_EMAIL,
+      to: toEmail,
+      subject: `${givenName}'s - Meal Plan`,
       html: componentHTML, // HTML content in the email body
       attachments: [
         {
-          filename: "MealPlan.pdf",
+          filename: `MealPlan-${givenName}.pdf`,
           content: pdfBuffer, // Attach the PDF
         },
       ],
