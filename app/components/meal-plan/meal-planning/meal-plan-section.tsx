@@ -179,6 +179,11 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
       setLoading(false);
     }
 
+    const handleEmailMealPlan = React.useCallback(() => {
+      console.log("`onBeforePrint` called");
+      return Promise.resolve();
+    }, []);
+
     if (loading || isPending) {
       return (
         <div className="flex justify-center items-center h-full">
@@ -230,13 +235,13 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
         <div className="relative">
           <h2 className="text-2xl font-bold mb-4 text-gray-800">Meal Plan</h2>
 
-          {/* <button
-          type="button"
-          onClick={() => handleEmail()}
-          className="absolute top-6 right-6 w-60 px-6 py-2 mb-8 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          Email Meal Plan
-        </button> */}
+          <button
+            type="button"
+            onClick={() => handleEmailMealPlan()}
+            className="absolute top-6 right-6 w-60 px-6 py-2 mb-8 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Email Meal Plan
+          </button>
 
           {/* Print Button */}
 

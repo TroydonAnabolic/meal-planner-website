@@ -42,6 +42,13 @@ const MealPlan: React.FC<MealPlanProps> = ({
       >
         Print Meal Plan
       </button>
+      <button
+        type="button"
+        onClick={() => printFn()}
+        className="absolute top-28 z-10 right-6 w-60 px-6 py-2 mb-8 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+      >
+        Email Meal Plan
+      </button>
       <MealPlanSection
         mealPlanData={mealPlanData}
         recipesData={recipesData}

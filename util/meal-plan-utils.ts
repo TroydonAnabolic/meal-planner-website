@@ -2,6 +2,9 @@
 
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
 import dayjs, { Dayjs } from "dayjs";
+import ReactDOMServer from "react-dom/server";
+import MealPlanSection from "@/app/components/meal-plan/meal-planning/meal-plan-section"; // Adjust the path as needed
+import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 
 export const generateEmptySelections = (
   startDate: Dayjs,
