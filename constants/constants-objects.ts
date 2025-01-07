@@ -7,7 +7,7 @@ export const defaultMealPlanPreference: IMealPlanPreferences = {
     accept: {
       all: [
         {
-          health: ["soy-free", "fish-free", "mediterranean"],
+          health: ["SOY_FREE", "FISH_FREE", "MEDITERRANEAN"],
         },
       ],
     },

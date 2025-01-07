@@ -9,6 +9,7 @@ import CompanyLogo from "./components/company-logo";
 import Link from "next/link";
 import LoginLink from "./components/auth/login-link";
 import { ROUTES } from "@/constants/routes";
+import { useSession } from "next-auth/react";
 
 interface NavigationItem {
   name: string;
@@ -17,14 +18,23 @@ interface NavigationItem {
 
 // app/components/Header.tsx
 
-const navigation: NavigationItem[] = [
-  { name: "HOME", href: ROUTES.HOME },
-  { name: "HOW IT WORKS", href: ROUTES.HOW_IT_WORKS },
-  { name: "PREMIUM PLAN", href: ROUTES.PREMIUM_PLAN },
-  // Add more navigation items as needed
-];
-
 const Header = () => {
+  const { data: session, status } = useSession();
+
+  const navigation: NavigationItem[] = [
+    { name: "HOME", href: ROUTES.HOME },
+    { name: "HOW IT WORKS", href: ROUTES.HOW_IT_WORKS },
+    { name: "PREMIUM PLAN", href: ROUTES.PREMIUM_PLAN },
+  ];
+
+  // only show in main page when not authenticated
+  if (!session) {
+    navigation.push({
+      name: "MEAL PLANNER DEMO",
+      href: ROUTES.MEAL_PLANNER_DEMO,
+    });
+  }
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const location = usePathname();

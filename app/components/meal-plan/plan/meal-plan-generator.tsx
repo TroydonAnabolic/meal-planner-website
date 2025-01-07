@@ -24,16 +24,30 @@ import FilterRecipes from "./filter-recipes";
 import ShoppingListTable from "../../shopping-list/shopping-list-table";
 import { IShoppingListResult } from "@/models/interfaces/edamam/meal-planner/shopping-list-response";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
+import { useSession } from "next-auth/react";
 
 type MealPlanGeneratorProps = {
   clientData: IClientInterface;
-  // mealPlanData?: IMealPlan;
+};
+
+const COOKIE_NAME = "lastMealPlanTime";
+const COOKIE_EXPIRATION_MINUTES = 5;
+
+const getCookie = (name: string) => {
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? decodeURIComponent(match[2]) : null;
+};
+
+const setCookie = (name: string, value: string, minutes: number) => {
+  const date = new Date();
+  date.setTime(date.getTime() + minutes * 60 * 1000);
+  document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
 };
 
 const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
   clientData,
-  // mealPlanData,
 }) => {
+  const { data: session, status } = useSession();
   const [recipes, setRecipes] = useState<IRecipeInterface[]>([]);
   const [excluded, setExcluded] = useState<string[]>([]);
   const [mealPlan, setMealPlan] = useState<IMealPlan | null>();
@@ -79,6 +93,36 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
     setIsLoading(true);
     setMealPlan(null);
     setRecipes([]);
+
+    // when user not authorized, disallow user to regenerate meal plan for 5 mins
+    if (!session) {
+      const lastMealPlanTime = getCookie(COOKIE_NAME);
+      const now = new Date().getTime();
+
+      if (lastMealPlanTime) {
+        const remainingTime =
+          COOKIE_EXPIRATION_MINUTES * 60 * 1000 -
+          (now - Number(lastMealPlanTime));
+
+        if (remainingTime > 0) {
+          setConfirmModalProps({
+            open: true,
+            title: "Please Wait",
+            message: `You can only generate a meal plan once every ${COOKIE_EXPIRATION_MINUTES} minutes. Please try again in ${Math.ceil(
+              remainingTime / 60000
+            )} minutes.`,
+            confirmText: "OK",
+            onConfirm: closeConfirmModal,
+            colorScheme: "bg-yellow-600 hover:bg-yellow-500",
+            cancelText: "",
+            type: "warning",
+          });
+          return;
+        }
+      }
+
+      setCookie(COOKIE_NAME, String(now), COOKIE_EXPIRATION_MINUTES);
+    }
 
     if (!startDate || !endDate) {
       setConfirmModalProps({
@@ -287,28 +331,32 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
             </div>
           </div>
 
-          <div className="w-1/2">
-            <FilterRecipes
-              title="Filter Recipes"
-              excluded={excluded}
-              setExcluded={setExcluded}
-              timeToCook={timeToCook}
-              setTimeToCook={setTimeToCook}
-            />
-          </div>
+          {session && (
+            <div className="w-1/2">
+              <FilterRecipes
+                title="Filter Recipes"
+                excluded={excluded}
+                setExcluded={setExcluded}
+                timeToCook={timeToCook}
+                setTimeToCook={setTimeToCook}
+              />
+            </div>
+          )}
         </div>
 
         {/* Confirm Button */}
-        <div>
-          {recipes.length > 0 && (
-            <button
-              onClick={handleCreateMealPlanAndMealsClick}
-              className="mt-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
-            >
-              Create Meal Plan
-            </button>
-          )}
-        </div>
+        {session && (
+          <div>
+            {recipes.length > 0 && (
+              <button
+                onClick={handleCreateMealPlanAndMealsClick}
+                className="mt-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
+              >
+                Create Meal Plan
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="mt-6 flex space-x-4">
           {/* Recipes Grid or Empty State */}
@@ -353,7 +401,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
           </div>
 
           {/* Shopping List Table */}
-          {mealPlan && recipes.length > 0 && (
+          {session && mealPlan && recipes.length > 0 && (
             <div className="w-1/4 text-gray-800">
               <ShoppingListTable
                 recipes={recipes}
@@ -364,16 +412,21 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
           )}
         </div>
 
-        <span className="text-sm text-gray-500 ">
-          <Link
-            title="Edit Meal Preferences"
-            href={"./meal-preferences"}
-            className="mt-4 mr-1 inline-flex justify-center\u00A0py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
-          >
-            Edit Meal Preferences
-          </Link>
-          to customize your meal plan preferences.
-        </span>
+        {session ? (
+          <span className="text-sm text-gray-500 ">
+            <Link
+              title="Edit Meal Preferences"
+              href={"./meal-preferences"}
+              className="mt-4 mr-1 inline-flex justify-center\u00A0py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+            >
+              Edit Meal Preferences
+            </Link>
+            to customize your meal plan preferences.
+          </span>
+        ) : (
+          // TODO: Add a input to edit preferences if session is not present
+          <h3>Edit demo preferences component goes here</h3>
+        )}
 
         <SummaryTable
           mealPlanPreferences={
