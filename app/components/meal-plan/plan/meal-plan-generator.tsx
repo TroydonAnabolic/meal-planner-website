@@ -51,7 +51,10 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
   const [recipes, setRecipes] = useState<IRecipeInterface[]>([]);
   const [excluded, setExcluded] = useState<string[]>([]);
   const [mealPlan, setMealPlan] = useState<IMealPlan | null>();
-  // mealPlanData || null
+  const [mealPlanPreferences, setMealPlanPreferences] =
+    useState<IMealPlanPreferences | null>(
+      clientData.ClientSettingsDto?.mealPlanPreferences!
+    );
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [startDate, setStartDate] = useState<Dayjs | null>(
@@ -62,6 +65,9 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
   const [shoppingList, setShoppingList] = useState<IShoppingListResult | null>(
     null
   );
+  const [minEnergy, setMinEnergy] = useState<number | undefined>(undefined);
+  const [maxEnergy, setMaxEnergy] = useState<number | undefined>(undefined);
+
   const [confirmModalProps, setConfirmModalProps] =
     useState<ConfirmActionModalProps>({
       open: false,
@@ -76,6 +82,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
     });
 
   const closeConfirmModal = useCallback(() => {
+    setIsLoading(false);
     setConfirmModalProps({
       open: false,
       title: "",
@@ -88,6 +95,59 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
       type: "primary",
     });
   }, []);
+
+  const handleMinEnergyChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = event.target.value
+      ? parseInt(event.target.value, 10)
+      : undefined;
+
+    setMinEnergy(value); // Update the local state for minimum energy.
+
+    // Safely update the mealPlanPreferences with immutability.
+    const updatedMealPlanPreferences: IMealPlanPreferences = {
+      ...mealPlanPreferences!,
+      plan: {
+        ...mealPlanPreferences?.plan,
+        fit: {
+          ...mealPlanPreferences?.plan.fit,
+          ENERC_KCAL: {
+            ...mealPlanPreferences?.plan.fit?.ENERC_KCAL,
+            min: value, // Update the min value for ENERC_KCAL.
+          },
+        },
+      },
+    };
+
+    setMealPlanPreferences(updatedMealPlanPreferences);
+  };
+
+  const handleMaxEnergyChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = event.target.value
+      ? parseInt(event.target.value, 10)
+      : undefined;
+    setMaxEnergy(value);
+
+    // Safely update the mealPlanPreferences with immutability.
+    const updatedMealPlanPreferences: IMealPlanPreferences = {
+      ...mealPlanPreferences!,
+      plan: {
+        ...mealPlanPreferences?.plan,
+        fit: {
+          ...mealPlanPreferences?.plan.fit,
+          ENERC_KCAL: {
+            ...mealPlanPreferences?.plan.fit?.ENERC_KCAL,
+            max: value, // Update the min value for ENERC_KCAL.
+          },
+        },
+      },
+    };
+
+    setMealPlanPreferences(updatedMealPlanPreferences);
+  };
 
   const handleGenerateMealPlan = async () => {
     setIsLoading(true);
@@ -139,9 +199,6 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
       setIsLoading(false); // Stop loading if validation fails
       return;
     }
-
-    const mealPlanPreferences: IMealPlanPreferences | undefined =
-      clientData.ClientSettingsDto?.mealPlanPreferences;
 
     if (!mealPlanPreferences) {
       setConfirmModalProps((prev) => ({
@@ -311,7 +368,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
               onClick={handleGenerateMealPlan}
               icon={<PrecisionManufacturingIcon />}
             />
-            <div className="flex justify-around mt-4">
+            <div className="flex justify-around mt-4 space-x-4">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
                   format="DD/MM/YYYY"
@@ -328,6 +385,30 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
                   minDate={startDate!}
                 />
               </LocalizationProvider>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Min Energy
+                  </label>
+                  <input
+                    type="number"
+                    value={minEnergy || ""}
+                    onChange={handleMinEnergyChange}
+                    className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Max Energy
+                  </label>
+                  <input
+                    type="number"
+                    value={maxEnergy || ""}
+                    onChange={handleMaxEnergyChange}
+                    className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -428,11 +509,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
           <h3>Edit demo preferences component goes here</h3>
         )}
 
-        <SummaryTable
-          mealPlanPreferences={
-            clientData.ClientSettingsDto?.mealPlanPreferences!
-          }
-        />
+        <SummaryTable mealPlanPreferences={mealPlanPreferences!} />
 
         {confirmModalProps.open && (
           <ConfirmActionModal

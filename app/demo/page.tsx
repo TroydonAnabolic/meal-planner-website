@@ -1,4 +1,5 @@
 // app/components/meal-planner/PlanMeal.tsx
+"use client";
 
 import { IClientInterface } from "@/models/interfaces/client/client";
 import React from "react";
@@ -7,11 +8,11 @@ import { Countries } from "@/constants/constants-enums";
 import { initializeClientSettings } from "@/util/client-settings-util";
 import { defaultMealPlanPreference } from "@/constants/constants-objects";
 
-type PlanMealProps = {
+type PlanMealDemoProps = {
   clientData: IClientInterface;
 };
 
-const PlanMeal: React.FC<PlanMealProps> = () => {
+const PlanMealDemo: React.FC<PlanMealDemoProps> = () => {
   const clientData: IClientInterface = {
     Id: 0,
     FirstName: "Givenname",
@@ -26,9 +27,9 @@ const PlanMeal: React.FC<PlanMealProps> = () => {
   clientData.ClientSettingsDto!.mealPlanPreferences = defaultMealPlanPreference;
 
   return (
-    <main className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+    <main className="mx-auto py-16 px-4 sm:px-6 lg:px-8 ">
       {/* Pricing section */}
-      <div className="relative isolate mt-32 bg-white px-6 sm:mt-56 lg:px-8">
+      <div className="relative isolate text-center bg-white px-6 lg:px-8">
         <div
           aria-hidden="true"
           className="absolute inset-x-0 -top-3 -z-10 transform-gpu overflow-hidden px-36 blur-3xl"
@@ -52,4 +53,4 @@ const PlanMeal: React.FC<PlanMealProps> = () => {
   );
 };
 
-export default PlanMeal;
+export default PlanMealDemo;

@@ -4,7 +4,7 @@ export const ROUTES = {
   PRIVACY: "/privacy",
   HOW_IT_WORKS: "/how-it-works",
   PREMIUM_PLAN: "/premium-plan",
-  MEAL_PLANNER_DEMO: "/meal-planner-demo",
+  MEAL_PLANNER_DEMO: "/demo",
   AUTH: {
     REGISTER: "/register",
     LOGIN: "/login",
