@@ -38,11 +38,11 @@ export async function register(
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
-  const birthday = new Date(formData.get("birthDay") as string);
-  const age = calculateAge(birthday);
+  // const birthday = new Date(formData.get("birthDay") as string);
+  // const age = calculateAge(birthday);
   const country = formData.get("country") as Countries;
-  const gender = formData.get("gender") as GenderType;
-  const activityLevel = formData.get("activityLevel") as ActivityLevel;
+  //const gender = formData.get("gender") as GenderType;
+  //  const activityLevel = formData.get("activityLevel") as ActivityLevel;
 
   const newClient: IClientInterface = {
     Id: 0,
@@ -53,10 +53,10 @@ export async function register(
     Email: email,
     PhoneNumber: `+${formData.get("phoneNumber") as string}`,
     Country: country,
-    Gender: gender,
-    Activity: activityLevel,
-    Age: age,
-    Birthday: birthday,
+    // Gender: gender,
+    // Activity: activityLevel,
+    // Age: age,
+    // Birthday: birthday,
     City: formData.get("city") as string,
     Address: formData.get("address") as string,
     Suburb: formData.get("suburb") as string,

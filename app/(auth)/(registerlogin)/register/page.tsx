@@ -3,7 +3,9 @@ import { register, resendConfirmationEmail } from "@/actions/auth-actions";
 import EmailInput from "@/app/components/ui/inputs/email-input";
 import PhoneNumberInput from "@/app/components/ui/inputs/phone-number-input";
 import SelectDropdown from "@/app/components/ui/inputs/select-dropdown";
+import PricingGrid from "@/app/components/ui/subscribe/pricing-sections";
 import { Countries } from "@/constants/constants-enums";
+import { tiers } from "@/constants/constants-objects";
 import { ActivityLevel, GenderType } from "@/models/Client";
 import Link from "next/link";
 import { useState } from "react";
@@ -29,6 +31,10 @@ const tempData = {
   activityLevel: ActivityLevel.Active,
 };
 
+function classNames(...classes: (string | false)[]): string {
+  return classes.filter(Boolean).join(" ");
+}
+
 const RegistrationPage = (props: Props) => {
   const [formData, formAction, isPending] = useFormState(register, {
     errors: {},
@@ -36,11 +42,6 @@ const RegistrationPage = (props: Props) => {
   const [selectedCountry, setSelectedCountry] = useState<Countries>(
     Countries.NZ
   );
-  const [selectedGender, setSelectedGender] = useState<GenderType>(
-    GenderType.Male
-  );
-  const [selectedActivityLevel, setSelectedActivityLevel] =
-    useState<ActivityLevel>(ActivityLevel.Active);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState(tempData.email);
 
@@ -75,7 +76,6 @@ const RegistrationPage = (props: Props) => {
               required={true}
             />
           </div>
-
           {/* Password Field */}
           <div>
             <label
@@ -97,7 +97,6 @@ const RegistrationPage = (props: Props) => {
               />
             </div>
           </div>
-
           {/* Confirm Password Field */}
           <div>
             <label
@@ -119,7 +118,6 @@ const RegistrationPage = (props: Props) => {
               />
             </div>
           </div>
-
           {/* Given Name Field */}
           <div>
             <label
@@ -141,7 +139,6 @@ const RegistrationPage = (props: Props) => {
               />
             </div>
           </div>
-
           {/* Family Name Field (Optional) */}
           <div>
             <label
@@ -162,7 +159,6 @@ const RegistrationPage = (props: Props) => {
               />
             </div>
           </div>
-
           {/* Address Field (Optional) */}
           <div>
             <label
@@ -180,78 +176,80 @@ const RegistrationPage = (props: Props) => {
             </div>
           </div>
 
-          {/* Suburb Field (Optional) */}
-          <div>
-            <label
-              htmlFor="suburb"
-              className="block text-sm font-medium leading-6 text-gray-800"
-            >
-              Suburb
-            </label>
-            <div className="mt-2">
-              <input
-                id="suburb"
-                name="suburb"
-                type="text"
-                placeholder="Enter your suburb"
-                defaultValue={tempData.suburb}
-                autoComplete="address-level2"
-                className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-gray-800"
-              />
+          {/* Suburb and Post Code Fields */}
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <label
+                htmlFor="suburb"
+                className="block text-sm font-medium leading-6 text-gray-800"
+              >
+                Suburb
+              </label>
+              <div className="mt-2">
+                <input
+                  id="suburb"
+                  name="suburb"
+                  type="text"
+                  placeholder="Enter your suburb"
+                  defaultValue={tempData.suburb}
+                  autoComplete="address-level2"
+                  className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-gray-800"
+                />
+              </div>
+            </div>
+            <div className="flex-1">
+              <label
+                htmlFor="postCode"
+                className="block text-sm font-medium leading-6 text-gray-800"
+              >
+                Post Code
+              </label>
+              <div className="mt-2">
+                <input
+                  id="postCode"
+                  name="postCode"
+                  type="text"
+                  placeholder="Enter your post code"
+                  defaultValue={tempData.postCode}
+                  autoComplete="postal-code"
+                  className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-gray-800"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Post Code Field (Optional) */}
-          <div>
-            <label
-              htmlFor="postCode"
-              className="block text-sm font-medium leading-6 text-gray-800"
-            >
-              Post Code
-            </label>
-            <div className="mt-2">
-              <input
-                id="postCode"
-                name="postCode"
-                type="text"
-                placeholder="Enter your post code"
-                defaultValue={tempData.postCode}
-                autoComplete="postal-code"
-                className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-gray-800"
+          {/* City and Country Fields */}
+          <div className="flex gap-4 mt-4">
+            <div className="flex-1">
+              <label
+                htmlFor="city"
+                className="block text-sm font-medium leading-6 text-gray-800"
+              >
+                City
+              </label>
+              <div className="mt-2">
+                <input
+                  id="city"
+                  name="city"
+                  type="text"
+                  placeholder="Enter your city"
+                  defaultValue={tempData.city}
+                  autoComplete="address-level1"
+                  className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-gray-800"
+                />
+              </div>
+            </div>
+            <div className="flex-1">
+              <SelectDropdown
+                label="Country"
+                options={Object.values(Countries)}
+                selected={selectedCountry}
+                onChange={setSelectedCountry}
+                name="country"
+                placeholder="Select your country"
               />
             </div>
           </div>
-
-          {/* City Field (Optional) */}
-          <div>
-            <label
-              htmlFor="city"
-              className="block text-sm font-medium leading-6 text-gray-800"
-            >
-              City
-            </label>
-            <div className="mt-2">
-              <input
-                id="city"
-                name="city"
-                type="text"
-                placeholder="Enter your city"
-                defaultValue={tempData.city}
-                autoComplete="address-level1"
-                className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-gray-800"
-              />
-            </div>
-          </div>
-
-          {/* Country Dropdown */}
-          <SelectDropdown
-            label="Country"
-            options={Object.values(Countries)}
-            selected={selectedCountry}
-            onChange={setSelectedCountry}
-            name="country"
-            placeholder="Select your country"
-          />
 
           {/* Phone Number Field (Optional) */}
           <div>
@@ -268,46 +266,17 @@ const RegistrationPage = (props: Props) => {
             />
           </div>
 
-          {/* Birth Day Field (Optional) */}
           <div>
             <label
-              htmlFor="birthDay"
+              htmlFor="pricing"
               className="block text-sm font-medium leading-6 text-gray-800"
             >
-              Birth Day
+              Pricing
             </label>
-            <div className="mt-2">
-              <input
-                id="birthDay"
-                name="birthDay"
-                type="date"
-                placeholder="Enter your birth date"
-                defaultValue={tempData.birthDay}
-                autoComplete="bday"
-                className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-gray-800"
-              />
+            <div>
+              <PricingGrid tiers={tiers} classNames={classNames} />;
             </div>
           </div>
-
-          {/* Gender Dropdown */}
-          <SelectDropdown
-            label="Gender"
-            options={Object.values(GenderType)}
-            selected={selectedGender}
-            onChange={setSelectedGender}
-            name="gender"
-            placeholder="Select your gender"
-          />
-
-          {/* Activity Level Dropdown */}
-          <SelectDropdown
-            label="Activity Level"
-            options={Object.values(ActivityLevel)}
-            selected={selectedActivityLevel}
-            onChange={setSelectedActivityLevel}
-            name="activityLevel"
-            placeholder="Select your activity level"
-          />
 
           {formData?.errors && (
             <ul id="form-errors" className="text-red-700">
@@ -316,7 +285,6 @@ const RegistrationPage = (props: Props) => {
               ))}
             </ul>
           )}
-
           {formData?.errors?.email === "Email already exists." && (
             <button
               onClick={async () => {
@@ -327,7 +295,6 @@ const RegistrationPage = (props: Props) => {
               Click here to resend confirmation email
             </button>
           )}
-
           {/* Submit Button */}
           <div>
             <button

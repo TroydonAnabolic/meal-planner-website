@@ -1,5 +1,6 @@
 import { IMealPlanPreferences } from "@/models/interfaces/client/meal-planner-preferences";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
+import { Tier } from "@/types/subscribe";
 
 export const defaultMealPlanPreference: IMealPlanPreferences = {
   size: 7,
@@ -375,3 +376,37 @@ export const defaultRecipe: IRecipeInterface = {
     },
   ],
 };
+
+export const tiers: Tier[] = [
+  {
+    name: "Basic Plan",
+    id: "tier-basic",
+    href: "/register",
+    priceMonthly: "$19",
+    description:
+      "Ideal for individuals starting their journey towards a healthier lifestyle.",
+    features: [
+      "Personalized meal plans",
+      "Access to basic recipes",
+      "Nutritional tracking",
+      "Email support",
+    ],
+    featured: false,
+  },
+  // {
+  //   name: "Premium Plan",
+  //   id: "tier-premium",
+  //   href: "#",
+  //   priceMonthly: "$49",
+  //   description:
+  //     "Perfect for those who want a comprehensive meal planning experience.",
+  //   features: [
+  //     "All features of Basic Plan",
+  //     "Advanced recipe options",
+  //     "Customizable meal plans",
+  //     "Priority support",
+  //     "Weekly progress reports",
+  //   ],
+  //   featured: true,
+  // },
+];

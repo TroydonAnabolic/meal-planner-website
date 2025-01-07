@@ -23,7 +23,7 @@ export async function getClient(userID: string) {
   return clientObj;
 }
 
-export async function storeClient(clientData: Client) {
+export async function storeClient(clientData: IClientInterface) {
   const response = await instance.post(
     `${ACCOUNTAPI_BASE}/clients`,
     clientData

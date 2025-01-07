@@ -9,7 +9,7 @@ export interface IClientInterface {
   AmazonId?: string;
   FirstName: string;
   LastName: string;
-  Age: number;
+  Age?: number;
   BodyWeight?: number;
   Height?: number;
   Gender?: GenderType;
