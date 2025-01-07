@@ -25,6 +25,8 @@ import ShoppingListTable from "../../shopping-list/shopping-list-table";
 import { IShoppingListResult } from "@/models/interfaces/edamam/meal-planner/shopping-list-response";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
 import { useSession } from "next-auth/react";
+import { Nutrients } from "@/constants/constants-enums";
+import GlowyBanner from "../../ui/banner/banner-with-glow";
 
 type MealPlanGeneratorProps = {
   clientData: IClientInterface;
@@ -65,8 +67,20 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
   const [shoppingList, setShoppingList] = useState<IShoppingListResult | null>(
     null
   );
-  const [minEnergy, setMinEnergy] = useState<number | undefined>(undefined);
-  const [maxEnergy, setMaxEnergy] = useState<number | undefined>(undefined);
+  const [minEnergy, setMinEnergy] = useState<number | undefined>(
+    clientData.ClientSettingsDto?.mealPlanPreferences?.plan.fit
+      ? clientData.ClientSettingsDto?.mealPlanPreferences?.plan.fit[
+          Nutrients.ENERC_KCAL
+        ].min
+      : undefined
+  );
+  const [maxEnergy, setMaxEnergy] = useState<number | undefined>(
+    clientData.ClientSettingsDto?.mealPlanPreferences?.plan.fit
+      ? clientData.ClientSettingsDto?.mealPlanPreferences?.plan.fit[
+          Nutrients.ENERC_KCAL
+        ].max
+      : undefined
+  );
 
   const [confirmModalProps, setConfirmModalProps] =
     useState<ConfirmActionModalProps>({

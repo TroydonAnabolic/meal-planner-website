@@ -24,57 +24,61 @@ export async function middleware(req: NextRequest) {
 
   if (protectedRoutes.some((route) => pathname.startsWith(route))) {
     // TODO: Potentially wont work in production
-    const { user } = (await auth()) as Session;
-    const clientId = parseInt(user.clientId!, 10);
+    const session = await auth();
 
-    if (isNaN(clientId)) {
-      return NextResponse.json(
-        { message: "Invalid client ID format." },
-        { status: 400 }
-      );
-    }
+    // apply rate limit only when user authenticated, the demo automatically disallows user from sending more than 1 request per 5 mins
+    if (session) {
+      const clientId = parseInt(session.user.clientId!, 10);
 
-    // Determine the API name based on the route
-    const apiName = extractApiNameFromPath(pathname);
-    if (!apiName) {
-      return NextResponse.json(
-        {
-          name: "InvalidAPI",
-          message: "API not recognized for rate limiting.",
-        },
-        { status: 400 }
-      );
-    }
+      if (isNaN(clientId)) {
+        return NextResponse.json(
+          { message: "Invalid client ID format." },
+          { status: 400 }
+        );
+      }
 
-    // Check rate limits
-    const { allowed, retryAfter } = rateLimiter.checkRateLimit(
-      apiName,
-      clientId
-    );
-
-    if (!allowed) {
-      if (retryAfter) {
+      // Determine the API name based on the route
+      const apiName = extractApiNameFromPath(pathname);
+      if (!apiName) {
         return NextResponse.json(
           {
-            name: "RateLimitExceeded",
-            message: `Rate limit exceeded. Retry after ${retryAfter} seconds.`,
+            name: "InvalidAPI",
+            message: "API not recognized for rate limiting.",
           },
-          {
-            status: 429,
-            statusText: `Rate limit exceeded. Retry after ${retryAfter} seconds.`,
-          }
+          { status: 400 }
         );
-      } else {
-        return NextResponse.json(
-          {
-            name: "MonthlyRateLimitExceeded",
-            message: "Monthly rate limit exceeded.",
-          },
-          {
-            status: 429,
-            statusText: `Rate limit exceeded. Retry after ${retryAfter} seconds.`,
-          }
-        );
+      }
+
+      // Check rate limits
+      const { allowed, retryAfter } = rateLimiter.checkRateLimit(
+        apiName,
+        clientId
+      );
+
+      if (!allowed) {
+        if (retryAfter) {
+          return NextResponse.json(
+            {
+              name: "RateLimitExceeded",
+              message: `Rate limit exceeded. Retry after ${retryAfter} seconds.`,
+            },
+            {
+              status: 429,
+              statusText: `Rate limit exceeded. Retry after ${retryAfter} seconds.`,
+            }
+          );
+        } else {
+          return NextResponse.json(
+            {
+              name: "MonthlyRateLimitExceeded",
+              message: "Monthly rate limit exceeded.",
+            },
+            {
+              status: 429,
+              statusText: `Rate limit exceeded. Retry after ${retryAfter} seconds.`,
+            }
+          );
+        }
       }
     }
   }

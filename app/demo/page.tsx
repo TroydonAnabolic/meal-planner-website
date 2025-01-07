@@ -2,17 +2,21 @@
 "use client";
 
 import { IClientInterface } from "@/models/interfaces/client/client";
-import React from "react";
+import React, { useState } from "react";
 import MealPlanGenerator from "../components/meal-plan/plan/meal-plan-generator";
 import { Countries } from "@/constants/constants-enums";
 import { initializeClientSettings } from "@/util/client-settings-util";
 import { defaultMealPlanPreference } from "@/constants/constants-objects";
+import GlowyBanner from "../components/ui/banner/banner-with-glow";
+import GlowyBannerWithLink from "../components/ui/banner/banner-with-glow-and-link";
 
 type PlanMealDemoProps = {
   clientData: IClientInterface;
 };
 
 const PlanMealDemo: React.FC<PlanMealDemoProps> = () => {
+  const [isBannedOpen, setIsBannedOpen] = useState<boolean>(true);
+
   const clientData: IClientInterface = {
     Id: 0,
     FirstName: "Givenname",
@@ -43,6 +47,13 @@ const PlanMealDemo: React.FC<PlanMealDemoProps> = () => {
           />
         </div>
         <div className="p-4">
+          <GlowyBannerWithLink
+            title={"Subscribe to unlock all features"}
+            subtitle="With a subscription you can add finegrain preferences to get more accurate meal plan results, such as adding additional meal types, customizing each meal type, and more... "
+            link="/register"
+            linkText="Subscribe now"
+            onDismiss={() => setIsBannedOpen(false)}
+          />
           <h1 className="text-2xl font-bold p-4 text-gray-800">
             Plan Your Meals
           </h1>
