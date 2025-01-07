@@ -3,8 +3,6 @@
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
 import dayjs, { Dayjs } from "dayjs";
 import ReactDOMServer from "react-dom/server";
-import MealPlanSection from "@/app/components/meal-plan/meal-planning/meal-plan-section"; // Adjust the path as needed
-import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 
 export const generateEmptySelections = (
   startDate: Dayjs,
@@ -57,4 +55,35 @@ export const generateEmptySelections = (
   }
 
   return selections;
+};
+export function getCurrentMealPlan(
+  mealPlanData: IMealPlan[],
+  today: dayjs.Dayjs,
+  mealPlans: IMealPlan[],
+  defaultMealPlan: IMealPlan
+) {
+  const currentMealPlan = mealPlanData.find(
+    (plan) =>
+      dayjs(plan.startDate).isBefore(today) &&
+      dayjs(plan.endDate).isAfter(today)
+  );
+  const initialMealPlan = currentMealPlan || mealPlans[0] || defaultMealPlan;
+  return initialMealPlan;
+}
+
+export function getDefaultMealPlan(clientId: number): IMealPlan {
+  return {
+    id: 0,
+    clientId: clientId || 0,
+    startDate: dayjs().startOf("week").toISOString(),
+    endDate: dayjs().endOf("week").toISOString(),
+    selection: generateEmptySelections(
+      dayjs().startOf("week"),
+      dayjs().endOf("week")
+    ),
+  };
+}
+
+export const renderMealPlanToHTML = (mealPlanSection: any): string => {
+  return ReactDOMServer.renderToStaticMarkup(mealPlanSection);
 };

@@ -18,68 +18,54 @@ import ConfirmActionModal, {
 import ActionPanelButton from "../../action-panel/action-panel-button";
 import { exponentialBackoffFetch } from "@/lib/http/exponential-back-off";
 import LabelDropdown from "../../ui/inputs/label-dropdown";
-import { generateEmptySelections } from "@/util/meal-plan-utils";
+import {
+  generateEmptySelections,
+  getDefaultMealPlan,
+} from "@/util/meal-plan-utils";
 import GlowyBanner from "../../ui/banner/banner-with-glow";
-import { useSession } from "next-auth/react";
 
 type MealPlanSectionProps = {
-  mealPlanData: IMealPlan[] | undefined;
-  recipesData: IRecipeInterface[] | undefined;
+  initialMealPlan: IMealPlan;
+  selectedMealPlan: IMealPlan;
+  mealPlans: IMealPlan[];
+  setMealPlans: React.Dispatch<React.SetStateAction<IMealPlan[]>>;
+  setSelectedMealPlan: React.Dispatch<React.SetStateAction<IMealPlan>>;
+  recipesLoading: boolean;
+  recipesError: string | null;
+  selectedLabel: string;
+  setSelectedLabel: React.Dispatch<React.SetStateAction<string>>;
+  recipes: IRecipeInterface[];
   clientId: number;
+  confirmModalProps: ConfirmActionModalProps;
+  setConfirmModalProps: React.Dispatch<
+    React.SetStateAction<ConfirmActionModalProps>
+  >;
 };
 
 // TODO: Try to fix re-renders, and generate tests to do manual and automatically
 const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
-  ({ mealPlanData, recipesData, clientId }, ref) => {
-    // const contentRef = useRef<HTMLDivElement>(null);
-    const { data: session, status } = useSession();
-    const [mealPlans, setMealPlans] = useState<IMealPlan[]>(mealPlanData || []);
-    const [selectedLabel, setSelectedLabel] =
-      useState<string>("Choose a meal plan");
-    const defaultMealPlan: IMealPlan = {
-      id: 0,
-      clientId: clientId || 0,
-      startDate: dayjs().startOf("week").toISOString(),
-      endDate: dayjs().endOf("week").toISOString(),
-      selection: generateEmptySelections(
-        dayjs().startOf("week"),
-        dayjs().endOf("week")
-      ),
-    };
-    const today = dayjs();
-    const initialMealPlan = getCurrentMealPlan(
-      mealPlanData || [],
-      today,
+  (
+    {
+      initialMealPlan,
+      selectedMealPlan,
+      setSelectedMealPlan,
       mealPlans,
-      defaultMealPlan
-    );
-    const [selectedMealPlan, setSelectedMealPlan] = useState<IMealPlan>(
-      initialMealPlan || defaultMealPlan
-    );
-
-    console.log("mealPlanData", mealPlanData);
+      setMealPlans,
+      recipesLoading,
+      recipesError,
+      selectedLabel,
+      setSelectedLabel,
+      recipes,
+      clientId,
+      confirmModalProps,
+      setConfirmModalProps,
+    },
+    ref
+  ) => {
     const [formResult, setFormResult] = useState<FormResult | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
-    const [isPending, setIsPending] = useState<boolean>(false);
     const [isBannedOpen, setIsBannedOpen] = useState<boolean>(true);
-    const [recipes, setRecipes] = useState<IRecipeInterface[]>(
-      recipesData || []
-    );
-    const [recipesLoading, setRecipesLoading] = useState<boolean>(false);
-    const [recipesError, setRecipesError] = useState<string | null>(null);
-
-    const [confirmModalProps, setConfirmModalProps] =
-      useState<ConfirmActionModalProps>({
-        open: false,
-        title: "",
-        message: "",
-        confirmText: "",
-        colorScheme: "",
-        onConfirm: () => {},
-        cancelText: "",
-        onClose: () => {},
-        type: "primary",
-      });
+    const defaultMealPlan: IMealPlan = getDefaultMealPlan(clientId);
 
     const closeConfirmModal = useCallback(() => {
       setConfirmModalProps({
@@ -94,52 +80,6 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
         type: "primary",
       });
     }, []);
-
-    useEffect(() => {
-      if (!mealPlanData) return;
-      const today = dayjs();
-      const initialMealPlan = getCurrentMealPlan(
-        mealPlanData,
-        today,
-        mealPlans,
-        defaultMealPlan
-      );
-      setSelectedMealPlan(initialMealPlan);
-      setSelectedLabel(
-        initialMealPlan.id === 0
-          ? "New Meal Plan"
-          : `${dayjs(initialMealPlan.startDate).format("DD/MM/YYYY")} - ${dayjs(
-              initialMealPlan.endDate
-            ).format("DD/MM/YYYY")}`
-      );
-    }, [mealPlanData, mealPlans]);
-
-    useEffect(() => {
-      const fetchRecipes = async () => {
-        if (selectedMealPlan.id === 0) {
-          setRecipes([]);
-          return;
-        }
-        setLoading(true);
-        try {
-          const response = await exponentialBackoffFetch(() =>
-            fetch(`/api/recipes/${selectedMealPlan.id}`)
-          );
-          if (!response.ok) {
-            throw new Error("Failed to fetch recipes.");
-          }
-          const data: IRecipeInterface[] = await response.json();
-          setRecipes(data);
-        } catch (error) {
-          console.error(error);
-          setRecipesError("Failed to fetch recipes.");
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchRecipes();
-    }, [selectedMealPlan.id]);
 
     // extract start and end date from selected option and then set selected meal plan
     const handleMealPlanChange = (selectedId: string) => {
@@ -178,36 +118,6 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
       const result = await createMealPlan(recipes, selectedMealPlan);
       setFormResult(result);
       setLoading(false);
-    }
-
-    const handleEmailMealPlan = React.useCallback(async () => {
-      {
-        const response = await fetch("/api/email/meal-plan", {
-          method: "POST",
-          body: JSON.stringify({
-            mealPlanData,
-            recipesData,
-            clientId,
-            toEmail: session?.user.email,
-            givenName: session?.user.givenName,
-          }),
-          headers: { "Content-Type": "application/json" },
-        });
-
-        if (response.ok) {
-          alert("Meal plan emailed successfully!");
-        } else {
-          alert("Failed to email meal plan.");
-        }
-      }
-    }, []);
-
-    if (loading || isPending) {
-      return (
-        <div className="flex justify-center items-center h-full">
-          <div className="text-lg font-semibold text-gray-700">Loading...</div>
-        </div>
-      );
     }
 
     return (
@@ -252,24 +162,6 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
 
         <div className="relative">
           <h2 className="text-2xl font-bold mb-4 text-gray-800">Meal Plan</h2>
-
-          <button
-            type="button"
-            onClick={() => handleEmailMealPlan()}
-            className="absolute top-6 right-6 w-60 px-6 py-2 mb-8 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Email Meal Plan
-          </button>
-
-          {/* <button
-            type="button"
-            onClick={async () => handleEmailMealPlan()}
-            className="w-60 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Email Meal Plan
-          </button> */}
-
-          {/* Print Button */}
 
           <form action={formAction} className="space-y-6 mt-10">
             <div className="flex justify-around p-4">
@@ -433,17 +325,3 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
 MealPlanSection.displayName = "MealPlanSection"; // Helpful for debugging with forwardRef
 
 export default MealPlanSection;
-function getCurrentMealPlan(
-  mealPlanData: IMealPlan[],
-  today: dayjs.Dayjs,
-  mealPlans: IMealPlan[],
-  defaultMealPlan: IMealPlan
-) {
-  const currentMealPlan = mealPlanData.find(
-    (plan) =>
-      dayjs(plan.startDate).isBefore(today) &&
-      dayjs(plan.endDate).isAfter(today)
-  );
-  const initialMealPlan = currentMealPlan || mealPlans[0] || defaultMealPlan;
-  return initialMealPlan;
-}

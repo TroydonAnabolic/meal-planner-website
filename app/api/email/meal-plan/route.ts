@@ -1,62 +1,59 @@
 import { NextRequest, NextResponse } from "next/server";
-import puppeteer from "puppeteer";
-import nodemailer from "nodemailer";
-import { renderMealPlanToHTML } from "@/util/renderMealPlan";
+import sendgrid from "@sendgrid/mail";
+import { generateMealPlanEmail } from "@/app/components/email-templates/meal-plan-email";
+import { generatePDF } from "@/util/pdf-generator";
+
+// Initialize SendGrid with your API key
+sendgrid.setApiKey(process.env.SENDGRID_API_KEY as string);
 
 // API route: POST handler for sending email
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { mealPlanData, recipesData, clientId, toEmail, givenName } =
-      await req.json();
-
-    // Generate Static HTML
-    const componentHTML = renderMealPlanToHTML(
+    // const { html, clientId, toEmail, givenName } = await req.json();
+    const {
+      mealPlanHtml,
       mealPlanData,
       recipesData,
-      clientId
-    );
+      clientId,
+      toEmail,
+      givenName,
+    } = await request.json();
 
-    // Generate PDF
-    const generatePDF = async (htmlContent: string): Promise<Buffer> => {
-      const browser = await puppeteer.launch();
-      const page = await browser.newPage();
-      await page.setContent(htmlContent);
-      const pdfUint8Array = await page.pdf({ format: "A4" }); // Uint8Array
-      await browser.close();
-
-      // Convert Uint8Array to Buffer
-      return Buffer.from(pdfUint8Array);
-    };
-
-    const pdfBuffer = await generatePDF(componentHTML);
-
-    // Configure Email Transport
-    const transporter = nodemailer.createTransport({
-      service: "Gmail",
-      auth: {
-        user: process.env.MEAL_PLANNER_SEND_EMAIL,
-        pass: process.env.MEAL_PLANNER_SEND_PASSWORD, // Use environment variables for sensitive data
-      },
+    // Generate email HTML content
+    const htmlContent = await generateMealPlanEmail({
+      mealPlanData,
+      recipesData,
+      clientId,
+      givenName,
     });
 
-    // Email Options
-    const mailOptions = {
-      from: process.env.MEAL_PLANNER_SEND_EMAIL,
-      to: toEmail,
-      subject: `${givenName}'s - Meal Plan`,
-      html: componentHTML, // HTML content in the email body
-      attachments: [
-        {
-          filename: `MealPlan-${givenName}.pdf`,
-          content: pdfBuffer, // Attach the PDF
-        },
-      ],
+    // Generate PDF
+    const pdfBuffer = await generatePDF(mealPlanHtml);
+
+    // Convert PDF buffer to base64
+    const pdfAttachment = {
+      content: pdfBuffer.toString("base64"),
+      filename: "meal-plan.pdf",
+      type: "application/pdf",
+      disposition: "attachment",
     };
 
-    // Send Email
-    await transporter.sendMail(mailOptions);
+    // Configure email message
+    const msg = {
+      to: toEmail,
+      from: process.env.SENDGRID_ADMIN_SENDER_EMAIL as string, // Verified sender email
+      subject: `${givenName}'s - Meal Plan`,
+      html: htmlContent,
+      attachments: [pdfAttachment],
+    };
 
-    return NextResponse.json({ message: "Email sent successfully" });
+    // Send email
+    const sent = await sendgrid.send(msg);
+
+    return NextResponse.json({
+      message: "Email sent successfully",
+      success: true,
+    });
   } catch (error: any) {
     console.error("Error sending email:", error);
     return NextResponse.json(
