@@ -115,7 +115,7 @@ export const providerMap = providers
   })
   .filter((provider) => provider.id !== "credentials");
 
-const config: NextAuthConfig = {
+export const config: NextAuthConfig = {
   // TODO: Implement secure cookie when deploying to production, check this if issues in production
   useSecureCookies: process.env.NODE_ENV === "production",
   providers: providers,

@@ -3,12 +3,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { getClient, updateClient } from "@/lib/client/client";
 import { auth } from "@/auth";
+
 type METADATA = {
   userId: string;
   priceId: string;
 };
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+/*
+  To test locally:
+
+  Forward events to your webhook
+  stripe listen --forward-to localhost:3000/webhooks/stripe/checkout
+
+  Trigger events with the CLI
+  stripe trigger customer.subscription.created
+
+*/
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const endpointSecret = process.env.STRIPE_SECRET_WEBHOOK_KEY!;

@@ -1,15 +1,15 @@
 import Stripe from "stripe";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { useSession } from "next-auth/react";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export async function POST(request: NextRequest) {
   try {
-    const { priceId } = await request.json();
-    const session = await auth();
+    const { priceId, userID, stripeCustomerId } = await request.json();
 
-    if (!session?.user) {
+    if (userID) {
       return NextResponse.json(
         {
           error: {
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "subscription",
-      customer: session.user.stripeCustomerId,
+      customer: stripeCustomerId,
       line_items: [
         {
           price: priceId,
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
           : process.env.AUTH_TRUST_HOST) + `/error`,
       subscription_data: {
         metadata: {
-          payingUserId: session.user.userId, // sets the cognito userid in stripe
+          payingUserId: userID, // sets the cognito userid in stripe
         },
       },
     });

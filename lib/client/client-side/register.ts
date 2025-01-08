@@ -6,6 +6,7 @@ import { IClientInterface } from "@/models/interfaces/client/client";
 import { loadStripe } from "@stripe/stripe-js";
 import axios from "axios";
 import { redirect } from "next/navigation";
+import { deleteClient } from "../client";
 
 export async function registerAction(
   prevState: unknown,
@@ -80,6 +81,8 @@ async function stripeCheckout(
     if (client?.Id && client.Id > 0) {
       const response = await axios.post("/api/stripe/checkout", {
         priceId: priceId,
+        userID: client.UserID,
+        stripeCustomerId: client.stripeCustomerId,
       });
 
       console.log("Attempting to re-direct to checkout");
@@ -93,7 +96,12 @@ async function stripeCheckout(
   } catch (error: any) {
     // delete user if any error occurs
     if (client?.Id! > 0) {
-      await adminDeleteUser(client?.Email!);
+      try {
+        await adminDeleteUser(client?.Email!);
+        await deleteClient(client?.UserID!);
+      } catch (error: any) {
+        console.log(error.message);
+      }
     }
     console.log(error.message);
   }
