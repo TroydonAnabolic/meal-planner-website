@@ -7,6 +7,8 @@ export interface IClientInterface {
   Id: number;
   DashboardId?: number;
   AmazonId?: string;
+  stripeCustomerId: string;
+  isStripeBasicActive: boolean;
   FirstName: string;
   LastName: string;
   Age?: number;

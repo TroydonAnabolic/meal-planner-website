@@ -1,12 +1,15 @@
 "use client";
-import { register, resendConfirmationEmail } from "@/actions/auth-actions";
+import { resendConfirmationEmail } from "@/actions/auth-actions";
 import EmailInput from "@/app/components/ui/inputs/email-input";
 import PhoneNumberInput from "@/app/components/ui/inputs/phone-number-input";
 import SelectDropdown from "@/app/components/ui/inputs/select-dropdown";
+import HorizontalScrollContainer from "@/app/components/ui/scrolls/horizontal-scroll-container/horizontal-scroll-container";
 import PricingGrid from "@/app/components/ui/subscribe/pricing-sections";
 import { Countries } from "@/constants/constants-enums";
 import { tiers } from "@/constants/constants-objects";
+import { registerAction } from "@/lib/client/client-side/register";
 import { ActivityLevel, GenderType } from "@/models/Client";
+import { Tier } from "@/types/subscribe";
 import Link from "next/link";
 import { useState } from "react";
 import { useFormState } from "react-dom";
@@ -36,7 +39,7 @@ function classNames(...classes: (string | false)[]): string {
 }
 
 const RegistrationPage = (props: Props) => {
-  const [formData, formAction, isPending] = useFormState(register, {
+  const [formData, formAction, isPending] = useFormState(registerAction, {
     errors: {},
   });
   const [selectedCountry, setSelectedCountry] = useState<Countries>(
@@ -44,9 +47,18 @@ const RegistrationPage = (props: Props) => {
   );
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState(tempData.email);
+  // get the tier that starts of with active as default
+  const initialActiveTier = tiers.find((t) => t.active);
+  const [selectedTier, setSelectedTier] = useState<Tier>(initialActiveTier!);
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
+  };
+
+  const handleSelectTier = (tier: Tier) => {
+    setSelectedTier(tier);
+    console.log("Selected Tier:", tier); // Debugging purpose
+    // Perform further actions, such as showing a form or proceeding with payment.
   };
 
   return (
@@ -175,7 +187,6 @@ const RegistrationPage = (props: Props) => {
               />
             </div>
           </div>
-
           {/* Suburb and Post Code Fields */}
           <div className="flex gap-4">
             <div className="flex-1">
@@ -217,7 +228,6 @@ const RegistrationPage = (props: Props) => {
               </div>
             </div>
           </div>
-
           {/* City and Country Fields */}
           <div className="flex gap-4 mt-4">
             <div className="flex-1">
@@ -250,7 +260,6 @@ const RegistrationPage = (props: Props) => {
               />
             </div>
           </div>
-
           {/* Phone Number Field (Optional) */}
           <div>
             <label
@@ -265,7 +274,6 @@ const RegistrationPage = (props: Props) => {
               onChange={setPhoneNumber}
             />
           </div>
-
           <div>
             <label
               htmlFor="pricing"
@@ -274,10 +282,17 @@ const RegistrationPage = (props: Props) => {
               Pricing
             </label>
             <div>
-              <PricingGrid tiers={tiers} classNames={classNames} />;
+              <HorizontalScrollContainer>
+                <PricingGrid
+                  tiers={tiers}
+                  classNames={(...classes) => classes.filter(Boolean).join(" ")}
+                  onSelectTier={handleSelectTier} // Pass callback to PricingGrid
+                />
+              </HorizontalScrollContainer>
             </div>
           </div>
-
+          {/* Selected product id to submit for subscribing */}
+          <input type="hidden" name="priceId" value={selectedTier?.id} />{" "}
           {formData?.errors && (
             <ul id="form-errors" className="text-red-700">
               {Object.keys(formData.errors).map((error) => (

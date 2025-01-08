@@ -4,7 +4,6 @@ import {
   APIM_HEADERS,
   BACKEND_URL_LIVE,
 } from "@/constants/constants-urls";
-import Client from "@/models/Client";
 import { IClientInterface } from "@/models/interfaces/client/client";
 import { constructClientObjectFromResponse } from "@/util/client-util";
 
@@ -33,7 +32,7 @@ export async function storeClient(clientData: IClientInterface) {
   return id;
 }
 
-export async function updateClient(clientData: Client) {
+export async function updateClient(clientData: IClientInterface) {
   try {
     const response = await instance.put(
       `${ACCOUNTAPI_BASE}/clients`,

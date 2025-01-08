@@ -31,13 +31,6 @@ const ProfileInformation: React.FC<ProfileInformationProps> = ({
   const { update: sessionUpdate } = useSession(); // Import useSession from next-auth/react
   const [client, setClient] = useState<IClientInterface>(clientData!);
 
-  // const [optimisticClient, setOptimisticClient] = useOptimistic(
-  //   clientData!,
-  //   (state: IClientInterface, updatedClient: Partial<IClientInterface>) => ({
-  //     ...state,
-  //     ...updatedClient,
-  //   })
-  // );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState({
     title: "",

@@ -28,54 +28,22 @@ import { ISignUpResult } from "amazon-cognito-identity-js";
 import { Countries } from "@/constants/constants-enums";
 import { ROUTES } from "@/constants/routes";
 import { IClientSettingsInterface } from "@/models/interfaces/client/client-settings";
+import { loadStripe } from "@stripe/stripe-js";
 
 export async function register(
-  prevState: unknown,
-  formData: FormData
-): Promise<
-  { errors: { [key: string]: string }; email?: string | undefined } | undefined
-> {
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-  const confirmPassword = formData.get("confirmPassword") as string;
-  // const birthday = new Date(formData.get("birthDay") as string);
-  // const age = calculateAge(birthday);
-  const country = formData.get("country") as Countries;
-  //const gender = formData.get("gender") as GenderType;
-  //  const activityLevel = formData.get("activityLevel") as ActivityLevel;
-
-  const newClient: IClientInterface = {
-    Id: 0,
-    DashboardId: 1,
-    AmazonId: "",
-    FirstName: formData.get("givenName") as string,
-    LastName: formData.get("familyName") as string,
-    Email: email,
-    PhoneNumber: `+${formData.get("phoneNumber") as string}`,
-    Country: country,
-    // Gender: gender,
-    // Activity: activityLevel,
-    // Age: age,
-    // Birthday: birthday,
-    City: formData.get("city") as string,
-    Address: formData.get("address") as string,
-    Suburb: formData.get("suburb") as string,
-    PostCode: Number(formData.get("postCode")),
-    ClientSettingsDto: {
-      id: 0,
-      clientId: 0,
-    },
-  };
-
+  newClient: IClientInterface,
+  password: string,
+  confirmPassword: string
+): Promise<IClientInterface | undefined> {
   // Validate the form data using the schema
   const result = registerSchema.safeParse({
-    email,
+    email: newClient.Email,
     password,
     confirmPassword,
   });
 
   if (!result.success) {
-    return { errors: handleValidationErrors(result) };
+    return;
   }
   let isSuccessful = false;
 
@@ -86,7 +54,7 @@ export async function register(
       { errors: { [key: string]: string }; email?: string } | undefined
     >((resolve) => {
       cognitoPool.signUp(
-        email,
+        newClient.Email,
         password,
         attributeList,
         [],
@@ -104,7 +72,7 @@ export async function register(
               case "UsernameExistsException":
                 return resolve({
                   errors: { email: "Email already exists." },
-                  email: email,
+                  email: newClient.Email,
                 });
               default:
                 return resolve({
@@ -133,7 +101,7 @@ export async function register(
               error?.message + error?.cause?.code
             );
             try {
-              await adminDeleteUser(email);
+              await adminDeleteUser(newClient.Email);
             } catch (deleteError: any) {
               console.error(
                 `Failed to delete user after client creation failed: ${deleteError.message}`
@@ -145,14 +113,9 @@ export async function register(
       );
     });
 
-    return signUpResult;
+    return newClient;
   } catch (error) {
     console.error("Error during signup:", error);
-    return {
-      errors: { general: "Could not get client - please try again later!" },
-    };
-  } finally {
-    if (isSuccessful) redirect(ROUTES.AUTH.REGISTRATION_CONFIRMATION);
   }
 }
 

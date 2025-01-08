@@ -24,7 +24,7 @@ const Header = () => {
   const navigation: NavigationItem[] = [
     { name: "HOME", href: ROUTES.HOME },
     { name: "HOW IT WORKS", href: ROUTES.HOW_IT_WORKS },
-    { name: "PREMIUM PLAN", href: ROUTES.PREMIUM_PLAN },
+    // { name: "PREMIUM PLAN", href: ROUTES.PREMIUM_PLAN },
   ];
 
   // only show in main page when not authenticated

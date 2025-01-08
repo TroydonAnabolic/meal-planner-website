@@ -380,9 +380,9 @@ export const defaultRecipe: IRecipeInterface = {
 export const tiers: Tier[] = [
   {
     name: "Basic Plan",
-    id: "tier-basic",
+    id: "prod_RXsiI2vMTRk0d8", // stripe product id
     href: "/register",
-    priceMonthly: "$19",
+    price: "$19",
     description:
       "Ideal for individuals starting their journey towards a healthier lifestyle.",
     features: [
@@ -392,21 +392,40 @@ export const tiers: Tier[] = [
       "Email support",
     ],
     featured: false,
+    active: true, // Active plan
   },
-  // {
-  //   name: "Premium Plan",
-  //   id: "tier-premium",
-  //   href: "#",
-  //   priceMonthly: "$49",
-  //   description:
-  //     "Perfect for those who want a comprehensive meal planning experience.",
-  //   features: [
-  //     "All features of Basic Plan",
-  //     "Advanced recipe options",
-  //     "Customizable meal plans",
-  //     "Priority support",
-  //     "Weekly progress reports",
-  //   ],
-  //   featured: true,
-  // },
+  {
+    name: "Premium Plan",
+    id: "tier-premium",
+    href: "/register/premium",
+    price: "$49",
+    description:
+      "Perfect for those who want a comprehensive meal planning experience.",
+    features: [
+      "All features of Basic Plan",
+      "Advanced recipe options",
+      "Customizable meal plans",
+      "Priority support",
+      "Weekly progress reports",
+    ],
+    featured: true,
+    active: false, // Not active
+  },
+  {
+    name: "Enterprise Plan",
+    id: "tier-enterprise",
+    href: "/register/enterprise",
+    price: "Contact us",
+    description: "Tailored solutions for organizations and businesses.",
+    features: [
+      "All features of Premium Plan",
+      "Corporate wellness programs",
+      "Dedicated account manager",
+      "Custom meal plans for teams",
+      "Detailed analytics and reports",
+      "24/7 VIP support",
+    ],
+    featured: false,
+    active: false, // Not active
+  },
 ];

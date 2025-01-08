@@ -13,6 +13,8 @@ import {
   InitiateAuthCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 import { getClientUnsafe } from "./lib/client/client-side/client";
+import Stripe from "stripe";
+import { getClient, updateClient } from "./lib/client/client";
 
 const cognitoConfig: CognitoIdentityProviderClientConfig = {
   region: process.env.NEXT_PUBLIC_COGNITO_REGION, // Your AWS region
@@ -181,6 +183,8 @@ const config: NextAuthConfig = {
           givenName: token.givenName as string,
           familyName: token.familyName as string,
           phoneNumber: token.phoneNumber as string,
+          stripeCustomerId: token.stripeCustomerId as string,
+          isActive: token.isActive as boolean,
           idToken: token.idToken as string,
           accessToken: token.accessToken as string,
           refreshToken: token.refreshToken as string,
@@ -190,6 +194,29 @@ const config: NextAuthConfig = {
   },
   events: {
     // Create a new user in your system
+    // TODO: check if the user object is destructured here or session, then strongly type it and check everything else works
+    createUser: async ({ user }: any) => {
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+      try {
+        const customer = await stripe.customers.create({
+          email: user.email!,
+          name: `${user.givenName!} ${user.familyName!}`,
+        });
+
+        // TODO: make sure this is used because axios error might occur andmight need getClientUnsafe, it might work now that i got a server certificATE
+
+        const client = await getClient(user.userId);
+        client.stripeCustomerId = customer.id;
+        await updateClient(client);
+      } catch (error) {
+        console.error(
+          "Error creating Stripe customer or updating user:",
+          error
+        );
+        throw error;
+      }
+    },
   },
   pages: {
     signIn: "/login",

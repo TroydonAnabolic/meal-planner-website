@@ -2,8 +2,9 @@ export type Tier = {
   name: string;
   id: string;
   href: string;
-  priceMonthly: string;
+  price: string;
   description: string;
   features: string[];
   featured: boolean;
+  active: boolean; // Added property
 };
