@@ -383,7 +383,7 @@ export const tiers: Tier[] = [
     id:
       process.env.NODE_ENV === "production"
         ? "price_1QemxVBYYYaaMgOALwA0dyzb"
-        : "price_1QemxVBYYYaaMgOALwA0dyzb",
+        : "price_1QfBDLBYYYaaMgOAoouhmzCC", // 0.19c change back to prod later
     href: "/register",
     price: "$19",
     description:

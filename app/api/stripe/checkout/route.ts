@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { useSession } from "next-auth/react";
 import { getClient, updateClient } from "@/lib/client/client";
+import { ROUTES } from "@/constants/routes";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
@@ -56,7 +57,8 @@ export async function POST(request: NextRequest) {
       success_url:
         (process.env.NODE_ENV === "production"
           ? process.env.AUTH_TRUST_HOST_PROD
-          : process.env.AUTH_TRUST_HOST) + `/login`,
+          : process.env.AUTH_TRUST_HOST) +
+        ROUTES.AUTH.REGISTRATION_CONFIRMATION,
       cancel_url:
         (process.env.NODE_ENV === "production"
           ? process.env.AUTH_TRUST_HOST_PROD
