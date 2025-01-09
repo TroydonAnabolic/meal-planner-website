@@ -1,4 +1,5 @@
 import BudgetPreferencesSection from "@/app/components/client/billing/budget-contraints";
+import SubscriptionsSection from "@/app/components/client/billing/subscriptions";
 import { auth } from "@/auth";
 import { getClient } from "@/lib/client/client";
 import { initializeClientSettings } from "@/util/client-settings-util";
@@ -12,6 +13,7 @@ const BillingPage = async (props: Props) => {
   return (
     <>
       <BudgetPreferencesSection clientData={clientData} />
+      <SubscriptionsSection clientData={clientData} />
     </>
   );
 };

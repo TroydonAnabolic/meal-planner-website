@@ -1,6 +1,6 @@
-import { Tier } from "@/types/subscribe";
-import { CheckIcon } from "@heroicons/react/20/solid";
-import Link from "next/link";
+"use client"; // Needed for client-side hooks like useRouter
+import React from "react";
+import { useRouter } from "next/navigation"; // Updated import for App Router
 import PricingGrid from "../components/ui/subscribe/pricing-sections";
 import { tiers } from "@/constants/constants-objects";
 
@@ -10,7 +10,13 @@ function classNames(...classes: (string | false)[]): string {
   return classes.filter(Boolean).join(" ");
 }
 
-const PremiumPlan = (props: Props) => {
+const PremiumPlan: React.FC<Props> = () => {
+  const router = useRouter();
+
+  const handleSelectTier = (tier: { id: string; name: string }) => {
+    router.push(`/register?tierId=${tier.id}`); // Navigate with query params
+  };
+
   return (
     <main className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
       {/* Pricing section */}
@@ -40,7 +46,12 @@ const PremiumPlan = (props: Props) => {
           preferences and lifestyle. Select a plan that fits your needs and
           start your journey towards healthier eating today.
         </p>
-        <PricingGrid tiers={tiers} classNames={classNames} showLink={true} />;
+        <PricingGrid
+          tiers={tiers}
+          classNames={classNames}
+          onSelectTier={handleSelectTier}
+        />
+        ;
       </div>
     </main>
   );

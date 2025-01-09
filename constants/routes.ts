@@ -19,7 +19,7 @@ export const ROUTES = {
     SETTINGS: {
       PROFILE: "/meal-planner/settings/profile",
       PHYSICAL_ATTRIBUTES: "/meal-planner/settings/physical-attributes",
-      BILLING: "/meal-planner/settings/billing",
+      SUBSCRIPTIONS: "/meal-planner/settings/subscriptions",
       // Add more settings-related routes here
     },
     PLAN: "/meal-planner/plan-meal",

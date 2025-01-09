@@ -17,22 +17,22 @@ import { useFormState } from "react-dom";
 type Props = {};
 
 // Temporary data for testing initial values
-const tempData = {
-  email: "troydonluic@gmail.com",
-  password: "Password123!",
-  confirmPassword: "Password123!",
-  givenName: "John",
-  familyName: "Doe",
-  address: "123 Main St",
-  suburb: "Suburbia",
-  postCode: "12345",
-  city: "Test City",
-  phoneNumber: "64224319560",
-  //birthDay: "1990-01-01",
-  country: Countries.US,
-  //gender: GenderType.Male,
-  // activityLevel: ActivityLevel.Active,
-};
+// const tempData = {
+//   email: "troydonluic@gmail.com",
+//   password: "Password123!",
+//   confirmPassword: "Password123!",
+//   givenName: "John",
+//   familyName: "Doe",
+//   address: "123 Main St",
+//   suburb: "Suburbia",
+//   postCode: "12345",
+//   city: "Test City",
+//   phoneNumber: "64224319560",
+//   //birthDay: "1990-01-01",
+//   country: Countries.US,
+//   //gender: GenderType.Male,
+//   // activityLevel: ActivityLevel.Active,
+// };
 
 function classNames(...classes: (string | false)[]): string {
   return classes.filter(Boolean).join(" ");
@@ -45,8 +45,8 @@ const RegistrationPage = (props: Props) => {
   const [selectedCountry, setSelectedCountry] = useState<Countries>(
     Countries.NZ
   );
-  const [phoneNumber, setPhoneNumber] = useState(tempData.phoneNumber);
-  const [email, setEmail] = useState(tempData.email);
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   // get the tier that starts of with active as default
   const initialActiveTier = tiers.find((t) => t.active);
   const [selectedTier, setSelectedTier] = useState<Tier>(initialActiveTier!);
@@ -58,7 +58,6 @@ const RegistrationPage = (props: Props) => {
   const handleSelectTier = (tier: Tier) => {
     setSelectedTier(tier);
     console.log("Selected Tier:", tier); // Debugging purpose
-    // Perform further actions, such as showing a form or proceeding with payment.
   };
 
   return (
@@ -103,7 +102,7 @@ const RegistrationPage = (props: Props) => {
                 type="password"
                 required
                 placeholder="Enter your password"
-                defaultValue={tempData.password}
+                //defaultValue={tempData.password}
                 autoComplete="new-password"
                 className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-gray-800"
               />
@@ -124,7 +123,7 @@ const RegistrationPage = (props: Props) => {
                 type="password"
                 required
                 placeholder="Confirm your password"
-                defaultValue={tempData.confirmPassword}
+                //  defaultValue={tempData.confirmPassword}
                 autoComplete="new-password"
                 className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-gray-800"
               />
@@ -145,7 +144,7 @@ const RegistrationPage = (props: Props) => {
                 type="text"
                 required
                 placeholder="Enter your first name"
-                defaultValue={tempData.givenName}
+                //  defaultValue={tempData.givenName}
                 autoComplete="given-name"
                 className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-gray-800"
               />
@@ -165,7 +164,7 @@ const RegistrationPage = (props: Props) => {
                 name="familyName"
                 type="text"
                 placeholder="Enter your last name"
-                defaultValue={tempData.familyName}
+                //   defaultValue={tempData.familyName}
                 autoComplete="family-name"
                 className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-gray-800"
               />
@@ -181,7 +180,7 @@ const RegistrationPage = (props: Props) => {
             </label>
             <div className="mt-2">
               <input
-                defaultValue={tempData.address}
+                // defaultValue={tempData.address}
                 autoComplete="street-address"
                 className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-gray-800"
               />
@@ -202,7 +201,7 @@ const RegistrationPage = (props: Props) => {
                   name="suburb"
                   type="text"
                   placeholder="Enter your suburb"
-                  defaultValue={tempData.suburb}
+                  //  defaultValue={tempData.suburb}
                   autoComplete="address-level2"
                   className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-gray-800"
                 />
@@ -221,7 +220,7 @@ const RegistrationPage = (props: Props) => {
                   name="postCode"
                   type="text"
                   placeholder="Enter your post code"
-                  defaultValue={tempData.postCode}
+                  //   defaultValue={tempData.postCode}
                   autoComplete="postal-code"
                   className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-gray-800"
                 />
@@ -243,7 +242,7 @@ const RegistrationPage = (props: Props) => {
                   name="city"
                   type="text"
                   placeholder="Enter your city"
-                  defaultValue={tempData.city}
+                  //   defaultValue={tempData.city}
                   autoComplete="address-level1"
                   className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 text-gray-800"
                 />

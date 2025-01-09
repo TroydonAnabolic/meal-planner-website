@@ -6,8 +6,15 @@ import { ROUTES } from "@/constants/routes";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export async function POST(request: NextRequest) {
-  const { priceId, userID } = await request.json();
+  const {
+    priceId,
+    userID,
+    isNewUser,
+  }: { priceId: string; userID: string; isNewUser: boolean } =
+    await request.json();
+
   console.log("api price id used: " + priceId);
+
   if (!userID || !priceId) {
     return NextResponse.json(
       {
@@ -33,15 +40,29 @@ export async function POST(request: NextRequest) {
       state: client.Suburb,
     };
 
-    const customer = await stripe.customers.create({
-      email: client.Email,
-      name: `${client.FirstName!} ${client.LastName!}`,
-      phone: client.PhoneNumber,
-      address: addressParam,
-    });
+    // TODO: Test registration and add subscription still works
+    if (isNewUser) {
+      // create a new user in stripe and assign its id to the client in db, set to active subscription
+      const customer = await stripe.customers.create({
+        email: client.Email,
+        name: `${client.FirstName!} ${client.LastName!}`,
+        phone: client.PhoneNumber,
+        address: addressParam,
+      });
 
-    client.stripeCustomerId = customer.id;
-    client.isStripeBasicActive = true;
+      client.stripeCustomerId = customer.id;
+      client.isStripeBasicActive = true;
+    } else {
+      // update the user in stripe to the latest client details, also set to active subscription
+      const customer = await stripe.customers.update(client.stripeCustomerId, {
+        email: client.Email,
+        name: `${client.FirstName!} ${client.LastName!}`,
+        phone: client.PhoneNumber,
+        address: addressParam,
+      });
+      client.isStripeBasicActive = true;
+    }
+
     const updatedClient = await updateClient(client);
 
     if (updatedClient) {

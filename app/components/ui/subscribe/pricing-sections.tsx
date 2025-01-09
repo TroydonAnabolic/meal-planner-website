@@ -1,18 +1,23 @@
+"use client"; // Needed for client-side hooks like useRouter
 import React from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation"; // Updated import for App Router
 import { Tier } from "@/types/subscribe";
 import { CheckIcon } from "@heroicons/react/24/outline";
 
 type PricingGridProps = {
   tiers: Tier[];
   classNames: (...classes: (string | false)[]) => string;
+  buttonDisabled: boolean;
   onSelectTier: (tier: Tier) => void; // Callback for tier selection
+  buttonText?: string;
 };
 
 const PricingGrid: React.FC<PricingGridProps> = ({
   tiers,
   classNames,
+  buttonDisabled = false,
   onSelectTier,
+  buttonText = "Select Plan",
 }) => {
   return (
     <div className="flex justify-center gap-6 mt-6">
@@ -40,18 +45,17 @@ const PricingGrid: React.FC<PricingGridProps> = ({
               </li>
             ))}
           </ul>
-          <Link
-            href={tier.href}
-            onClick={() => onSelectTier(tier)} // Trigger selection callback
-            aria-disabled={!tier.active}
+          <button
+            onClick={() => onSelectTier(tier)} // Trigger navigation on button click
+            disabled={buttonDisabled} //! TODO: !tier.active -> removed this check if ok in registraiton and from authenticated
             className={classNames(
               tier.active
-                ? "mt-6 block px-4 py-2 text-sm font-semibold rounded-md bg-white text-indigo-600 hover:bg-indigo-100"
-                : "mt-6 block px-4 py-2 text-sm font-semibold rounded-md bg-gray-400 text-gray-600 pointer-events-none"
+                ? "mt-6 block w-full px-4 py-2 text-sm font-semibold rounded-md bg-white text-indigo-600 hover:bg-indigo-100"
+                : "mt-6 block w-full px-4 py-2 text-sm font-semibold rounded-md bg-gray-400 text-gray-600 pointer-events-none"
             )}
           >
-            {tier.active ? "Select Plan" : "Unavailable"}
-          </Link>
+            {tier.active ? buttonText : "Unavailable"}
+          </button>
         </div>
       ))}
     </div>
