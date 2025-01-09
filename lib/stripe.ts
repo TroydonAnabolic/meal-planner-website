@@ -62,3 +62,39 @@ export async function stripeCheckout(
     return { success: false, errors: { message: error.message } };
   }
 }
+
+export async function stripeCancelSubscription(
+  client: IClientInterface | undefined,
+  priceId: string
+): Promise<FormResult> {
+  // subscribe to stripe product plan
+  try {
+    const stripe = await loadStripe(
+      process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string
+    );
+    if (!stripe) {
+      return { success: false };
+    }
+
+    if (client?.Id && client.Id > 0) {
+      const response = await axios.post("/api/stripe/cancel-subscription", {
+        priceId: priceId,
+        activeSubscriptionId: client.stripeCustomerId,
+      });
+
+      // const res = await fetch(`/api/stripe/cancel-subscription`, {
+      //   method: "POST",
+      //   body: JSON.stringify({ activeSubscriptionId: subscriptionId }), // Assuming productId is needed for the session creation
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      // });
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    console.log(error.message);
+
+    return { success: false, errors: { message: error.message } };
+  }
+}

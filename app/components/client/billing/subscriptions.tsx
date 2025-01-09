@@ -1,17 +1,11 @@
 // BudgetPreferencesSection.tsx
 "use client";
 
-import { saveBudgetConstraints } from "@/actions/client-settings-action";
 import { IClientInterface } from "@/models/interfaces/client/client";
 import React, { useCallback, useState } from "react";
-import { useFormState } from "react-dom";
-import FormButton from "../../ui/buttons/form-button";
-import { Frequency } from "@/constants/constants-enums";
-import SelectDropdown from "../../ui/inputs/select-dropdown";
 import PricingGrid from "../../ui/subscribe/pricing-sections";
 import { tiers } from "@/constants/constants-objects";
 import { Tier } from "@/types/subscribe";
-import HorizontalScrollContainer from "../../ui/scrolls/horizontal-scroll-container/horizontal-scroll-container";
 import { stripeCheckout } from "@/lib/stripe";
 import { ConfirmActionModalProps } from "../../ui/modals/confirm-action-modal";
 
@@ -66,20 +60,33 @@ const SubscriptionsSection: React.FC<SubscriptionsSectionProps> = ({
     setConfirmModalProps((prev) => ({
       ...prev,
       open: true,
-      title: "Confirm Selected Plan",
-      message:
-        "Are you sure you want to create this meal plan? This will replace all meals for the selected date range.",
+      title: clientData.isStripeBasicActive
+        ? "Cancel Selected Plan"
+        : "Confirm Selected Plan",
+      message: clientData.isStripeBasicActive
+        ? "This will cancel your current subscription, are you sure you want to cancel?"
+        : `Are you sure you want to subscribe to the ${tier.price} monthly plan?`,
       confirmText: "Yes",
       cancelText: "No",
-      onConfirm: handleSelectPricing,
+      onConfirm: clientData.isStripeBasicActive
+        ? handleCancelSubscription
+        : handleCheckoutSubscription,
       onCancel: closeConfirmModal,
       colorScheme: "bg-blue-600 hover:bg-blue-500",
       type: "primary",
     }));
   };
 
-  const handleSelectPricing = async () => {
+  const handleCheckoutSubscription = async () => {
     const result = await stripeCheckout(client, selectedTier.id, false);
+  };
+
+  const handleCancelSubscription = async () => {
+    const result = await stripeCancelSubscription(
+      client,
+      selectedTier.id,
+      false
+    );
   };
 
   return (
@@ -103,9 +110,9 @@ const SubscriptionsSection: React.FC<SubscriptionsSectionProps> = ({
                 tiers={tiers}
                 classNames={(...classes) => classes.filter(Boolean).join(" ")}
                 buttonText={
-                  clientData.isStripeBasicActive ? "Active" : "Select Plan"
+                  clientData.isStripeBasicActive ? "Cancel" : "Select Plan"
                 }
-                buttonDisabled={clientData.isStripeBasicActive}
+                //buttonDisabled={clientData.isStripeBasicActive}
                 onSelectTier={handleSelectTier} // Pass callback to PricingGrid
               />
             </div>

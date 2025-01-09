@@ -7,7 +7,7 @@ import { CheckIcon } from "@heroicons/react/24/outline";
 type PricingGridProps = {
   tiers: Tier[];
   classNames: (...classes: (string | false)[]) => string;
-  buttonDisabled: boolean;
+  //buttonDisabled: boolean;
   onSelectTier: (tier: Tier) => void; // Callback for tier selection
   buttonText?: string;
 };
@@ -15,7 +15,7 @@ type PricingGridProps = {
 const PricingGrid: React.FC<PricingGridProps> = ({
   tiers,
   classNames,
-  buttonDisabled = false,
+  //buttonDisabled = false,
   onSelectTier,
   buttonText = "Select Plan",
 }) => {
@@ -47,7 +47,7 @@ const PricingGrid: React.FC<PricingGridProps> = ({
           </ul>
           <button
             onClick={() => onSelectTier(tier)} // Trigger navigation on button click
-            disabled={buttonDisabled} //! TODO: !tier.active -> removed this check if ok in registraiton and from authenticated
+            // disabled={!tier.active} //! TODO: !tier.active -> removed this check if ok in registraiton and from authenticated
             className={classNames(
               tier.active
                 ? "mt-6 block w-full px-4 py-2 text-sm font-semibold rounded-md bg-white text-indigo-600 hover:bg-indigo-100"
