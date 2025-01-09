@@ -24,6 +24,8 @@ export function constructClientObjectFromResponse(
     PostCode: response.data.postCode,
     Activity: response.data.activity,
     UserID: response.data.userID,
+    stripeCustomerId: response.data.stripeCustomerId,
+    isStripeBasicActive: response.data.isStripeBasicActive,
     ClientSettingsDto: response.data.clientSettingsDto
       ? {
           id: response.data.clientSettingsDto.id,

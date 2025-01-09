@@ -21,7 +21,7 @@ import { IClientInterface } from "@/models/interfaces/client/client";
 import { isEmailNotConfirmedException } from "@/util/error-util";
 import { adminDeleteUser, fetchCognitoAttributes } from "./cognito-actions";
 import { FormResult } from "@/types/form";
-import { storeClient } from "@/lib/client/client";
+import { deleteClient, storeClient } from "@/lib/client/client";
 import { ISignUpResult } from "amazon-cognito-identity-js";
 import { ROUTES } from "@/constants/routes";
 
@@ -333,6 +333,9 @@ export async function deleteUser(
         }
       });
     });
+
+    // TODO: Test if delete works from here
+    await deleteClient(session.user.userId);
 
     await signOut({ redirect: false });
   } catch (error) {

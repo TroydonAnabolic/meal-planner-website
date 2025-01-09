@@ -426,7 +426,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
             </div>
           </div>
 
-          {session && (
+          {session && clientData.isStripeBasicActive && (
             <div className="w-1/2">
               <FilterRecipes
                 title="Filter Recipes"
@@ -440,7 +440,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
         </div>
 
         {/* Confirm Button */}
-        {session && (
+        {session && clientData.isStripeBasicActive && (
           <div>
             {recipes.length > 0 && (
               <button
@@ -496,18 +496,21 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
           </div>
 
           {/* Shopping List Table */}
-          {session && mealPlan && recipes.length > 0 && (
-            <div className="w-1/4 text-gray-800">
-              <ShoppingListTable
-                recipes={recipes}
-                shoppingList={shoppingList}
-                setShoppingList={setShoppingList}
-              />
-            </div>
-          )}
+          {session &&
+            clientData.isStripeBasicActive &&
+            mealPlan &&
+            recipes.length > 0 && (
+              <div className="w-1/4 text-gray-800">
+                <ShoppingListTable
+                  recipes={recipes}
+                  shoppingList={shoppingList}
+                  setShoppingList={setShoppingList}
+                />
+              </div>
+            )}
         </div>
 
-        {session ? (
+        {session && clientData.isStripeBasicActive ? (
           <span className="text-sm text-gray-500 ">
             <Link
               title="Edit Meal Preferences"

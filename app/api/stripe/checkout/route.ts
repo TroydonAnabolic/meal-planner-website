@@ -1,7 +1,5 @@
 import Stripe from "stripe";
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { useSession } from "next-auth/react";
 import { getClient, updateClient } from "@/lib/client/client";
 import { ROUTES } from "@/constants/routes";
 
@@ -43,46 +41,56 @@ export async function POST(request: NextRequest) {
     });
 
     client.stripeCustomerId = customer.id;
-    await updateClient(client);
+    client.isStripeBasicActive = true;
+    const updatedClient = await updateClient(client);
 
-    const checkoutSession = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      customer: client.stripeCustomerId,
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
+    if (updatedClient) {
+      const checkoutSession = await stripe.checkout.sessions.create({
+        mode: "subscription",
+        customer: client.stripeCustomerId,
+        line_items: [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+        success_url:
+          (process.env.NODE_ENV === "production"
+            ? process.env.AUTH_TRUST_HOST_PROD
+            : process.env.AUTH_TRUST_HOST) +
+          ROUTES.AUTH.REGISTRATION_CONFIRMATION,
+        cancel_url:
+          (process.env.NODE_ENV === "production"
+            ? process.env.AUTH_TRUST_HOST_PROD
+            : process.env.AUTH_TRUST_HOST) + `/error`,
+        subscription_data: {
+          metadata: {
+            payingUserId: userID, // sets the cognito userid in stripe
+          },
         },
-      ],
-      success_url:
-        (process.env.NODE_ENV === "production"
-          ? process.env.AUTH_TRUST_HOST_PROD
-          : process.env.AUTH_TRUST_HOST) +
-        ROUTES.AUTH.REGISTRATION_CONFIRMATION,
-      cancel_url:
-        (process.env.NODE_ENV === "production"
-          ? process.env.AUTH_TRUST_HOST_PROD
-          : process.env.AUTH_TRUST_HOST) + `/error`,
-      subscription_data: {
-        metadata: {
-          payingUserId: userID, // sets the cognito userid in stripe
-        },
-      },
-    });
+      });
 
-    if (!checkoutSession.url) {
+      if (!checkoutSession.url) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "stripe-error",
+              message: "Could not create checkout session",
+            },
+          },
+          { status: 500 }
+        );
+      }
+      return NextResponse.json({ result: checkoutSession, ok: true });
+    } else {
       return NextResponse.json(
         {
-          error: {
-            code: "stripe-error",
-            message: "Could not create checkout session",
-          },
+          message:
+            "Could not create checkout session - client failed to update",
         },
         { status: 500 }
       );
     }
-
-    return NextResponse.json({ result: checkoutSession, ok: true });
   } catch (error) {
     console.error("Could not create checkout session", error);
     return NextResponse.json(

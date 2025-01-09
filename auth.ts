@@ -81,6 +81,14 @@ const providers: Provider[] = [
         const clientId = client.Id ? client.Id.toString() : "";
         userInfo.clientId = clientId;
 
+        if (
+          !client.stripeCustomerId ||
+          !client.stripeCustomerId.length
+          // || !client.isStripeBasicActive
+        ) {
+          throw new Error("Authentication failed - no payment method");
+        }
+
         //TODO: Implement secure cookie
         // Inside your authorize function after fetching clientId
         // const cookie = serialize("clientId", clientId.toString(), {
@@ -143,27 +151,6 @@ export const config: NextAuthConfig = {
         token.expires = Date.now() + 3600 * 1000; // 1 hour
         user ||= session?.user;
 
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
-        try {
-          const customer = await stripe.customers.create({
-            email: session.user.email!,
-            name: `${session.user.givenName!} ${session.user.familyName!}`,
-          });
-
-          // TODO: make sure this is used because axios error might occur andmight need getClientUnsafe, it might work now that i got a server certificATE
-
-          const client = await getClient(session.user.userId);
-          client.stripeCustomerId = customer.id;
-          await updateClient(client);
-        } catch (error) {
-          console.error(
-            "Error creating Stripe customer or updating user:",
-            error
-          );
-          throw error;
-        }
-
         return {
           ...token,
           ...user,
@@ -217,28 +204,25 @@ export const config: NextAuthConfig = {
   events: {
     // Create a new user in your system
     // TODO: check if the user object is destructured here or session, then strongly type it and check everything else works
-    createUser: async ({ user }: any) => {
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
-      try {
-        const customer = await stripe.customers.create({
-          email: user.email!,
-          name: `${user.givenName!} ${user.familyName!}`,
-        });
-
-        // TODO: make sure this is used because axios error might occur andmight need getClientUnsafe, it might work now that i got a server certificATE
-
-        const client = await getClient(user.userId);
-        client.stripeCustomerId = customer.id;
-        await updateClient(client);
-      } catch (error) {
-        console.error(
-          "Error creating Stripe customer or updating user:",
-          error
-        );
-        throw error;
-      }
-    },
+    // createUser: async ({ user }: any) => {
+    //   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+    //   try {
+    //     const customer = await stripe.customers.create({
+    //       email: user.email!,
+    //       name: `${user.givenName!} ${user.familyName!}`,
+    //     });
+    //     // TODO: make sure this is used because axios error might occur andmight need getClientUnsafe, it might work now that i got a server certificATE
+    //     const client = await getClient(user.userId);
+    //     client.stripeCustomerId = customer.id;
+    //     await updateClient(client);
+    //   } catch (error) {
+    //     console.error(
+    //       "Error creating Stripe customer or updating user:",
+    //       error
+    //     );
+    //     throw error;
+    //   }
+    // },
   },
   pages: {
     signIn: "/login",
