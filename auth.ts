@@ -139,9 +139,31 @@ export const config: NextAuthConfig = {
       session?: any;
     }): Promise<JWT> {
       if ((trigger == "signUp" && session?.user) || user) {
-        // runs on sign in
+        // runs on sign up
         token.expires = Date.now() + 3600 * 1000; // 1 hour
         user ||= session?.user;
+
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+        try {
+          const customer = await stripe.customers.create({
+            email: session.user.email!,
+            name: `${session.user.givenName!} ${session.user.familyName!}`,
+          });
+
+          // TODO: make sure this is used because axios error might occur andmight need getClientUnsafe, it might work now that i got a server certificATE
+
+          const client = await getClient(session.user.userId);
+          client.stripeCustomerId = customer.id;
+          await updateClient(client);
+        } catch (error) {
+          console.error(
+            "Error creating Stripe customer or updating user:",
+            error
+          );
+          throw error;
+        }
+
         return {
           ...token,
           ...user,

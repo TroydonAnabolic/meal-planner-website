@@ -21,3 +21,28 @@ export async function getClientUnsafe(userID: string) {
     constructClientObjectFromResponse(response);
   return clientObj;
 }
+
+export async function updateClientUnsafe(clientData: IClientInterface) {
+  try {
+    const response = await instance.put(
+      `${ACCOUNTAPI_BASE}/clients`,
+      clientData
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Error updating client data:", error);
+    throw error;
+  }
+}
+
+export async function deleteClientUnsafe(userID: string) {
+  try {
+    const response = await instance.delete(`${ACCOUNTAPI_BASE}/clients`, {
+      params: { userID: userID },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("Error deleting client data:", error);
+    throw error;
+  }
+}

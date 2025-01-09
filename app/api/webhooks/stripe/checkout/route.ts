@@ -22,12 +22,16 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 */
 export async function POST(request: NextRequest) {
   const body = await request.text();
-  const endpointSecret = process.env.STRIPE_SECRET_WEBHOOK_KEY!;
+  const endpointSecret =
+    process.env.NODE_ENV === "production"
+      ? process.env.STRIPE_SECRET_WEBHOOK_KEY
+      : process.env.STRIPE_SECRET_WEBHOOK_KEY_DEV;
+
   const sig = headers().get("stripe-signature") as string;
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
+    event = stripe.webhooks.constructEvent(body, sig, endpointSecret!);
   } catch (err) {
     return new Response(`Webhook Error: ${err}`, {
       status: 400,

@@ -47,9 +47,9 @@ export async function updateClient(clientData: IClientInterface) {
 
 export async function deleteClient(userID: string) {
   try {
-    const response = await instance.delete(
-      `${ACCOUNTAPI_BASE}/clients/${userID}`
-    );
+    const response = await instance.delete(`${ACCOUNTAPI_BASE}/clients`, {
+      params: { userID: userID },
+    });
     return response.data;
   } catch (error: any) {
     console.error("Error deleting client data:", error);

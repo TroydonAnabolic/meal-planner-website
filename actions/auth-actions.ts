@@ -8,7 +8,6 @@ import {
   prepareAttributes,
 } from "../util/cognito-util";
 import { auth, signIn, signOut, unstable_update as update } from "@/auth";
-import { ActivityLevel, GenderType } from "@/models/Client";
 import { isRedirectError } from "next/dist/client/components/redirect";
 import {
   registerSchema,
@@ -22,13 +21,9 @@ import { IClientInterface } from "@/models/interfaces/client/client";
 import { isEmailNotConfirmedException } from "@/util/error-util";
 import { adminDeleteUser, fetchCognitoAttributes } from "./cognito-actions";
 import { FormResult } from "@/types/form";
-import { calculateAge } from "@/util/date-util";
 import { storeClient } from "@/lib/client/client";
 import { ISignUpResult } from "amazon-cognito-identity-js";
-import { Countries } from "@/constants/constants-enums";
 import { ROUTES } from "@/constants/routes";
-import { IClientSettingsInterface } from "@/models/interfaces/client/client-settings";
-import { loadStripe } from "@stripe/stripe-js";
 
 export async function register(
   newClient: IClientInterface,
@@ -52,7 +47,7 @@ export async function register(
 
     const signUpResult = await new Promise<
       { errors: { [key: string]: string }; email?: string } | undefined
-    >((resolve) => {
+    >((resolve, reject) => {
       cognitoPool.signUp(
         newClient.Email,
         password,
@@ -64,25 +59,23 @@ export async function register(
 
             switch (err.name) {
               case "InvalidParameterException":
-                return resolve({
-                  errors: { email: "Invalid email address." },
-                });
+                reject(new Error("Invalid email address."));
               case "InvalidPasswordException":
-                return resolve({ errors: { password: "Invalid password." } });
+                reject(new Error("Invalid password."));
               case "UsernameExistsException":
-                return resolve({
-                  errors: { email: "Email already exists." },
-                  email: newClient.Email,
-                });
+                reject(new Error(`Email already exists: ${newClient.Email}`));
+
               default:
-                return resolve({
-                  errors: { general: "Something went wrong." },
-                });
+                reject(new Error("Something went wrong during signup."));
             }
+            return;
           }
 
           if (!data) {
-            return resolve({ errors: { general: "Something went wrong." } });
+            reject(
+              new Error("Something went wrong during signup: No data received.")
+            );
+            return;
           }
 
           try {
@@ -107,7 +100,7 @@ export async function register(
                 `Failed to delete user after client creation failed: ${deleteError.message}`
               );
             }
-            resolve({ errors: { general: "Error creating client." } });
+            reject(new Error("Error creating client."));
           }
         }
       );

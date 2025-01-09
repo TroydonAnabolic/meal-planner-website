@@ -380,7 +380,10 @@ export const defaultRecipe: IRecipeInterface = {
 export const tiers: Tier[] = [
   {
     name: "Basic Plan",
-    id: "prod_RXsiI2vMTRk0d8", // stripe product id
+    id:
+      process.env.NODE_ENV === "production"
+        ? "price_1QemxVBYYYaaMgOALwA0dyzb"
+        : "price_1QemxVBYYYaaMgOALwA0dyzb",
     href: "/register",
     price: "$19",
     description:

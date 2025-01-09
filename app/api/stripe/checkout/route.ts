@@ -2,28 +2,51 @@ import Stripe from "stripe";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { useSession } from "next-auth/react";
+import { getClient, updateClient } from "@/lib/client/client";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export async function POST(request: NextRequest) {
-  try {
-    const { priceId, userID, stripeCustomerId } = await request.json();
-
-    if (userID) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "no-access",
-            message: "You are not signed in.",
-          },
+  const { priceId, userID } = await request.json();
+  console.log("api price id used: " + priceId);
+  if (!userID || !priceId) {
+    return NextResponse.json(
+      {
+        error: {
+          code: "no-access",
+          message: "Invalid parameters received.",
         },
-        { status: 401 }
-      );
-    }
+      },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const client = await getClient(userID);
+
+    // Example usage in a Stripe API call with AddressParam
+    const addressParam: Stripe.AddressParam = {
+      city: client.City,
+      country: client.Country as string,
+      line1: client.Address,
+      line2: "",
+      postal_code: String(client.PostCode),
+      state: client.Suburb,
+    };
+
+    const customer = await stripe.customers.create({
+      email: client.Email,
+      name: `${client.FirstName!} ${client.LastName!}`,
+      phone: client.PhoneNumber,
+      address: addressParam,
+    });
+
+    client.stripeCustomerId = customer.id;
+    await updateClient(client);
 
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "subscription",
-      customer: stripeCustomerId,
+      customer: client.stripeCustomerId,
       line_items: [
         {
           price: priceId,

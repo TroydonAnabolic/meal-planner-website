@@ -18,20 +18,20 @@ type Props = {};
 
 // Temporary data for testing initial values
 const tempData = {
-  email: "",
-  password: "",
-  confirmPassword: "",
+  email: "troydonluic@gmail.com",
+  password: "Password123!",
+  confirmPassword: "Password123!",
   givenName: "John",
   familyName: "Doe",
   address: "123 Main St",
   suburb: "Suburbia",
   postCode: "12345",
   city: "Test City",
-  phoneNumber: "1234567890",
-  birthDay: "1990-01-01",
+  phoneNumber: "64224319560",
+  //birthDay: "1990-01-01",
   country: Countries.US,
-  gender: GenderType.Male,
-  activityLevel: ActivityLevel.Active,
+  //gender: GenderType.Male,
+  // activityLevel: ActivityLevel.Active,
 };
 
 function classNames(...classes: (string | false)[]): string {
@@ -45,7 +45,7 @@ const RegistrationPage = (props: Props) => {
   const [selectedCountry, setSelectedCountry] = useState<Countries>(
     Countries.NZ
   );
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState(tempData.phoneNumber);
   const [email, setEmail] = useState(tempData.email);
   // get the tier that starts of with active as default
   const initialActiveTier = tiers.find((t) => t.active);
