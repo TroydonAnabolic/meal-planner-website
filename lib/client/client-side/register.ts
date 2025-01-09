@@ -105,12 +105,12 @@ async function stripeCheckout(
 
       const data = response.data;
       if (!data.ok) throw new Error("Something went wrong");
-      await stripe.redirectToCheckout({
-        sessionId: data.result.id,
-      });
+      // await stripe.redirectToCheckout({
+      //   sessionId: data.result.id,
+      // });
 
       const { error } = await stripe!.redirectToCheckout({
-        sessionId: checkoutSession.session.id,
+        sessionId: data.result.id,
       });
 
       if (error) {
