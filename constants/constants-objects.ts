@@ -382,7 +382,7 @@ export const tiers: Tier[] = [
     name: "Basic Plan",
     id:
       process.env.NODE_ENV === "production"
-        ? "price_1QemxVBYYYaaMgOALwA0dyzb"
+        ? "price_1QfBDLBYYYaaMgOAoouhmzCC" // $19 actual price to use once fully tested price_1QemxVBYYYaaMgOALwA0dyzb
         : "price_1QfBDLBYYYaaMgOAoouhmzCC", // 0.19c change back to prod later
     href: "/register",
     price: "$19",

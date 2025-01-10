@@ -38,9 +38,8 @@ export async function register(
   });
 
   if (!result.success) {
-    return;
+    throw new Error("Validation failed: Invalid input data.");
   }
-  let isSuccessful = false;
 
   try {
     const attributeList = prepareAttributes(newClient);
@@ -83,7 +82,6 @@ export async function register(
             const id = await storeClient(newClient);
             if (id && id > 0) {
               newClient.Id = id;
-              isSuccessful = true;
               resolve(undefined);
             } else {
               throw new Error("Client not stored");
@@ -108,6 +106,7 @@ export async function register(
 
     return newClient;
   } catch (error) {
+    throw error; // Ensure errors are propagated
     console.error("Error during signup:", error);
   }
 }

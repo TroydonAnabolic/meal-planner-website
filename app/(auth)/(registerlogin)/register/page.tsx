@@ -309,7 +309,7 @@ const RegistrationPage = (props: Props) => {
           {formData?.errors && (
             <ul id="form-errors" className="text-red-700">
               {Object.keys(formData.errors).map((error) => (
-                <li key={error}>{formData.errors[error]}</li>
+                <li key={error}>{formData.errors![error]}</li>
               ))}
             </ul>
           )}
