@@ -229,6 +229,17 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
     }));
   };
 
+  const handleToggleFavourite = (isFavourite: boolean) => {
+    if (readOnly) {
+      return;
+    }
+    setRecipe?.((prev) => ({
+      ...prev!,
+      isFavourite: isFavourite,
+      isCustom: true,
+    }));
+  };
+
   const placeholderImage = "/aiimages/food/avocado.jpg";
 
   const handleImageError = (
@@ -489,6 +500,15 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
                 label="Avoid Recipe"
                 subLabel="Mark this recipe to avoid in future suggestions."
                 enabled={recipe.avoid}
+                disableInput={readOnly}
+                onChange={handleToggleAvoid}
+              />
+            </div>
+            <div className="my-4">
+              <ToggleInput
+                label="Make Favourite"
+                subLabel="Mark this recipe as favourite"
+                enabled={recipe.isFavourite!}
                 disableInput={readOnly}
                 onChange={handleToggleAvoid}
               />

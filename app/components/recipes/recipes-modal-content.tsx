@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import { fetchEdamamRecipes } from "@/lib/edamam";
@@ -64,13 +64,13 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
   const getDefaultActiveTab = () => {
     switch (action) {
       case "Add":
+        return "Add Recipes";
+      case "Search":
         return "Search Recipes";
       case "View":
         return "View Recipe";
       case "Edit":
         return "Edit Recipe";
-      default:
-        return "Search Recipes";
     }
   };
   // Initialize activeTab based on the initial action
@@ -85,8 +85,10 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
   }, [open, action]);
 
   // Define tabs based on the current action
-  const tabs =
-    action === "Add" || actionParam === UrlAction.Add
+  const tabs = useMemo(() => {
+    return action === "Add" ||
+      actionParam === UrlAction.Add ||
+      action === "Search"
       ? [
           {
             name: "Search Recipes",
@@ -111,6 +113,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
             current: activeTab === "Edit Recipe",
           },
         ];
+  }, [activeTab, action, actionParam]);
 
   useEffect(() => {
     // Update recipe state based on search parameters
@@ -171,9 +174,6 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
    */
   const handleTabChange = useCallback(
     (tabName: string) => {
-      const tabChangedTo = tabs.find((t) => t.name === tabName);
-      tabs.forEach((t) => t.name === tabChangedTo)[tabChangedTo];
-
       if (tabName === "Add Recipe") {
         setAction("Add");
       } else if (tabName === "Search Recipes") {
@@ -185,7 +185,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
       }
       setActiveTab(tabName);
     },
-    [action, setAction]
+    [handleEditRecipe, handleViewRecipe, setAction]
   );
 
   const handleViewRecipeToAdd = (recipe: IRecipeInterface) => {

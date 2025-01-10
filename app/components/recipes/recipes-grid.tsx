@@ -86,6 +86,7 @@ const RecipesGrid: React.FC<RecipesGridProps> = ({ recipesData, clientId }) => {
     dateAdded: new Date().toISOString(),
     avoid: false,
     isCustom: true,
+    isFavourite: false,
   };
 
   const handleImageError = (
