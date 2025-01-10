@@ -4,12 +4,12 @@
 import { IClientInterface } from "@/models/interfaces/client/client";
 import React, { useCallback, useState } from "react";
 import PricingGrid from "../../ui/subscribe/pricing-sections";
-import { tiers } from "@/constants/constants-objects";
 import { Tier } from "@/types/subscribe";
 import { stripeCancelSubscription, stripeCheckout } from "@/lib/stripe";
 import ConfirmActionModal, {
   ConfirmActionModalProps,
 } from "../../ui/modals/confirm-action-modal";
+import { tiers } from "@/constants/constants-objects";
 
 interface SubscriptionsSectionProps {
   clientData: IClientInterface;
@@ -22,25 +22,15 @@ const SubscriptionsSection: React.FC<SubscriptionsSectionProps> = ({
   const [client, setClient] = useState<IClientInterface>(clientData);
 
   // TODO: get basic tier by default, in the future when implementing other tier update logic e.g. isStripePremiumActive etc.
-  const [selectedTier, setSelectedTier] = useState<Tier | null>(
-    tiers.find((t) => t.active) || null
-  );
+  const basicTier = tiers.find((t) => t.name === "Basic Plan");
+  if (basicTier) {
+    basicTier.active = clientData.isStripeBasicActive;
+  }
+  const [selectedTier, setSelectedTier] = useState<Tier>(basicTier!);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const [confirmModalProps, setConfirmModalProps] =
-    useState<ConfirmActionModalProps>({
-      open: false,
-      title: "",
-      message: "",
-      confirmText: "",
-      colorScheme: "",
-      onConfirm: () => {},
-      cancelText: "",
-      onClose: () => {},
-      type: "primary",
-    });
-
-  const closeConfirmModal = useCallback(() => {
+  const closeConfirmModal = () => {
+    console.log("close confirm modal run");
     setIsLoading(false);
     setConfirmModalProps({
       open: false,
@@ -53,7 +43,22 @@ const SubscriptionsSection: React.FC<SubscriptionsSectionProps> = ({
       onClose: () => {},
       type: "primary",
     });
-  }, []);
+  };
+
+  const [confirmModalProps, setConfirmModalProps] =
+    useState<ConfirmActionModalProps>({
+      open: false,
+      title: "",
+      message: "",
+      confirmText: "",
+      colorScheme: "",
+      onConfirm: () => {},
+      cancelText: "",
+      onClose: () => {
+        closeConfirmModal();
+      },
+      type: "primary",
+    });
 
   const isCancelAction = clientData.isStripeBasicActive;
 
@@ -71,7 +76,10 @@ const SubscriptionsSection: React.FC<SubscriptionsSectionProps> = ({
       onConfirm: isCancelAction
         ? handleCancelSubscription
         : handleCheckoutSubscription,
-      onCancel: closeConfirmModal,
+      onCancel: () => {
+        console.log("On cancel invoke 1");
+        closeConfirmModal();
+      },
       colorScheme: "bg-blue-600 hover:bg-blue-500",
       type: "primary",
     }));

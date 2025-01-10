@@ -289,7 +289,7 @@ const RegistrationPage = (props: Props) => {
               Pricing
             </label>
             {!selectedTier && (
-              <p className="text-sm text-gray-500">No plan selected</p>
+              <p className="text-sm text-red-500">No plan selected</p>
             )}
             <div>
               <HorizontalScrollContainer>

@@ -95,7 +95,7 @@ export async function stripeCancelSubscription(
         );
       }
     }
-    revalidatePath(ROUTES.MEAL_PLANNER.SETTINGS.SUBSCRIPTIONS, "layout");
+    revalidatePath(ROUTES.MEAL_PLANNER.SETTINGS.SUBSCRIPTIONS);
     return { success: true };
   } catch (error: any) {
     console.log(error.message);
