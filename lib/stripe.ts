@@ -4,6 +4,8 @@ import { IClientInterface } from "@/models/interfaces/client/client";
 import { FormResult } from "@/types/form";
 import axios from "axios";
 import { loadStripe } from "@stripe/stripe-js";
+import { revalidatePath } from "next/cache";
+import { ROUTES } from "@/constants/routes";
 
 export async function stripeCheckout(
   client: IClientInterface | undefined,
@@ -60,12 +62,15 @@ export async function stripeCheckout(
     console.log(error.message);
 
     return { success: false, errors: { message: error.message } };
+  } finally {
+    if (!isNewUser) {
+      revalidatePath(ROUTES.MEAL_PLANNER.SETTINGS.SUBSCRIPTIONS, "layout");
+    }
   }
 }
 
 export async function stripeCancelSubscription(
-  client: IClientInterface | undefined,
-  priceId: string
+  client: IClientInterface | undefined
 ): Promise<FormResult> {
   // subscribe to stripe product plan
   try {
@@ -76,21 +81,21 @@ export async function stripeCancelSubscription(
       return { success: false };
     }
 
-    if (client?.Id && client.Id > 0) {
+    if (client && client.Id > 0) {
       const response = await axios.post("/api/stripe/cancel-subscription", {
-        priceId: priceId,
-        activeSubscriptionId: client.stripeCustomerId,
+        userID: client.UserID,
       });
 
-      // const res = await fetch(`/api/stripe/cancel-subscription`, {
-      //   method: "POST",
-      //   body: JSON.stringify({ activeSubscriptionId: subscriptionId }), // Assuming productId is needed for the session creation
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      // });
+      // Check if the status code indicates success
+      if (response.status >= 200 && response.status < 300) {
+        console.log("Subscription cancelled successfully:", response.data);
+      } else {
+        throw new Error(
+          `Error cancelling subscription: ${response.statusText}`
+        );
+      }
     }
-
+    revalidatePath(ROUTES.MEAL_PLANNER.SETTINGS.SUBSCRIPTIONS, "layout");
     return { success: true };
   } catch (error: any) {
     console.log(error.message);

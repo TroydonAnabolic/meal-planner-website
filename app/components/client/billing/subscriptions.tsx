@@ -6,8 +6,10 @@ import React, { useCallback, useState } from "react";
 import PricingGrid from "../../ui/subscribe/pricing-sections";
 import { tiers } from "@/constants/constants-objects";
 import { Tier } from "@/types/subscribe";
-import { stripeCheckout } from "@/lib/stripe";
-import { ConfirmActionModalProps } from "../../ui/modals/confirm-action-modal";
+import { stripeCancelSubscription, stripeCheckout } from "@/lib/stripe";
+import ConfirmActionModal, {
+  ConfirmActionModalProps,
+} from "../../ui/modals/confirm-action-modal";
 
 interface SubscriptionsSectionProps {
   clientData: IClientInterface;
@@ -20,11 +22,9 @@ const SubscriptionsSection: React.FC<SubscriptionsSectionProps> = ({
   const [client, setClient] = useState<IClientInterface>(clientData);
 
   // TODO: get basic tier by default, in the future when implementing other tier update logic e.g. isStripePremiumActive etc.
-  const basicTier = tiers.find((t) => t.active);
-  if (basicTier) {
-    basicTier.active = clientData.isStripeBasicActive;
-  }
-  const [selectedTier, setSelectedTier] = useState<Tier>(basicTier!);
+  const [selectedTier, setSelectedTier] = useState<Tier | null>(
+    tiers.find((t) => t.active) || null
+  );
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [confirmModalProps, setConfirmModalProps] =
@@ -55,20 +55,20 @@ const SubscriptionsSection: React.FC<SubscriptionsSectionProps> = ({
     });
   }, []);
 
+  const isCancelAction = clientData.isStripeBasicActive;
+
   const handleSelectTier = async (tier: Tier) => {
     setSelectedTier(tier);
     setConfirmModalProps((prev) => ({
       ...prev,
       open: true,
-      title: clientData.isStripeBasicActive
-        ? "Cancel Selected Plan"
-        : "Confirm Selected Plan",
-      message: clientData.isStripeBasicActive
-        ? "This will cancel your current subscription, are you sure you want to cancel?"
-        : `Are you sure you want to subscribe to the ${tier.price} monthly plan?`,
-      confirmText: "Yes",
+      title: isCancelAction ? "Cancel Selected Plan" : "Subscribe to Plan",
+      message: isCancelAction
+        ? "This will cancel your current subscription, are you sure?"
+        : `Subscribe to the ${tier.name} plan for ${tier.price}?`,
+      confirmText: client.isStripeBasicActive ? "Cancel" : "Subscribe",
       cancelText: "No",
-      onConfirm: clientData.isStripeBasicActive
+      onConfirm: isCancelAction
         ? handleCancelSubscription
         : handleCheckoutSubscription,
       onCancel: closeConfirmModal,
@@ -78,15 +78,64 @@ const SubscriptionsSection: React.FC<SubscriptionsSectionProps> = ({
   };
 
   const handleCheckoutSubscription = async () => {
-    const result = await stripeCheckout(client, selectedTier.id, false);
+    setIsLoading(true);
+    const result = await stripeCheckout(client, selectedTier!.id, false);
+    setIsLoading(false);
+
+    if (result.success) {
+      setConfirmModalProps({
+        open: true,
+        title: "Subscription Updated",
+        message: "Your subscription has been successfully updated.",
+        confirmText: "Okay",
+        onConfirm: closeConfirmModal,
+        colorScheme: "bg-green-600 hover:bg-green-500",
+      });
+      setClient({ ...client, isStripeBasicActive: true }); // Update state
+    } else {
+      setConfirmModalProps((prev) => ({
+        ...prev,
+        confirmText: "Okay",
+        cancelText: "",
+        message: `Failed to subscribe: ${
+          result.errors?.message || "Unknown error"
+        }`,
+        colorScheme: "bg-red-600 hover:bg-red-500",
+        onConfirm: closeConfirmModal,
+      }));
+    }
   };
 
   const handleCancelSubscription = async () => {
-    const result = await stripeCancelSubscription(
-      client,
-      selectedTier.id,
-      false
-    );
+    setIsLoading(true);
+    const result = await stripeCancelSubscription(client);
+    setIsLoading(false);
+
+    if (result.success) {
+      setConfirmModalProps({
+        open: true,
+        title: "Subscription Cancelled",
+        message: "Your subscription has been successfully cancelled.",
+        confirmText: "Okay",
+        onConfirm: closeConfirmModal,
+        colorScheme: "bg-green-600 hover:bg-green-500",
+      });
+      setClient({ ...client, isStripeBasicActive: false }); // Update state
+    } else if (result.errors) {
+      setConfirmModalProps((prev) => ({
+        ...prev,
+        message: "Failed to cancel subscription",
+        colorScheme: "bg-red-600 hover:bg-red-500",
+        confirmText: "Okay",
+        cancelText: "",
+        onConfirm: closeConfirmModal,
+      }));
+      console.log(
+        `Failed to cancel subscription: ${
+          result.errors?.message || "Unknown error"
+        }`
+      );
+    }
   };
 
   return (
@@ -104,29 +153,25 @@ const SubscriptionsSection: React.FC<SubscriptionsSectionProps> = ({
         {/* Subscriptions */}
         <div className="md:col-span-2">
           <div className="">
-            {/* Budget Amount */}
             <div className="">
               <PricingGrid
                 tiers={tiers}
+                selectedTier={selectedTier}
+                isLoading={isLoading}
                 classNames={(...classes) => classes.filter(Boolean).join(" ")}
                 buttonText={
                   clientData.isStripeBasicActive ? "Cancel" : "Select Plan"
                 }
-                //buttonDisabled={clientData.isStripeBasicActive}
-                onSelectTier={handleSelectTier} // Pass callback to PricingGrid
+                onSelectTier={(t) => {
+                  handleSelectTier(t);
+                }} // Pass callback to PricingGrid
               />
             </div>
           </div>
-          {/* <div className="mt-8 flex">
-            <button
-              className="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-              onClick={}
-            >
-              Save
-            </button>
-          </div> */}
         </div>
       </div>
+
+      {confirmModalProps.open && <ConfirmActionModal {...confirmModalProps} />}
     </>
   );
 };

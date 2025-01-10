@@ -395,7 +395,8 @@ export const tiers: Tier[] = [
       "Email support",
     ],
     featured: false,
-    active: true, // Active plan
+    active: false, // Active plan
+    available: true,
   },
   {
     name: "Premium Plan",
@@ -413,6 +414,7 @@ export const tiers: Tier[] = [
     ],
     featured: true,
     active: false, // Not active
+    available: false,
   },
   {
     name: "Enterprise Plan",
@@ -430,5 +432,6 @@ export const tiers: Tier[] = [
     ],
     featured: false,
     active: false, // Not active
+    available: false,
   },
 ];

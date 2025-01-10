@@ -79,7 +79,9 @@ export async function POST(request: NextRequest) {
           (process.env.NODE_ENV === "production"
             ? process.env.AUTH_TRUST_HOST_PROD
             : process.env.AUTH_TRUST_HOST) +
-          ROUTES.AUTH.REGISTRATION_CONFIRMATION,
+          (isNewUser
+            ? ROUTES.AUTH.REGISTRATION_CONFIRMATION
+            : request.nextUrl.pathname),
         cancel_url:
           (process.env.NODE_ENV === "production"
             ? process.env.AUTH_TRUST_HOST_PROD

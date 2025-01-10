@@ -49,15 +49,23 @@ const RegistrationPage = (props: Props) => {
   const [email, setEmail] = useState<string>("");
   // get the tier that starts of with active as default
   const initialActiveTier = tiers.find((t) => t.active);
-  const [selectedTier, setSelectedTier] = useState<Tier>(initialActiveTier!);
+  const [selectedTier, setSelectedTier] = useState<Tier | null>(
+    initialActiveTier!
+  );
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
   };
 
   const handleSelectTier = (tier: Tier) => {
-    setSelectedTier(tier);
-    console.log("Selected Tier:", tier); // Debugging purpose
+    if (selectedTier?.id === tier.id) {
+      // Unselect the tier if it's already selected
+      setSelectedTier(null);
+    } else {
+      // Select the new tier
+      setSelectedTier(tier);
+    }
+    console.log("Selected Tier:", selectedTier); // Debugging purpose
   };
 
   return (
@@ -280,10 +288,14 @@ const RegistrationPage = (props: Props) => {
             >
               Pricing
             </label>
+            {!selectedTier && (
+              <p className="text-sm text-gray-500">No plan selected</p>
+            )}
             <div>
               <HorizontalScrollContainer>
                 <PricingGrid
                   tiers={tiers}
+                  selectedTier={selectedTier} // Pass selectedTier
                   classNames={(...classes) => classes.filter(Boolean).join(" ")}
                   onSelectTier={handleSelectTier} // Pass callback to PricingGrid
                 />
@@ -291,7 +303,9 @@ const RegistrationPage = (props: Props) => {
             </div>
           </div>
           {/* Selected product id to submit for subscribing */}
-          <input type="hidden" name="priceId" value={selectedTier?.id} />{" "}
+
+          <input type="hidden" name="priceId" value={selectedTier?.id || ""} />
+
           {formData?.errors && (
             <ul id="form-errors" className="text-red-700">
               {Object.keys(formData.errors).map((error) => (

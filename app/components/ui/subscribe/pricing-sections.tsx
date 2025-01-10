@@ -9,7 +9,9 @@ type PricingGridProps = {
   classNames: (...classes: (string | false)[]) => string;
   //buttonDisabled: boolean;
   onSelectTier: (tier: Tier) => void; // Callback for tier selection
+  selectedTier: Tier | null; // Add this prop
   buttonText?: string;
+  isLoading?: boolean;
 };
 
 const PricingGrid: React.FC<PricingGridProps> = ({
@@ -17,7 +19,9 @@ const PricingGrid: React.FC<PricingGridProps> = ({
   classNames,
   //buttonDisabled = false,
   onSelectTier,
+  selectedTier, // Add this prop
   buttonText = "Select Plan",
+  isLoading = false,
 }) => {
   return (
     <div className="flex justify-center gap-6 mt-6">
@@ -25,8 +29,10 @@ const PricingGrid: React.FC<PricingGridProps> = ({
         <div
           key={tier.id}
           className={classNames(
-            tier.active
-              ? "bg-indigo-600 text-white shadow-lg"
+            tier.available
+              ? tier.id === selectedTier?.id
+                ? "bg-indigo-800 text-white shadow-xl ring-2 ring-indigo-500" // Highlight selected tier
+                : "bg-indigo-600 text-white shadow-lg"
               : "bg-gray-200 text-gray-500 cursor-not-allowed opacity-60",
             "rounded-lg p-6 ring-1 ring-gray-900/10 w-80 text-center"
           )}
@@ -46,15 +52,21 @@ const PricingGrid: React.FC<PricingGridProps> = ({
             ))}
           </ul>
           <button
+            type="button"
             onClick={() => onSelectTier(tier)} // Trigger navigation on button click
+            //      disabled={isLoading || !tier.active}
             // disabled={!tier.active} //! TODO: !tier.active -> removed this check if ok in registraiton and from authenticated
             className={classNames(
-              tier.active
+              tier.available
                 ? "mt-6 block w-full px-4 py-2 text-sm font-semibold rounded-md bg-white text-indigo-600 hover:bg-indigo-100"
                 : "mt-6 block w-full px-4 py-2 text-sm font-semibold rounded-md bg-gray-400 text-gray-600 pointer-events-none"
             )}
           >
-            {tier.active ? buttonText : "Unavailable"}
+            {isLoading
+              ? "Processing..."
+              : tier.available
+              ? buttonText
+              : "Unavailable"}
           </button>
         </div>
       ))}

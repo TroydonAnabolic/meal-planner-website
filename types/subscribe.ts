@@ -7,4 +7,5 @@ export type Tier = {
   features: string[];
   featured: boolean;
   active: boolean; // Added property
+  available: boolean; // Added property
 };

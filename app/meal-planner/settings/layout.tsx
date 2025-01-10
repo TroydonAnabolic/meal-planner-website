@@ -19,7 +19,7 @@ const secondaryNavigation = [
     current: false,
   },
   {
-    name: "Subscriptions",
+    name: "Subscription",
     href: ROUTES.MEAL_PLANNER.SETTINGS.SUBSCRIPTIONS,
     current: false,
   },
