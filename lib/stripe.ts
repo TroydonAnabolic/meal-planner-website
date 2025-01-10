@@ -70,7 +70,7 @@ export async function stripeCheckout(
 }
 
 export async function stripeCancelSubscription(
-  client: IClientInterface | undefined
+  userID: string | undefined
 ): Promise<FormResult> {
   // subscribe to stripe product plan
   try {
@@ -81,9 +81,9 @@ export async function stripeCancelSubscription(
       return { success: false };
     }
 
-    if (client && client.Id > 0) {
+    if (userID) {
       const response = await axios.post("/api/stripe/cancel-subscription", {
-        userID: client.UserID,
+        userID: userID,
       });
 
       // Check if the status code indicates success

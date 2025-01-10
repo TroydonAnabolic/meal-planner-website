@@ -38,6 +38,7 @@ const TabsWithPills: React.FC<TabsWithPillsProps> = ({
           id="tabs"
           name="tabs"
           defaultValue={tabs.find((tab) => tab.current)?.name || ""}
+          value={tabs.find((tab) => tab.current)?.name || ""}
           className={`block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-gray-800 ${fontSize}`}
           onChange={(e) => handleTabClick(e.target.value)}
         >

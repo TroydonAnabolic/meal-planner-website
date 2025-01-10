@@ -24,6 +24,7 @@ import { FormResult } from "@/types/form";
 import { deleteClient, storeClient } from "@/lib/client/client";
 import { ISignUpResult } from "amazon-cognito-identity-js";
 import { ROUTES } from "@/constants/routes";
+import { stripeCancelSubscription } from "@/lib/stripe";
 
 export async function register(
   newClient: IClientInterface,
@@ -321,22 +322,27 @@ export async function deleteUser(
     session?.user?.refreshToken
   );
   try {
-    await new Promise<void>((resolve, reject) => {
-      cognitoUser.deleteUser((err, result) => {
-        if (err) {
-          console.error("deleteUser error:", err.message);
-          reject(err);
-        } else {
-          console.log("deleteUser result:", result);
-          resolve();
-        }
+    const result = await stripeCancelSubscription(session.user.userId);
+    // only proceed to delete accounts if subscription is sucessfully cancelled
+    // TODO: test cancel subscription feature once completed app
+    if (result.success) {
+      await new Promise<void>((resolve, reject) => {
+        cognitoUser.deleteUser((err, result) => {
+          if (err) {
+            console.error("deleteUser error:", err.message);
+            reject(err);
+          } else {
+            console.log("deleteUser result:", result);
+            resolve();
+          }
+        });
       });
-    });
 
-    // TODO: Test if delete works from here
-    await deleteClient(session.user.userId);
+      // TODO: Test if delete works from here
+      await deleteClient(session.user.userId);
 
-    await signOut({ redirect: false });
+      await signOut({ redirect: false });
+    }
   } catch (error) {
     console.error("delete user error:", error);
     if (isRedirectError(error)) {

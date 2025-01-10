@@ -47,6 +47,7 @@ const PremiumPlan: React.FC<Props> = () => {
           start your journey towards healthier eating today.
         </p>
         <PricingGrid
+          selectedTier={tiers.find((t) => t.available) || null}
           tiers={tiers}
           classNames={classNames}
           onSelectTier={handleSelectTier}

@@ -22,6 +22,7 @@ export interface IMealInterface {
   image?: string;
   dayOfTheWeek?: DayOfTheWeek;
   foodSourceUrl?: string;
+  isFavourite?: boolean;
 }
 
 export interface IMealIngredient {

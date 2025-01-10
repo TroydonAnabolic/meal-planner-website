@@ -116,7 +116,7 @@ const SubscriptionsSection: React.FC<SubscriptionsSectionProps> = ({
 
   const handleCancelSubscription = async () => {
     setIsLoading(true);
-    const result = await stripeCancelSubscription(client);
+    const result = await stripeCancelSubscription(client.UserID);
     setIsLoading(false);
 
     if (result.success) {

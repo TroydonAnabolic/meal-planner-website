@@ -43,6 +43,23 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
   onDelete,
   onClose, // Destructure 'onClose'
 }) => {
+  // State for search query in 'Find New Recipe' tab
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  // State to hold search results from Edamam API
+  const [searchResults, setSearchResults] = useState<IRecipeInterface[]>([]);
+
+  // Loading and error states for search functionality
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+  // Extract search parameters
+  const mealTypeParam = searchParams.get("mealType");
+  const timeScheduledParam = searchParams.get("timeScheduled");
+  const mealPlanIdParam = searchParams.get("mealPlanId");
+  const actionParam = searchParams.get("action");
+
   // Define the default active tab based on the current action
   const getDefaultActiveTab = () => {
     switch (action) {
@@ -66,23 +83,6 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
       setActiveTab(getDefaultActiveTab());
     }
   }, [open, action]);
-
-  // State for search query in 'Find New Recipe' tab
-  const [searchQuery, setSearchQuery] = useState<string>("");
-
-  // State to hold search results from Edamam API
-  const [searchResults, setSearchResults] = useState<IRecipeInterface[]>([]);
-
-  // Loading and error states for search functionality
-  const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
-
-  const searchParams = useSearchParams();
-  // Extract search parameters
-  const mealTypeParam = searchParams.get("mealType");
-  const timeScheduledParam = searchParams.get("timeScheduled");
-  const mealPlanIdParam = searchParams.get("mealPlanId");
-  const actionParam = searchParams.get("action");
 
   // Define tabs based on the current action
   const tabs =
@@ -171,22 +171,19 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
    */
   const handleTabChange = useCallback(
     (tabName: string) => {
-      if (action === "Add") {
-        if (tabName === "Add Recipe") {
-          setActiveTab(tabName);
-          setAction("Add");
-        } else if (tabName === "Search Recipes") {
-          setAction("Add");
-          setActiveTab("Search Recipes");
-        }
-      } else if (action === "Edit" || action === "View") {
-        if (tabName === "Edit Recipe") {
-          handleEditRecipe();
-        } else if (tabName === "View Recipe") {
-          handleViewRecipe();
-        }
-        setActiveTab(tabName);
+      const tabChangedTo = tabs.find((t) => t.name === tabName);
+      tabs.forEach((t) => t.name === tabChangedTo)[tabChangedTo];
+
+      if (tabName === "Add Recipe") {
+        setAction("Add");
+      } else if (tabName === "Search Recipes") {
+        setAction("Search");
+      } else if (tabName === "Edit Recipe") {
+        handleEditRecipe();
+      } else if (tabName === "View Recipe") {
+        handleViewRecipe();
       }
+      setActiveTab(tabName);
     },
     [action, setAction]
   );

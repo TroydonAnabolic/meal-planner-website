@@ -78,6 +78,7 @@ export interface IRecipeInterface {
   avoid: boolean;
   isCustom?: boolean;
   timeScheduled?: Date;
+  isFavourite?: boolean;
 }
 
 export interface Digest {
