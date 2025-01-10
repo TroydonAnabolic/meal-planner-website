@@ -10,9 +10,7 @@ import { defaultMealPlanPreference } from "@/constants/constants-objects";
 import GlowyBanner from "../components/ui/banner/banner-with-glow";
 import GlowyBannerWithLink from "../components/ui/banner/banner-with-glow-and-link";
 
-type PlanMealDemoProps = {
-  clientData: IClientInterface;
-};
+type PlanMealDemoProps = {};
 
 const PlanMealDemo: React.FC<PlanMealDemoProps> = () => {
   const [isBannedOpen, setIsBannedOpen] = useState<boolean>(true);
@@ -25,6 +23,8 @@ const PlanMealDemo: React.FC<PlanMealDemoProps> = () => {
     Email: "example3423@smartaitrainer.com",
     PhoneNumber: "0221002320",
     Country: Countries.NZ,
+    stripeCustomerId: "",
+    isStripeBasicActive: false,
   };
 
   initializeClientSettings(clientData);
