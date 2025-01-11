@@ -2,7 +2,7 @@
 
 import RecipeInputFields from "@/app/components/recipes/recipe-input-fields";
 import { MealType } from "@/constants/constants-enums";
-import { fetchRecipeFromId } from "@/lib/server-side/edamam";
+import { getRecipeFromId } from "@/lib/server-side/edamam";
 import { IRecipeHit } from "@/models/interfaces/recipe/recipe";
 import { getEnumKeysByValues } from "@/util/enum-util";
 
@@ -13,7 +13,7 @@ export default async function Page({
 }) {
   const id = (await params).id;
 
-  const recipeHit = await fetchRecipeFromId(id);
+  const recipeHit = await getRecipeFromId(id);
   const recipe = recipeHit?.recipe;
 
   const mealtypeKey = getEnumKeysByValues(

@@ -10,6 +10,7 @@ interface ActionPanelProps {
   icon?: React.ReactNode; // Optional icon prop
   type?: "button" | "submit" | "reset"; // Optional type prop
   className?: string; // Optional className for custom styling
+  disabled?: boolean;
 }
 
 const ActionPanelButton: React.FC<ActionPanelProps> = ({
@@ -20,6 +21,7 @@ const ActionPanelButton: React.FC<ActionPanelProps> = ({
   icon,
   type = "button",
   className = "",
+  disabled,
 }) => {
   return (
     <div className={`bg-indigo-50 shadow-lg sm:rounded-lg w-full ${className}`}>
@@ -30,6 +32,7 @@ const ActionPanelButton: React.FC<ActionPanelProps> = ({
           <div className="mt-6 flex justify-center">
             <button
               type={type}
+              disabled={disabled}
               onClick={onClick}
               className="inline-flex items-center rounded-md bg-indigo-600 px-5 py-3 text-lg font-semibold text-white shadow-lg hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >

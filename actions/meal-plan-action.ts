@@ -2,7 +2,7 @@
 
 import { MealType } from "@/constants/constants-enums";
 import { ROUTES } from "@/constants/routes";
-import { fetchRecipesFromUris } from "@/lib/edamam";
+import { fetchRecipesFromUris } from "@/lib/client/client-side/edamam";
 import { addMealPlanMeals } from "@/lib/meal";
 import { addMealPlan, updateMealPlan } from "@/lib/meal-plan";
 import { addMealPlanRecipes } from "@/lib/recipe";

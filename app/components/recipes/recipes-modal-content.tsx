@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
-import { fetchEdamamRecipes } from "@/lib/edamam";
+import { fetchEdamamRecipes } from "@/lib/client/client-side/edamam";
 import TabsWithPills from "../ui/tabs-in-pills";
 import RecipeSearchResultsGrid from "./recipe-search-results-grid";
 import FormModal from "../ui/modals/form-modal";

@@ -1,8 +1,6 @@
 "use client";
-import { fetchEdamamMealPlan, fetchRecipesFromUris } from "@/lib/edamam";
 import { IClientInterface } from "@/models/interfaces/client/client";
 import { IMealPlanPreferences } from "@/models/interfaces/client/meal-planner-preferences";
-import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
 import React, { useCallback, useEffect, useState } from "react";
 import ActionPanelButton from "../../action-panel/action-panel-button";
 import Image from "next/image";
@@ -24,13 +22,7 @@ import FilterRecipes from "./filter-recipes";
 import ShoppingListTable from "../../shopping-list/shopping-list-table";
 import { IShoppingListResult } from "@/models/interfaces/edamam/meal-planner/shopping-list-response";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
-import { useSession } from "next-auth/react";
 import { Nutrients } from "@/constants/constants-enums";
-import { Session } from "next-auth";
-import {
-  recipeUriFormat,
-  recipeUrlFormat,
-} from "@/constants/constants-objects";
 import GlowyBanner from "../../ui/banner/banner-with-glow";
 import { ROUTES } from "@/constants/routes";
 import { generateMealPlanAndRecipes } from "@/lib/meal-plan-generator";
@@ -56,7 +48,6 @@ const setCookie = (name: string, value: string, minutes: number) => {
 const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
   clientData,
 }) => {
-  const { data: session, status } = useSession();
   const [recipes, setRecipes] = useState<IRecipeInterface[]>([]);
   const [excluded, setExcluded] = useState<string[]>([]);
   const [mealPlan, setMealPlan] = useState<IMealPlan | null>();
@@ -183,7 +174,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
     let canUnAuthGenerate = true;
 
     canUnAuthGenerate = runDelayForUnAuthorized(
-      session,
+      clientData,
       setConfirmModalProps,
       closeConfirmModal,
       canUnAuthGenerate
@@ -210,12 +201,13 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
       return;
     }
 
-    if (!mealPlanPreferences) {
+    if (!mealPlanPreferences || !mealPlanPreferences.plan.sections) {
       setConfirmModalProps((prev) => ({
         ...prev,
         open: true,
         title: "Warning",
-        message: "Meal plan preferences are missing.",
+        message:
+          "Meal plan preferences are missing. At minimum, you require date range and min and max calorie for all meals, and at least one meal type",
         confirmText: "OK",
         onConfirm: () => {
           closeConfirmModal();
@@ -340,7 +332,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
   // set banner open when no meal plan preferences exist
   useEffect(() => {
     if (
-      session &&
+      clientData.Id &&
       clientData.isStripeBasicActive &&
       !mealPlanPreferences?.size &&
       !mealPlanPreferences?.plan.accept
@@ -391,6 +383,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
                   </>
                 }
                 buttonText="Generate Meal Plan"
+                //    disabled={isBannedOpen}
                 onClick={handleGenerateMealPlan}
                 icon={<PrecisionManufacturingIcon />}
               />
@@ -438,7 +431,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
               </div>
             </div>
 
-            {session && clientData.isStripeBasicActive && (
+            {clientData.Id > 0 && clientData.isStripeBasicActive && (
               <div className="w-1/2">
                 <FilterRecipes
                   title="Filter Recipes"
@@ -452,7 +445,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
           </div>
 
           {/* Confirm Button */}
-          {session && clientData.isStripeBasicActive && (
+          {clientData.Id > 0 && clientData.isStripeBasicActive && (
             <div>
               {recipes.length > 0 && (
                 <button
@@ -508,7 +501,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
             </div>
 
             {/* Shopping List Table */}
-            {session &&
+            {clientData.Id > 0 &&
               clientData.isStripeBasicActive &&
               mealPlan &&
               recipes.length > 0 && (
@@ -522,7 +515,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
               )}
           </div>
 
-          {session && clientData.isStripeBasicActive ? (
+          {clientData.Id > 0 && clientData.isStripeBasicActive ? (
             <span className="text-sm text-gray-500 ">
               <Link
                 title="Edit Meal Preferences"
@@ -561,7 +554,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
 export default MealPlanGenerator;
 
 function runDelayForUnAuthorized(
-  session: Session | null,
+  client: IClientInterface,
   setConfirmModalProps: React.Dispatch<
     React.SetStateAction<ConfirmActionModalProps>
   >,
@@ -569,7 +562,7 @@ function runDelayForUnAuthorized(
   canUnAuthGenerate: boolean
 ) {
   // TODO: check when logged in if !isStripeBasicActive allows this to run for no active subscriptions
-  if (!session || !session.user.isStripeBasicActive) {
+  if (!(client.Id > 0) || !client.isStripeBasicActive) {
     const lastMealPlanTime = getCookie(COOKIE_NAME);
     const now = new Date().getTime();
     if (lastMealPlanTime) {

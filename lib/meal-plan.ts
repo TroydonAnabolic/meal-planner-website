@@ -13,7 +13,7 @@ import {
   extractRecipeIdFromUri,
 } from "@/util/meal-generator-util";
 import axios from "axios";
-import { fetchRecipesFromUris } from "./edamam";
+import { fetchRecipesFromUris } from "./client/client-side/edamam";
 import dayjs from "dayjs";
 
 const instance = axios.create({

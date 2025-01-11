@@ -2,7 +2,7 @@ import {
   IFoodNutrients,
   IFoodNutrientsResponse,
 } from "@/models/interfaces/edamam/food/nutrients-response";
-import { fetchNutrients } from "./edamam";
+import { fetchNutrients } from "./client/client-side/edamam";
 import {
   IFoodIngredient,
   IFoodNutrientsRequest,

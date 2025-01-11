@@ -1,15 +1,15 @@
-import {
-  BACKEND_URL_LIVE,
-  APIM_HEADERS_PUBLIC,
-  DIETAPI_BASE,
-} from "@/constants/constants-urls";
-import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
-import axios from "axios";
+// import {
+//   BACKEND_URL_LIVE,
+//   APIM_HEADERS_PUBLIC,
+//   DIETAPI_BASE,
+// } from "@/constants/constants-urls";
+// import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
+// import axios from "axios";
 
-const instance = axios.create({
-  baseURL: BACKEND_URL_LIVE,
-  headers: APIM_HEADERS_PUBLIC,
-});
+// const instance = axios.create({
+//   baseURL: BACKEND_URL_LIVE,
+//   headers: APIM_HEADERS_PUBLIC,
+// });
 
 /**
  * Fetches recipes by client ID.

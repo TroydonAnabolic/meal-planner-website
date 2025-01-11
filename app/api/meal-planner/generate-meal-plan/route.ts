@@ -2,9 +2,12 @@ import {
   recipeUriFormat,
   recipeUrlFormat,
 } from "@/constants/constants-objects";
-import { fetchEdamamMealPlan, fetchRecipesFromUris } from "@/lib/edamam";
-import { getRecipesByClientId } from "@/lib/recipe";
+import {
+  getEdamamMealPlan,
+  getRecipesFromUris,
+} from "@/lib/server-side/edamam";
 import { IMealPlanPreferences } from "@/models/interfaces/client/meal-planner-preferences";
+import { IMealPlannerRequest } from "@/models/interfaces/edamam/meal-planner/meal-planner-request";
 import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import dayjs from "dayjs";
@@ -32,41 +35,48 @@ export async function POST(req: Request) {
     // Calculate size of the meal plan
     const size = dayjs(endDate).diff(dayjs(startDate), "day") + 1;
 
+    // Destructure and exclude `clientSettingsId` from mealPlanPreferences
+    const { clientSettingsId, id, ...cleanedMealPlanPreferences } =
+      mealPlanPreferences;
+
     // Prepare the payload for the Edamam API
-    const payload = {
-      ...mealPlanPreferences,
+    const payload: IMealPlannerRequest = {
+      ...cleanedMealPlanPreferences,
       size,
       plan: {
-        ...mealPlanPreferences.plan,
+        ...cleanedMealPlanPreferences.plan,
         exclude: excluded,
       },
     };
 
     // Fetch the generated meal plan
     // TODO: call the below functions from server side itself
-    const generatedMealPlan: GeneratorResponse = await fetchEdamamMealPlan(
+    const generatedMealPlan: GeneratorResponse = await getEdamamMealPlan(
       payload
     );
 
     // Extract all recipe URIs
-    const recipeUris: string[] = generatedMealPlan.selection.flatMap(
-      (selectionItem) =>
-        Object.values(selectionItem.sections).map(
+    const recipeUris: string[] | undefined =
+      generatedMealPlan.selection.flatMap((selectionItem) =>
+        Object.values(selectionItem?.sections).map(
           (section) => section._links.self.href
         )
-    );
+      );
 
     // Fetch recipes by their URIs
-    let fetchedRecipes: IRecipeInterface[] = await fetchRecipesFromUris(
-      recipeUris
-    );
+    let fetchedRecipes: IRecipeInterface[] = [];
+
+    if (recipeUris) {
+      fetchedRecipes = await getRecipesFromUris(recipeUris);
+    }
+
     let favouriteRecipes: IRecipeInterface[] | undefined = [];
 
     // Handle favorite recipes
     if (useFavouriteRecipes && clientId > 0) {
-      favouriteRecipes = (await getRecipesByClientId(clientId))?.filter(
-        (r) => r.isFavourite
-      );
+      // favouriteRecipes = (await getRecipesByClientId(clientId))?.filter(
+      //   (r) => r.isFavourite
+      // );
 
       if (favouriteRecipes?.length) {
         fetchedRecipes = fetchedRecipes.map((recipe) => {
@@ -93,7 +103,7 @@ export async function POST(req: Request) {
     }
 
     // Update the generated meal plan with replaced favorite recipes
-    generatedMealPlan.selection.forEach((selectionItem) => {
+    generatedMealPlan?.selection.forEach((selectionItem) => {
       Object.values(selectionItem.sections).forEach((section) => {
         const sectionRecipe = fetchedRecipes.find(
           (recipe) => recipe.uri === section._links.self.href
