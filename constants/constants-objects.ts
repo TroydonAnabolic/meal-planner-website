@@ -435,3 +435,7 @@ export const tiers: Tier[] = [
     available: false,
   },
 ];
+
+export const recipeUriFormat =
+  "http://www.edamam.com/ontologies/edamam.owl#recipe_";
+export const recipeUrlFormat = "https://api.edamam.com/api/recipes/v2/";

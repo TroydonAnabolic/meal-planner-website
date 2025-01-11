@@ -510,7 +510,7 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
                 subLabel="Mark this recipe as favourite"
                 enabled={recipe.isFavourite!}
                 disableInput={readOnly}
-                onChange={handleToggleAvoid}
+                onChange={handleToggleFavourite}
               />
             </div>
             {/* Recipe Image */}

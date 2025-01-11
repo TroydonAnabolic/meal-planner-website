@@ -27,6 +27,12 @@ import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
 import { useSession } from "next-auth/react";
 import { Nutrients } from "@/constants/constants-enums";
 import GlowyBanner from "../../ui/banner/banner-with-glow";
+import { Session } from "next-auth";
+import { getRecipesByClientId } from "@/lib/recipe";
+import {
+  recipeUriFormat,
+  recipeUrlFormat,
+} from "@/constants/constants-objects";
 
 type MealPlanGeneratorProps = {
   clientData: IClientInterface;
@@ -58,6 +64,8 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
       clientData.ClientSettingsDto?.mealPlanPreferences!
     );
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [useFavouriteRecipes, setUseFavouriteRecipes] =
+    useState<boolean>(false);
 
   const [startDate, setStartDate] = useState<Dayjs | null>(
     dayjs().startOf("week")
@@ -169,33 +177,17 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
     setRecipes([]);
 
     // when user not authorized, disallow user to regenerate meal plan for 5 mins
-    if (!session) {
-      const lastMealPlanTime = getCookie(COOKIE_NAME);
-      const now = new Date().getTime();
+    let canUnAuthGenerate = false;
 
-      if (lastMealPlanTime) {
-        const remainingTime =
-          COOKIE_EXPIRATION_MINUTES * 60 * 1000 -
-          (now - Number(lastMealPlanTime));
+    canUnAuthGenerate = checkIfUnAuthCanGenerate(
+      session,
+      setConfirmModalProps,
+      closeConfirmModal,
+      canUnAuthGenerate
+    );
 
-        if (remainingTime > 0) {
-          setConfirmModalProps({
-            open: true,
-            title: "Please Wait",
-            message: `You can only generate a meal plan once every ${COOKIE_EXPIRATION_MINUTES} minutes. Please try again in ${Math.ceil(
-              remainingTime / 60000
-            )} minutes.`,
-            confirmText: "OK",
-            onConfirm: closeConfirmModal,
-            colorScheme: "bg-yellow-600 hover:bg-yellow-500",
-            cancelText: "",
-            type: "warning",
-          });
-          return;
-        }
-      }
-
-      setCookie(COOKIE_NAME, String(now), COOKIE_EXPIRATION_MINUTES);
+    if (!canUnAuthGenerate) {
+      return;
     }
 
     if (!startDate || !endDate) {
@@ -244,6 +236,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
       },
     };
 
+    // fetch meal plan, this will have recipes attached to it
     try {
       const data: GeneratorResponse = await fetchEdamamMealPlan(payload);
       setMealPlan({
@@ -261,12 +254,60 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
         )
       );
 
-      // Fetch all recipes concurrently using Promise.all
-      const fetchedRecipes: IRecipeInterface[] = await fetchRecipesFromUris(
+      let fetchedRecipes: IRecipeInterface[] = await fetchRecipesFromUris(
         recipeUris
       );
+      let favouriteRecipes: IRecipeInterface[] | undefined = [];
 
-      setRecipes(fetchedRecipes);
+      // For each recipe, check its date time, and meal type. Replace with a favorite recipe if they intersect.
+      if (useFavouriteRecipes && clientData.Id > 0 && session) {
+        favouriteRecipes = (await getRecipesByClientId(clientData.Id))?.filter(
+          (r) => r.isFavourite
+        );
+
+        if (favouriteRecipes?.length) {
+          fetchedRecipes = fetchedRecipes.map((recipe) => {
+            // Check if there's an intersection with any favorite recipe
+            const matchingFavorite = favouriteRecipes?.find((fav) => {
+              const hasMealTypeIntersection = fav.mealTypeKey.some((type) =>
+                recipe.mealTypeKey.includes(type)
+              );
+              const hasTimeIntersection =
+                fav.timeScheduled &&
+                recipe.timeScheduled &&
+                new Date(fav.timeScheduled).getTime() ===
+                  new Date(recipe.timeScheduled).getTime();
+              return hasMealTypeIntersection && hasTimeIntersection;
+            });
+
+            // Replace recipe if a matching favorite is found
+            return matchingFavorite || recipe;
+          });
+        }
+      }
+
+      // Reassign the replaced favorite recipe URIs to the generator response
+      data.selection.forEach((selectionItem) => {
+        Object.values(selectionItem.sections).forEach((section) => {
+          // Find the recipe corresponding to the section's _links.self.href
+          const sectionRecipe = fetchedRecipes.find(
+            (recipe) => recipe.uri === section._links.self.href
+          );
+
+          if (sectionRecipe) {
+            // Format the URI for section.assigned
+            const formattedUri = sectionRecipe.uri.replace(
+              recipeUriFormat,
+              recipeUrlFormat
+            );
+
+            // Assign the formatted URI to section.assigned
+            section.assigned = formattedUri;
+          }
+        });
+      });
+
+      setRecipes(useFavouriteRecipes ? favouriteRecipes || [] : fetchedRecipes);
     } catch (error: any) {
       console.error("Failed to generate meal plan:", error);
       setConfirmModalProps((prev) => ({
@@ -546,3 +587,41 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
 };
 
 export default MealPlanGenerator;
+function checkIfUnAuthCanGenerate(
+  session: Session | null,
+  setConfirmModalProps: React.Dispatch<
+    React.SetStateAction<ConfirmActionModalProps>
+  >,
+  closeConfirmModal: () => void,
+  canUnAuthGenerate: boolean
+) {
+  if (!session) {
+    const lastMealPlanTime = getCookie(COOKIE_NAME);
+    const now = new Date().getTime();
+    if (lastMealPlanTime) {
+      const remainingTime =
+        COOKIE_EXPIRATION_MINUTES * 60 * 1000 -
+        (now - Number(lastMealPlanTime));
+
+      if (remainingTime > 0) {
+        setConfirmModalProps({
+          open: true,
+          title: "Please Wait",
+          message: `You can only generate a meal plan once every ${COOKIE_EXPIRATION_MINUTES} minutes. Please try again in ${Math.ceil(
+            remainingTime / 60000
+          )} minutes.`,
+          confirmText: "OK",
+          onConfirm: closeConfirmModal,
+          colorScheme: "bg-yellow-600 hover:bg-yellow-500",
+          cancelText: "",
+          type: "warning",
+        });
+        return false;
+      }
+      canUnAuthGenerate = true;
+    }
+
+    setCookie(COOKIE_NAME, String(now), COOKIE_EXPIRATION_MINUTES);
+  }
+  return canUnAuthGenerate;
+}
