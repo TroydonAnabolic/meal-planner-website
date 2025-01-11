@@ -1,15 +1,20 @@
 import React from "react";
 import { XMarkIcon } from "@heroicons/react/20/solid";
+import Link from "next/link";
 
 interface GlowyBannerProps {
   title: string;
   subtitle: string;
+  link?: string;
+  linkText?: string;
   onDismiss: () => void;
 }
 
 const GlowyBanner: React.FC<GlowyBannerProps> = ({
   title,
   subtitle,
+  link,
+  linkText,
   onDismiss,
 }) => {
   return (
@@ -54,6 +59,11 @@ const GlowyBanner: React.FC<GlowyBannerProps> = ({
         </svg>
         {subtitle}
       </p>
+      {link && (
+        <Link href={link} className="text-sm/6 text-gray-900 font-semibold">
+          {linkText}
+        </Link>
+      )}
 
       {/* Dismiss Button */}
       <div className="flex flex-1 justify-end">

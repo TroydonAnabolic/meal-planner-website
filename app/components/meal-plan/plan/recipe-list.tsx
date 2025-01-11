@@ -17,6 +17,7 @@ import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
 import Link from "next/link";
 import { ROUTES } from "@/constants/routes";
 import { useSearchParams } from "next/navigation";
+import { StarIcon } from "@heroicons/react/24/outline";
 
 type RecipeListProps = {
   recipes: IRecipeInterface[];
@@ -252,7 +253,14 @@ const RecipeList: React.FC<RecipeListProps> = ({
                       className="px-4 py-2 border border-gray-300 relative"
                     >
                       {recipe ? (
-                        <div className="flex flex-col items-center group">
+                        <div className="flex flex-col relative items-center group">
+                          {/* Badge Indicator */}
+                          {recipe.isFavourite && (
+                            <span className="absolute top-2 left-2 flex items-center bg-yellow-500 text-white text-xs px-2 py-1 rounded-full z-10 opacity-80">
+                              <StarIcon className="h-4 w-4 mr-1" />
+                              Favourite
+                            </span>
+                          )}
                           <Image
                             src={recipe.image}
                             alt={recipe.label}

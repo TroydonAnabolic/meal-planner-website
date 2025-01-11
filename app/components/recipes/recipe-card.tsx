@@ -3,7 +3,11 @@ import { macros } from "@/util/nutrients";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useCallback } from "react";
-import { XMarkIcon } from "@heroicons/react/24/outline"; // Import necessary icons
+import {
+  CheckCircleIcon,
+  StarIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline"; // Import necessary icons
 
 type RecipeCardProps = {
   recipe: IRecipeInterface;
@@ -34,6 +38,14 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
       key={recipe.id}
       className="group relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm"
     >
+      {/* Badge Indicator */}
+      {recipe.isFavourite && (
+        <span className="absolute top-2 left-2 flex items-center bg-yellow-500 text-white text-xs px-2 py-1 rounded-full z-10 opacity-80">
+          <StarIcon className="h-4 w-4 mr-1" />
+          Favourite
+        </span>
+      )}
+
       {/* Recipe Image with "View Details" Button */}
       <div className="h-48 w-full bg-gray-200 relative">
         {recipe.image ? (

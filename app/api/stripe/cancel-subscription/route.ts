@@ -1,3 +1,4 @@
+import { auth, unstable_update } from "@/auth";
 import { getClient, updateClient } from "@/lib/client/client";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -61,6 +62,14 @@ export async function POST(request: NextRequest) {
       // Update the client's subscription status in your database
       client.isStripeBasicActive = false;
       const updatedClient = await updateClient(client);
+      // TODO: check if it errors out over here
+      const session = await auth();
+      const newSession = await unstable_update({
+        user: {
+          stripeCustomerId: client.stripeCustomerId,
+          isStripeBasicActive: client.isStripeBasicActive,
+        },
+      });
     }
 
     return NextResponse.json(

@@ -3,7 +3,7 @@ import { fetchEdamamMealPlan, fetchRecipesFromUris } from "@/lib/edamam";
 import { IClientInterface } from "@/models/interfaces/client/client";
 import { IMealPlanPreferences } from "@/models/interfaces/client/meal-planner-preferences";
 import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import ActionPanelButton from "../../action-panel/action-panel-button";
 import Image from "next/image";
 import { createMealPlan } from "@/actions/meal-planner";
@@ -26,13 +26,14 @@ import { IShoppingListResult } from "@/models/interfaces/edamam/meal-planner/sho
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
 import { useSession } from "next-auth/react";
 import { Nutrients } from "@/constants/constants-enums";
-import GlowyBanner from "../../ui/banner/banner-with-glow";
 import { Session } from "next-auth";
-import { getRecipesByClientId } from "@/lib/recipe";
 import {
   recipeUriFormat,
   recipeUrlFormat,
 } from "@/constants/constants-objects";
+import { unsafe_getRecipesByClientId } from "@/lib/client/client-side/recipe";
+import GlowyBanner from "../../ui/banner/banner-with-glow";
+import { ROUTES } from "@/constants/routes";
 
 type MealPlanGeneratorProps = {
   clientData: IClientInterface;
@@ -66,11 +67,13 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [useFavouriteRecipes, setUseFavouriteRecipes] =
     useState<boolean>(false);
+  const [isBannedOpen, setIsBannedOpen] = useState<boolean>(true);
 
   const [startDate, setStartDate] = useState<Dayjs | null>(
     dayjs().startOf("week")
   );
   const [endDate, setEndDate] = useState<Dayjs | null>(dayjs().endOf("week"));
+
   const [timeToCook, setTimeToCook] = useState<dayjs.Dayjs | null>(null);
   const [shoppingList, setShoppingList] = useState<IShoppingListResult | null>(
     null
@@ -179,7 +182,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
     // when user not authorized, disallow user to regenerate meal plan for 5 mins
     let canUnAuthGenerate = false;
 
-    canUnAuthGenerate = checkIfUnAuthCanGenerate(
+    canUnAuthGenerate = runDelayForUnAuthorized(
       session,
       setConfirmModalProps,
       closeConfirmModal,
@@ -261,9 +264,9 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
 
       // For each recipe, check its date time, and meal type. Replace with a favorite recipe if they intersect.
       if (useFavouriteRecipes && clientData.Id > 0 && session) {
-        favouriteRecipes = (await getRecipesByClientId(clientData.Id))?.filter(
-          (r) => r.isFavourite
-        );
+        favouriteRecipes = (
+          await unsafe_getRecipesByClientId(clientData.Id)
+        )?.filter((r) => r.isFavourite);
 
         if (favouriteRecipes?.length) {
           fetchedRecipes = fetchedRecipes.map((recipe) => {
@@ -279,6 +282,11 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
                   new Date(recipe.timeScheduled).getTime();
               return hasMealTypeIntersection && hasTimeIntersection;
             });
+
+            // TODO: test if necessary - to allow fav ribbon during generation
+            if (matchingFavorite) {
+              recipe.isFavourite = true;
+            }
 
             // Replace recipe if a matching favorite is found
             return matchingFavorite || recipe;
@@ -395,199 +403,230 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
     setEndDate(date);
   };
 
+  // set banner open when no meal plan preferences exist
+  useEffect(() => {
+    if (
+      session &&
+      clientData.isStripeBasicActive &&
+      !mealPlanPreferences?.size &&
+      !mealPlanPreferences?.plan.accept
+    ) {
+      setIsBannedOpen(true);
+    }
+  }, []);
+
   return (
-    <div className="p-4 flex flex-col items-center justify-center  min-h-screen">
-      <div className="w-full md:max-w-screen-xl lg:max-w-screen-2xl">
-        <div className="mt-4 flex space-x-4 items-start ">
-          <div className="w-1/2 flex flex-col space-y-8">
-            <ActionPanelButton
-              title="Generate Meal Plan"
-              description={
-                <>
-                  <ul className="list-disc list-inside text-sm text-gray-500">
-                    <li>
-                      Edit your meal preferences to refine the results for meal
-                      plan generation.
-                    </li>
-                    <li>
-                      Add filter recipes to exclude specific items from the
-                      search.
-                    </li>
-                    <li>
-                      Input the number of days you want recipes generated for.
-                    </li>
-                  </ul>
-                </>
-              }
-              buttonText="Generate Meal Plan"
-              onClick={handleGenerateMealPlan}
-              icon={<PrecisionManufacturingIcon />}
-            />
-            <div className="flex justify-around mt-4 space-x-4">
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                  format="DD/MM/YYYY"
-                  label="Start Date"
-                  value={startDate}
-                  onChange={handleStartDateChange}
-                />
-                <DatePicker
-                  format="DD/MM/YYYY"
-                  label="End Date"
-                  value={endDate}
-                  onChange={handleEndDateChange}
-                  disabled={startDate === null}
-                  minDate={startDate!}
-                />
-              </LocalizationProvider>
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Min Energy
-                  </label>
-                  <input
-                    type="number"
-                    value={minEnergy || ""}
-                    onChange={handleMinEnergyChange}
-                    className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
+    <>
+      {isBannedOpen && (
+        <div className="mb-2">
+          <GlowyBanner
+            title={"Warning"}
+            subtitle={
+              "You have not set any specific preferences for your meals"
+            }
+            link={ROUTES.MEAL_PLANNER.MEAL_PREFERENCES}
+            linkText="Click here to personalize meal plan to refine generator results"
+            onDismiss={() => setIsBannedOpen(false)}
+          />
+        </div>
+      )}
+      <div className="p-4 flex flex-col items-center justify-center  min-h-screen">
+        <h1 className="text-2xl font-bold p-4 text-gray-800">
+          Plan Your Meals
+        </h1>
+        <div className="w-full md:max-w-screen-xl lg:max-w-screen-2xl">
+          <div className="mt-4 flex space-x-4 items-start ">
+            <div className="w-1/2 flex flex-col space-y-8">
+              <ActionPanelButton
+                title="Generate Meal Plan"
+                description={
+                  <>
+                    <ul className="list-disc list-inside text-sm text-gray-500">
+                      <li>
+                        Edit your meal preferences to refine the results for
+                        meal plan generation.
+                      </li>
+                      <li>
+                        Add filter recipes to exclude specific items from the
+                        search.
+                      </li>
+                      <li>
+                        Input the number of days you want recipes generated for.
+                      </li>
+                    </ul>
+                  </>
+                }
+                buttonText="Generate Meal Plan"
+                onClick={handleGenerateMealPlan}
+                icon={<PrecisionManufacturingIcon />}
+              />
+              <div className="flex justify-around mt-4 space-x-4">
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    format="DD/MM/YYYY"
+                    label="Start Date"
+                    value={startDate}
+                    onChange={handleStartDateChange}
                   />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Max Energy
-                  </label>
-                  <input
-                    type="number"
-                    value={maxEnergy || ""}
-                    onChange={handleMaxEnergyChange}
-                    className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
+                  <DatePicker
+                    format="DD/MM/YYYY"
+                    label="End Date"
+                    value={endDate}
+                    onChange={handleEndDateChange}
+                    disabled={startDate === null}
+                    minDate={startDate!}
                   />
+                </LocalizationProvider>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Min Energy
+                    </label>
+                    <input
+                      type="number"
+                      value={minEnergy || ""}
+                      onChange={handleMinEnergyChange}
+                      className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Max Energy
+                    </label>
+                    <input
+                      type="number"
+                      value={maxEnergy || ""}
+                      onChange={handleMaxEnergyChange}
+                      className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
+
+            {session && clientData.isStripeBasicActive && (
+              <div className="w-1/2">
+                <FilterRecipes
+                  title="Filter Recipes"
+                  excluded={excluded}
+                  setExcluded={setExcluded}
+                  timeToCook={timeToCook}
+                  setTimeToCook={setTimeToCook}
+                />
+              </div>
+            )}
           </div>
 
+          {/* Confirm Button */}
           {session && clientData.isStripeBasicActive && (
-            <div className="w-1/2">
-              <FilterRecipes
-                title="Filter Recipes"
-                excluded={excluded}
-                setExcluded={setExcluded}
-                timeToCook={timeToCook}
-                setTimeToCook={setTimeToCook}
-              />
+            <div>
+              {recipes.length > 0 && (
+                <button
+                  onClick={handleCreateMealPlanAndMealsClick}
+                  className="mt-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
+                >
+                  Create Meal Plan
+                </button>
+              )}
             </div>
           )}
-        </div>
 
-        {/* Confirm Button */}
-        {session && clientData.isStripeBasicActive && (
-          <div>
-            {recipes.length > 0 && (
-              <button
-                onClick={handleCreateMealPlanAndMealsClick}
-                className="mt-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
-              >
-                Create Meal Plan
-              </button>
-            )}
-          </div>
-        )}
-
-        <div className="mt-6 flex space-x-4">
-          {/* Recipes Grid or Empty State */}
-          <div className="w-3/4 ">
-            {!isLoading && recipes.length > 0 && (
-              <RecipeList
-                mealPlan={mealPlan!}
-                recipes={recipes}
-                startDate={startDate}
-                endDate={endDate}
-              />
-            )}
-
-            {/* Empty State */}
-            {recipes.length === 0 && (
-              <EmptyStateDashedBorders>
-                {/* Bowl of Fruits SVG Path */}
-
-                {!isLoading && (
-                  <>
-                    <span className="mt-4 block text-lg font-semibold text-gray-300">
-                      Your meal plan will appear here once generated. Start by
-                      clicking &apos; Generate Meal Plan&apos;!
-                    </span>
-                    <Image
-                      className="opacity-50"
-                      src="/aiimages/food/fruits-basket.svg"
-                      alt="Empty State"
-                      width={64}
-                      height={64}
-                    />
-                  </>
-                )}
-                {/* Loading Indicator */}
-                {isLoading && (
-                  <div className="flex justify-center my-6">
-                    <FoodLoader />
-                  </div>
-                )}
-              </EmptyStateDashedBorders>
-            )}
-          </div>
-
-          {/* Shopping List Table */}
-          {session &&
-            clientData.isStripeBasicActive &&
-            mealPlan &&
-            recipes.length > 0 && (
-              <div className="w-1/4 text-gray-800">
-                <ShoppingListTable
+          <div className="mt-6 flex space-x-4">
+            {/* Recipes Grid or Empty State */}
+            <div className="w-3/4 ">
+              {!isLoading && recipes.length > 0 && (
+                <RecipeList
+                  mealPlan={mealPlan!}
                   recipes={recipes}
-                  shoppingList={shoppingList}
-                  setShoppingList={setShoppingList}
+                  startDate={startDate}
+                  endDate={endDate}
                 />
-              </div>
-            )}
+              )}
+
+              {/* Empty State */}
+              {recipes.length === 0 && (
+                <EmptyStateDashedBorders>
+                  {/* Bowl of Fruits SVG Path */}
+
+                  {!isLoading && (
+                    <>
+                      <span className="mt-4 block text-lg font-semibold text-gray-300">
+                        Your meal plan will appear here once generated. Start by
+                        clicking &apos; Generate Meal Plan&apos;!
+                      </span>
+                      <Image
+                        className="opacity-50"
+                        src="/aiimages/food/fruits-basket.svg"
+                        alt="Empty State"
+                        width={64}
+                        height={64}
+                      />
+                    </>
+                  )}
+                  {/* Loading Indicator */}
+                  {isLoading && (
+                    <div className="flex justify-center my-6">
+                      <FoodLoader />
+                    </div>
+                  )}
+                </EmptyStateDashedBorders>
+              )}
+            </div>
+
+            {/* Shopping List Table */}
+            {session &&
+              clientData.isStripeBasicActive &&
+              mealPlan &&
+              recipes.length > 0 && (
+                <div className="w-1/4 text-gray-800">
+                  <ShoppingListTable
+                    recipes={recipes}
+                    shoppingList={shoppingList}
+                    setShoppingList={setShoppingList}
+                  />
+                </div>
+              )}
+          </div>
+
+          {session && clientData.isStripeBasicActive ? (
+            <span className="text-sm text-gray-500 ">
+              <Link
+                title="Edit Meal Preferences"
+                href={"./meal-preferences"}
+                className="mt-4 mr-1 inline-flex justify-center\u00A0py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+              >
+                Edit Meal Preferences
+              </Link>
+              to customize your meal plan preferences.
+            </span>
+          ) : (
+            // TODO: Add a input to edit preferences if session is not present
+            <h3>Edit demo preferences component goes here</h3>
+          )}
+
+          <SummaryTable mealPlanPreferences={mealPlanPreferences!} />
+
+          {confirmModalProps.open && (
+            <ConfirmActionModal
+              open={confirmModalProps.open}
+              onClose={closeConfirmModal}
+              title={confirmModalProps.title}
+              message={confirmModalProps.message}
+              confirmText={confirmModalProps.confirmText}
+              cancelText={confirmModalProps.cancelText}
+              onConfirm={confirmModalProps.onConfirm}
+              colorScheme={confirmModalProps.colorScheme}
+            />
+          )}
         </div>
-
-        {session && clientData.isStripeBasicActive ? (
-          <span className="text-sm text-gray-500 ">
-            <Link
-              title="Edit Meal Preferences"
-              href={"./meal-preferences"}
-              className="mt-4 mr-1 inline-flex justify-center\u00A0py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
-            >
-              Edit Meal Preferences
-            </Link>
-            to customize your meal plan preferences.
-          </span>
-        ) : (
-          // TODO: Add a input to edit preferences if session is not present
-          <h3>Edit demo preferences component goes here</h3>
-        )}
-
-        <SummaryTable mealPlanPreferences={mealPlanPreferences!} />
-
-        {confirmModalProps.open && (
-          <ConfirmActionModal
-            open={confirmModalProps.open}
-            onClose={closeConfirmModal}
-            title={confirmModalProps.title}
-            message={confirmModalProps.message}
-            confirmText={confirmModalProps.confirmText}
-            cancelText={confirmModalProps.cancelText}
-            onConfirm={confirmModalProps.onConfirm}
-            colorScheme={confirmModalProps.colorScheme}
-          />
-        )}
       </div>
-    </div>
+    </>
   );
 };
 
 export default MealPlanGenerator;
-function checkIfUnAuthCanGenerate(
+
+function runDelayForUnAuthorized(
   session: Session | null,
   setConfirmModalProps: React.Dispatch<
     React.SetStateAction<ConfirmActionModalProps>
@@ -595,7 +634,8 @@ function checkIfUnAuthCanGenerate(
   closeConfirmModal: () => void,
   canUnAuthGenerate: boolean
 ) {
-  if (!session) {
+  // TODO: check when logged in if !isStripeBasicActive allows this to run for no active subscriptions
+  if (!session || !session.user.isStripeBasicActive) {
     const lastMealPlanTime = getCookie(COOKIE_NAME);
     const now = new Date().getTime();
     if (lastMealPlanTime) {

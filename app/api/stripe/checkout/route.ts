@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import { NextRequest, NextResponse } from "next/server";
 import { getClient, updateClient } from "@/lib/client/client";
 import { ROUTES } from "@/constants/routes";
+import { auth, unstable_update } from "@/auth";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
@@ -40,6 +41,9 @@ export async function POST(request: NextRequest) {
       state: client.Suburb,
     };
 
+    // TODO: check if it errors out over here
+    const session = await auth();
+
     // TODO: Test registration and add subscription still works
     if (isNewUser) {
       // create a new user in stripe and assign its id to the client in db, set to active subscription
@@ -52,6 +56,11 @@ export async function POST(request: NextRequest) {
 
       client.stripeCustomerId = customer.id;
       client.isStripeBasicActive = true;
+
+      if (session) {
+        session.user.stripeCustomerId = customer.id;
+        session.user.isStripeBasicActive = true;
+      }
     } else {
       // update the user in stripe to the latest client details, also set to active subscription
       const customer = await stripe.customers.update(client.stripeCustomerId, {
@@ -60,10 +69,22 @@ export async function POST(request: NextRequest) {
         phone: client.PhoneNumber,
         address: addressParam,
       });
+      client.stripeCustomerId = customer.id;
       client.isStripeBasicActive = true;
+      if (session) {
+        session.user.stripeCustomerId = customer.id;
+        session.user.isStripeBasicActive = true;
+      }
     }
 
     const updatedClient = await updateClient(client);
+    //TODO: test if unstable update works
+    const newSession = await unstable_update({
+      user: {
+        stripeCustomerId: client.stripeCustomerId,
+        isStripeBasicActive: client.isStripeBasicActive,
+      },
+    });
 
     if (updatedClient) {
       const checkoutSession = await stripe.checkout.sessions.create({

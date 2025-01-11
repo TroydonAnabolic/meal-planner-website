@@ -14,8 +14,8 @@ declare module "next-auth" {
     givenName: string;
     familyName: string;
     phoneNumber: string;
-    stripeCustomerId?: string;
-    isActive?: boolean;
+    stripeCustomerId: string;
+    isStripeBasicActive: boolean;
     idToken?: string;
     accessToken?: string;
     refreshToken?: string;

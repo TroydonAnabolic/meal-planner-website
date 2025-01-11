@@ -23,4 +23,5 @@ export interface IMealPlan {
   startDate: string;
   endDate: string;
   selection: SelectionItem[];
+  //autoLogMeals: boolean;
 }

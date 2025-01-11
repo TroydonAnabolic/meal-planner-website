@@ -65,6 +65,8 @@ const providers: Provider[] = [
           idToken: IdToken!,
           accessToken: AccessToken!,
           refreshToken: RefreshToken!,
+          stripeCustomerId: "",
+          isStripeBasicActive: false,
           email: "",
           givenName: "",
           familyName: "",
@@ -80,6 +82,8 @@ const providers: Provider[] = [
         const client = await getClientUnsafe(userInfo.userId);
         const clientId = client.Id ? client.Id.toString() : "";
         userInfo.clientId = clientId;
+        userInfo.isStripeBasicActive = client.isStripeBasicActive;
+        userInfo.stripeCustomerId = client.stripeCustomerId;
 
         if (
           !client.stripeCustomerId ||
@@ -193,7 +197,7 @@ export const config: NextAuthConfig = {
           familyName: token.familyName as string,
           phoneNumber: token.phoneNumber as string,
           stripeCustomerId: token.stripeCustomerId as string,
-          isActive: token.isActive as boolean,
+          isStripeBasicActive: token.isStripeBasicActive as boolean,
           idToken: token.idToken as string,
           accessToken: token.accessToken as string,
           refreshToken: token.refreshToken as string,

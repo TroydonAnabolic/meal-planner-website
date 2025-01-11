@@ -149,4 +149,9 @@ export function initializeClientSettings(clientData: IClientInterface) {
       clientData.ClientSettingsDto.medicationsAndSupplementsArr = [];
     }
   }
+
+  if (!clientData.ClientSettingsDto.mealPlanPreferences) {
+    clientData.ClientSettingsDto.mealPlanPreferences =
+      defaultMealPlanPreference;
+  }
 }
