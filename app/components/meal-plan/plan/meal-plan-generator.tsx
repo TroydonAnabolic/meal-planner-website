@@ -31,9 +31,9 @@ import {
   recipeUriFormat,
   recipeUrlFormat,
 } from "@/constants/constants-objects";
-import { unsafe_getRecipesByClientId } from "@/lib/client/client-side/recipe";
 import GlowyBanner from "../../ui/banner/banner-with-glow";
 import { ROUTES } from "@/constants/routes";
+import { generateMealPlanAndRecipes } from "@/lib/meal-plan-generator";
 
 type MealPlanGeneratorProps = {
   clientData: IClientInterface;
@@ -180,7 +180,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
     setRecipes([]);
 
     // when user not authorized, disallow user to regenerate meal plan for 5 mins
-    let canUnAuthGenerate = false;
+    let canUnAuthGenerate = true;
 
     canUnAuthGenerate = runDelayForUnAuthorized(
       session,
@@ -190,6 +190,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
     );
 
     if (!canUnAuthGenerate) {
+      setIsLoading(false);
       return;
     }
 
@@ -228,91 +229,24 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
       return;
     }
 
-    const size = dayjs(endDate).diff(startDate, "day") + 1;
-
-    const payload = {
-      ...mealPlanPreferences,
-      size,
-      plan: {
-        ...mealPlanPreferences.plan,
-        exclude: excluded,
-      },
-    };
-
     // fetch meal plan, this will have recipes attached to it
     try {
-      const data: GeneratorResponse = await fetchEdamamMealPlan(payload);
+      const { generatedMealPlan, favouriteRecipes, fetchedRecipes } =
+        await generateMealPlanAndRecipes(
+          endDate,
+          startDate,
+          mealPlanPreferences,
+          excluded,
+          useFavouriteRecipes,
+          clientData
+        );
+
       setMealPlan({
-        ...data,
+        ...generatedMealPlan,
         id: mealPlan?.id || 0,
         clientId: clientData.Id,
         startDate: startDate?.toISOString() || "",
         endDate: endDate?.toISOString() || "",
-      });
-
-      // Extract all recipe URIs
-      const recipeUris: string[] = data.selection.flatMap((selectionItem) =>
-        Object.values(selectionItem.sections).map(
-          (section) => section._links.self.href
-        )
-      );
-
-      let fetchedRecipes: IRecipeInterface[] = await fetchRecipesFromUris(
-        recipeUris
-      );
-      let favouriteRecipes: IRecipeInterface[] | undefined = [];
-
-      // For each recipe, check its date time, and meal type. Replace with a favorite recipe if they intersect.
-      if (useFavouriteRecipes && clientData.Id > 0 && session) {
-        favouriteRecipes = (
-          await unsafe_getRecipesByClientId(clientData.Id)
-        )?.filter((r) => r.isFavourite);
-
-        if (favouriteRecipes?.length) {
-          fetchedRecipes = fetchedRecipes.map((recipe) => {
-            // Check if there's an intersection with any favorite recipe
-            const matchingFavorite = favouriteRecipes?.find((fav) => {
-              const hasMealTypeIntersection = fav.mealTypeKey.some((type) =>
-                recipe.mealTypeKey.includes(type)
-              );
-              const hasTimeIntersection =
-                fav.timeScheduled &&
-                recipe.timeScheduled &&
-                new Date(fav.timeScheduled).getTime() ===
-                  new Date(recipe.timeScheduled).getTime();
-              return hasMealTypeIntersection && hasTimeIntersection;
-            });
-
-            // TODO: test if necessary - to allow fav ribbon during generation
-            if (matchingFavorite) {
-              recipe.isFavourite = true;
-            }
-
-            // Replace recipe if a matching favorite is found
-            return matchingFavorite || recipe;
-          });
-        }
-      }
-
-      // Reassign the replaced favorite recipe URIs to the generator response
-      data.selection.forEach((selectionItem) => {
-        Object.values(selectionItem.sections).forEach((section) => {
-          // Find the recipe corresponding to the section's _links.self.href
-          const sectionRecipe = fetchedRecipes.find(
-            (recipe) => recipe.uri === section._links.self.href
-          );
-
-          if (sectionRecipe) {
-            // Format the URI for section.assigned
-            const formattedUri = sectionRecipe.uri.replace(
-              recipeUriFormat,
-              recipeUrlFormat
-            );
-
-            // Assign the formatted URI to section.assigned
-            section.assigned = formattedUri;
-          }
-        });
       });
 
       setRecipes(useFavouriteRecipes ? favouriteRecipes || [] : fetchedRecipes);

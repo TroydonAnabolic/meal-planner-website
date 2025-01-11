@@ -9,7 +9,6 @@ sendgrid.setApiKey(process.env.SENDGRID_API_KEY as string);
 // API route: POST handler for sending email
 export async function POST(request: NextRequest) {
   try {
-    // const { html, clientId, toEmail, givenName } = await req.json();
     const {
       mealPlanHtml,
       mealPlanData,

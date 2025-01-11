@@ -16,7 +16,10 @@ import {
   IRecipeResponseData,
 } from "@/models/interfaces/edamam/recipe/recipe-response";
 import { IMealPlannerRequest } from "@/models/interfaces/edamam/meal-planner/meal-planner-request";
-import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
+import {
+  GeneratorResponse,
+  IMealPlannerResponse,
+} from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
 import { transformMealPlanLabels } from "@/util/meal-generator-util";
 import {
   ShoppingListEntry,
@@ -27,6 +30,12 @@ import { exponentialBackoffFetch } from "./http/exponential-back-off";
 import qs from "qs";
 import { IShoppingListResult } from "@/models/interfaces/edamam/meal-planner/shopping-list-response";
 import Bottleneck from "bottleneck"; // Install via npm install bottleneck
+import { exponentialBackoffAxios } from "./http/exponential-back-off-axios";
+import { AxiosRequestConfig } from "axios";
+import {
+  EDAMAM_BASE,
+  EDAMAM_MEALPLANNER_API,
+} from "@/constants/constants-urls";
 
 // Initialize Bottleneck limiter
 const limiter = new Bottleneck({
@@ -208,6 +217,34 @@ export async function fetchEdamamMealPlan(
   }
 
   return response;
+}
+
+export async function getEdamamMealPlan(
+  mealPlanPreferences: IMealPlannerRequest
+): Promise<GeneratorResponse | undefined> {
+  const transformedMealPlan = transformMealPlanLabels(mealPlanPreferences);
+  const appId = process.env.EDAMAM_MEAL_PLANNER_APP_ID;
+  const appKey = process.env.EDAMAM_MEAL_PLANNER_APP_KEY;
+  const edamamAccountUser = process.env.EDAMAM_ACCOUNT_USER;
+
+  const token = Buffer.from(`${appId}:${appKey}`).toString("base64");
+  const authHeader = `Basic ${token}`;
+
+  const axiosConfig: AxiosRequestConfig = {
+    url: `${EDAMAM_BASE}${EDAMAM_MEALPLANNER_API}/${appId}/select`,
+    method: "POST",
+    data: transformedMealPlan,
+    headers: {
+      Authorization: authHeader,
+      "Edamam-Account-User": edamamAccountUser,
+    },
+  };
+  try {
+    const response = await exponentialBackoffAxios<IMealPlannerResponse>(
+      axiosConfig
+    );
+    return response.data.data!;
+  } catch (error) {}
 }
 
 export async function fetchRecipeFromURI(
