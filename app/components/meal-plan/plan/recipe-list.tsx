@@ -28,7 +28,6 @@ type RecipeListProps = {
   mode?: "view" | "add" | "edit";
 };
 
-// TODO: Add view recipe and use dynamic routes
 const RecipeList: React.FC<RecipeListProps> = ({
   recipes,
   mealPlan,
@@ -51,23 +50,6 @@ const RecipeList: React.FC<RecipeListProps> = ({
   const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIdx = startIdx + ITEMS_PER_PAGE;
   const currentSelection = mealPlan.selection.slice(startIdx, endIdx);
-
-  // Create a map of extracted recipe IDs to recipe objects
-  // const recipeMap = useMemo(() => {
-  //   const map = new Map<string, IRecipeInterface>();
-  //   recipes.forEach((recipe) => {
-  //     const recipeId = extractRecipeIdFromUri(recipe.uri);
-  //     if (recipeId) {
-  //       // Handle duplicates by appending a GUID
-  //       if ([...map.keys()].some((key) => key.startsWith(recipeId))) {
-  //         map.set(`${recipeId}-${uuidv4()}`, recipe);
-  //       } else {
-  //         map.set(recipeId, recipe);
-  //       }
-  //     }
-  //   });
-  //   return map;
-  // }, [recipes]);
 
   const recipeMap = useMemo(() => {
     const map = new Map<string, IRecipeInterface>();

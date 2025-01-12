@@ -29,6 +29,7 @@
     "bottleneck": "^2.19.5",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
+    "dayjs-plugin-utc": "^0.1.2",
     "formidable": "^3.5.2",
     "jsonwebtoken": "^9.0.2",
     "next": "14.2.5",

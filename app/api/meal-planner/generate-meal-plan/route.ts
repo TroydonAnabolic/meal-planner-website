@@ -1,7 +1,13 @@
 import {
+  MealNumber,
+  MealTimeRanges,
+  MealType,
+} from "@/constants/constants-enums";
+import {
   recipeUriFormat,
   recipeUrlFormat,
 } from "@/constants/constants-objects";
+import { getRecipesByClientId } from "@/lib/recipe";
 import {
   getEdamamMealPlan,
   getRecipesFromUris,
@@ -10,6 +16,8 @@ import { IMealPlanPreferences } from "@/models/interfaces/client/meal-planner-pr
 import { IMealPlannerRequest } from "@/models/interfaces/edamam/meal-planner/meal-planner-request";
 import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
+import { getEnumKeysByValues } from "@/util/enum-util";
+import { getMealTypeByTime } from "@/util/meal-utils";
 import dayjs from "dayjs";
 import { NextResponse } from "next/server";
 
@@ -70,44 +78,126 @@ export async function POST(req: Request) {
       fetchedRecipes = await getRecipesFromUris(recipeUris);
     }
 
+    fetchedRecipes = fetchedRecipes.map((recipe, index) => {
+      const dayIndex = Math.floor(
+        index / Object.keys(mealPlanPreferences.plan).length
+      ); // Calculate day index
+      const scheduledDate = new Date(
+        dayjs(startDate).add(dayIndex, "day").toISOString()
+      ); // Ensure it's a Date object
+
+      const mealTypeKey: MealType = getMealTypeByTime(scheduledDate);
+
+      return {
+        ...recipe,
+        mealTypeKey: [mealTypeKey],
+        timeScheduled: scheduledDate, // Add optional property
+      };
+    });
+
     let favouriteRecipes: IRecipeInterface[] | undefined = [];
 
     // Handle favorite recipes
     if (useFavouriteRecipes && clientId > 0) {
-      // favouriteRecipes = (await getRecipesByClientId(clientId))?.filter(
-      //   (r) => r.isFavourite
-      // );
+      favouriteRecipes = (await getRecipesByClientId(clientId))?.filter(
+        (r) => r.isFavourite
+      );
 
       if (favouriteRecipes?.length) {
         fetchedRecipes = fetchedRecipes.map((recipe) => {
-          // Check for intersections with favorite recipes
           const matchingFavorite = favouriteRecipes?.find((fav) => {
-            const hasMealTypeIntersection = fav.mealTypeKey.some((type) =>
-              recipe.mealTypeKey.includes(type)
+            // Normalize mealTypeKey for comparison
+            const recipeMealTypes = recipe.mealTypeKey?.map((type) =>
+              type.toLowerCase()
             );
-            const hasTimeIntersection =
-              fav.timeScheduled &&
-              recipe.timeScheduled &&
-              new Date(fav.timeScheduled).getTime() ===
-                new Date(recipe.timeScheduled).getTime();
-            return hasMealTypeIntersection && hasTimeIntersection;
+            const favMealTypes = fav.mealTypeKey?.map((type) =>
+              type.toLowerCase()
+            );
+
+            if (!recipeMealTypes || !favMealTypes) return false;
+
+            // Check for meal type intersection
+            const hasMealTypeIntersection = favMealTypes.some((favType) =>
+              recipeMealTypes.includes(favType)
+            );
+
+            if (!hasMealTypeIntersection) return false;
+
+            // Extract meal time ranges
+            const getMealTimeRange = (
+              mealTypeKey: string
+            ): [Date, Date] | null => {
+              const matchedMealType = Object.keys(MealTimeRanges).find(
+                (key) => key.toLowerCase() === mealTypeKey.toLowerCase()
+              );
+              if (!matchedMealType) return null;
+
+              const [start, end] = MealTimeRanges[matchedMealType as MealNumber]
+                .split(" - ")
+                .map(
+                  (time) =>
+                    new Date(
+                      `1970-01-01T${
+                        new Date(`1970-01-01T${time}`)
+                          .toISOString()
+                          .split("T")[1]
+                      }`
+                    )
+                );
+
+              return [start, end];
+            };
+
+            const favMealTime = favMealTypes
+              .map(getMealTimeRange)
+              .filter(Boolean)[0];
+            const recipeMealTime = recipeMealTypes
+              .map(getMealTimeRange)
+              .filter(Boolean)[0];
+
+            if (!favMealTime || !recipeMealTime) return false;
+
+            const favTimeScheduled = fav.timeScheduled
+              ? new Date(fav.timeScheduled).getTime()
+              : null;
+            const recipeTimeScheduled = recipe.timeScheduled
+              ? new Date(recipe.timeScheduled).getTime()
+              : null;
+
+            const isTimeInRange = (
+              time: number | null,
+              [start, end]: [Date, Date]
+            ): boolean =>
+              time !== null && time >= start.getTime() && time <= end.getTime();
+
+            const isFavInRange = isTimeInRange(favTimeScheduled, favMealTime);
+            const isRecipeInRange = isTimeInRange(
+              recipeTimeScheduled,
+              recipeMealTime
+            );
+
+            return isFavInRange && isRecipeInRange;
           });
 
-          if (matchingFavorite) {
-            recipe.isFavourite = true;
-          }
-
-          return matchingFavorite || recipe;
+          // Preserve original recipe if no favorite match is found
+          return matchingFavorite
+            ? { ...recipe, isFavourite: true }
+            : { ...recipe, isFavourite: false };
         });
       }
     }
 
     // Update the generated meal plan with replaced favorite recipes
-    generatedMealPlan?.selection.forEach((selectionItem) => {
+    generatedMealPlan?.selection.forEach((selectionItem, dayIndex) => {
       Object.values(selectionItem.sections).forEach((section) => {
-        const sectionRecipe = fetchedRecipes.find(
-          (recipe) => recipe.uri === section._links.self.href
-        );
+        const sectionRecipe = fetchedRecipes.find((recipe) => {
+          // TODO: maybe remove this to see if its causing issues
+          // const isSameHour = dayjs(recipe.timeScheduled).isSame(
+          //   dayjs(startDate).add(dayIndex, "day").startOf("hour"),
+          //   "hour"
+          // );
+          recipe.uri === section._links.self.href; //&& isSameHour;
+        });
 
         if (sectionRecipe) {
           const formattedUri = sectionRecipe.uri.replace(

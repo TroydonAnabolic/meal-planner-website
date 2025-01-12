@@ -36,9 +36,9 @@ function dateTransformer(data: any, headers?: any): any {
 const instance = axios.create({
   baseURL: BACKEND_URL_LIVE,
   headers: APIM_HEADERS,
-  transformRequest: [dateTransformer].concat(
-    axios.defaults.transformRequest || []
-  ),
+  // transformRequest: [dateTransformer].concat(
+  //   axios.defaults.transformRequest || []
+  // ),
 });
 
 /**

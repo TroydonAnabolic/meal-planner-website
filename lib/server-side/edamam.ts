@@ -89,10 +89,6 @@ export async function getRecipeFromURI(
   const appId = process.env.EDAMAM_RECIPE_APP_ID;
   const appKey = process.env.EDAMAM_RECIPE_APP_KEY;
 
-  const axiosConfig: AxiosRequestConfig = {
-    url: `${recipeURI}?app_id=${appId}&app_key=${appKey}`,
-  };
-
   try {
     const response = await exponentialBackoffFetch(() =>
       fetch(`${recipeURI}?app_id=${appId}&app_key=${appKey}`, {
@@ -105,12 +101,6 @@ export async function getRecipeFromURI(
     }
 
     const recipeResponse: IRecipeHit = await response.json();
-
-    // const recipeResponse = await exponentialBackoffAxios<IRecipeHit>(
-    //   axiosConfig,
-    //   5,
-    //   6000
-    // );
 
     if (!recipeResponse) {
       throw new Error("Failed to get recipe");

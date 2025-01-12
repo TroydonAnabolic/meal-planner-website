@@ -7,7 +7,6 @@ import React from "react";
 const RecipesPage = async () => {
   const session = await auth();
   const clientId = session?.user.clientId as unknown as number;
-  //const plainSession = session ? { ...session } : undefined;
   const recipeData = await getRecipesByClientId(clientId);
 
   return (

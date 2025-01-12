@@ -29,6 +29,9 @@ import {
 } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
+import timezone from "dayjs/plugin/timezone"; // Import timezone plugin
+
+dayjs.extend(timezone); // Extend dayjs with the timezone plugin
 
 type RecipeInputFieldsProps = {
   action: FormActionType | "Search";
@@ -131,9 +134,14 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
   // Handler for accepting the selected date-time
   const handleDateTimeAccept = () => {
     if (selectedDateTime) {
+      // Convert the selected time from NZT to UTC before saving
+      const userTimezone = dayjs.tz.guess(); // e.g., "Pacific/Auckland"
+
+      // Convert the selected time from the user's local timezone to UTC
+      const timeInUTC = selectedDateTime.tz(userTimezone, true).utc();
       setRecipe!((prevRecipe) => ({
         ...prevRecipe!,
-        timeScheduled: selectedDateTime.toDate(),
+        timeScheduled: timeInUTC.toDate(), // Save the UTC time to the database
       }));
       setIsPickerOpen(false);
     }
@@ -158,7 +166,14 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
 
   useEffect(() => {
     if (recipe.timeScheduled) {
-      setSelectedDateTime(dayjs(recipe.timeScheduled));
+      // Get the user's timezone from the browser
+      const userTimezone = dayjs.tz.guess(); // e.g., "Pacific/Auckland"
+
+      // Convert UTC time to the user's local time
+      const timeInLocal = dayjs(recipe.timeScheduled)
+        .utc()
+        .tz(userTimezone, true);
+      setSelectedDateTime(timeInLocal);
     }
   }, [recipe.timeScheduled]);
 
@@ -378,83 +393,81 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
                   readOnly={readOnly}
                 />
 
-                {isMealPlanRecipe && (
-                  <div className="space-y-6">
-                    {/* Time Scheduled Field */}
-                    <div className="mt-1 flex items-center">
-                      <input
-                        id="scheduledTime"
-                        name="scheduledTime"
-                        disabled={isMealPlanRecipe}
-                        type="text"
-                        placeholder="Scheduled Time"
-                        required
-                        value={
-                          recipe.timeScheduled
-                            ? dayjs(recipe.timeScheduled).format(
-                                "DD/MM/YYYY hh:mm A"
-                              )
-                            : ""
-                        }
-                        readOnly={readOnly}
-                        onChange={handleInputChange}
-                        className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
-                      />
-                      {!readOnly && (
-                        <button
-                          type="button"
-                          onClick={() => handleOpenPicker("timeScheduled")}
-                          className=" ml-2 px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none"
-                        >
-                          Select
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Static DateTime Picker */}
-                    {isPickerOpen && (
-                      <div className="mt-4">
-                        <p className="mb-2 text-sm font-medium text-gray-700">
-                          Select Recipe Scheduled Time
-                        </p>
-                        <LocalizationProvider
-                          dateAdapter={AdapterDayjs}
-                          adapterLocale="en-nz"
-                        >
-                          <StaticDateTimePicker
-                            orientation="portrait"
-                            ampm={true}
-                            minutesStep={1}
-                            disabled={isMealPlanRecipe}
-                            value={selectedDateTime}
-                            onChange={handleDateTimeChange}
-                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500  text-gray-700"
-                            sx={{
-                              width: "100%",
-                            }}
-                            slotProps={{
-                              // The actions will be the same between desktop and mobile
-                              actionBar: {
-                                actions: ["accept", "cancel", "clear"],
-                                onAccept: handleDateTimeAccept,
-                                onClear: handleDateTimeClear,
-                                onCancel: handleDateTimeCancel,
-                              },
-                              toolbar: {
-                                classes: {
-                                  ampmLabel: "text-sm",
-                                  ampmSelection:
-                                    "hover:bg-blue-100 active:bg-blue-200",
-                                },
-                                toolbarPlaceholder: "Scheduled Time",
-                              },
-                            }}
-                          />
-                        </LocalizationProvider>
-                      </div>
+                <div className="space-y-6">
+                  {/* Time Scheduled Field */}
+                  <div className="mt-1 flex items-center">
+                    <input
+                      id="scheduledTime"
+                      name="scheduledTime"
+                      disabled={isMealPlanRecipe}
+                      type="text"
+                      placeholder="Scheduled Time"
+                      required
+                      value={
+                        recipe.timeScheduled
+                          ? dayjs(recipe.timeScheduled).format(
+                              "DD/MM/YYYY hh:mm A"
+                            )
+                          : ""
+                      }
+                      readOnly={readOnly}
+                      onChange={handleInputChange}
+                      className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
+                    />
+                    {!readOnly && (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenPicker("timeScheduled")}
+                        className=" ml-2 px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none"
+                      >
+                        Select
+                      </button>
                     )}
                   </div>
-                )}
+
+                  {/* Static DateTime Picker */}
+                  {isPickerOpen && (
+                    <div className="mt-4">
+                      <p className="mb-2 text-sm font-medium text-gray-700">
+                        Select Recipe Scheduled Time
+                      </p>
+                      <LocalizationProvider
+                        dateAdapter={AdapterDayjs}
+                        adapterLocale="en-nz"
+                      >
+                        <StaticDateTimePicker
+                          orientation="portrait"
+                          ampm={true}
+                          minutesStep={1}
+                          disabled={isMealPlanRecipe}
+                          value={selectedDateTime}
+                          onChange={handleDateTimeChange}
+                          className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500  text-gray-700"
+                          sx={{
+                            width: "100%",
+                          }}
+                          slotProps={{
+                            // The actions will be the same between desktop and mobile
+                            actionBar: {
+                              actions: ["accept", "cancel", "clear"],
+                              onAccept: handleDateTimeAccept,
+                              onClear: handleDateTimeClear,
+                              onCancel: handleDateTimeCancel,
+                            },
+                            toolbar: {
+                              classes: {
+                                ampmLabel: "text-sm",
+                                ampmSelection:
+                                  "hover:bg-blue-100 active:bg-blue-200",
+                              },
+                              toolbarPlaceholder: "Scheduled Time",
+                            },
+                          }}
+                        />
+                      </LocalizationProvider>
+                    </div>
+                  )}
+                </div>
                 <div className="col-span-2">
                   <div className="border-t border-gray-200 pt-6">
                     {!readOnly && (
