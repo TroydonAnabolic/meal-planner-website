@@ -94,17 +94,29 @@ export async function getRecipeFromURI(
   };
 
   try {
-    const recipeResponse = await exponentialBackoffAxios<IRecipeHit>(
-      axiosConfig,
-      5,
-      6000
+    const response = await exponentialBackoffFetch(() =>
+      fetch(`${recipeURI}?app_id=${appId}&app_key=${appKey}`, {
+        method: "GET",
+      })
     );
+
+    if (!response.ok) {
+      throw new Error("Failed to get recipe");
+    }
+
+    const recipeResponse: IRecipeHit = await response.json();
+
+    // const recipeResponse = await exponentialBackoffAxios<IRecipeHit>(
+    //   axiosConfig,
+    //   5,
+    //   6000
+    // );
 
     if (!recipeResponse) {
       throw new Error("Failed to get recipe");
     }
 
-    return recipeResponse.data;
+    return recipeResponse;
   } catch (error: any) {
     console.error(`Failed to get recipe: ${error.message}`, error);
   }

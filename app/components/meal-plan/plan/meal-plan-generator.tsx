@@ -26,6 +26,7 @@ import { Nutrients } from "@/constants/constants-enums";
 import GlowyBanner from "../../ui/banner/banner-with-glow";
 import { ROUTES } from "@/constants/routes";
 import { generateMealPlanAndRecipes } from "@/lib/meal-plan-generator";
+import ToggleInput from "../../ui/inputs/toggle-input";
 
 type MealPlanGeneratorProps = {
   clientData: IClientInterface;
@@ -163,6 +164,25 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
     };
 
     setMealPlanPreferences(updatedMealPlanPreferences);
+  };
+
+  const handleToggleFavourite = (isFavourite: boolean) => {
+    if (isFavourite) {
+      setConfirmModalProps({
+        open: true,
+        title: "Use Favourites",
+        message:
+          "Favourited recipes that match the corresponding meal type (e.g. lunch/dinner) and scheduled time will replace the generated recipes in your meal plan.",
+        confirmText: "OK",
+        colorScheme: "bg-blue-600 hover:bg-blue-500",
+        onConfirm: closeConfirmModal,
+        cancelText: "",
+        onClose: () => {},
+        type: "primary",
+      });
+    }
+
+    setUseFavouriteRecipes(isFavourite);
   };
 
   const handleGenerateMealPlan = async () => {
@@ -427,6 +447,14 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
                       className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
                     />
                   </div>
+                </div>
+                <div className="my-4">
+                  <ToggleInput
+                    label="Favourites"
+                    subLabel=""
+                    enabled={useFavouriteRecipes}
+                    onChange={handleToggleFavourite}
+                  />
                 </div>
               </div>
             </div>
