@@ -36,22 +36,34 @@ export const groupMealsByWeek = (
   return weeks;
 };
 
-export function getMealTypeByTime(date: Date): MealType {
-  const time = dayjs(date).format("h:mm A"); // Format time for easy comparison
+export function getMealTypeByTime(date: Date, mealTypes: MealType[]): MealType {
+  const time = dayjs(date); // Parse the given date using dayjs
 
-  for (const [mealType, timeRange] of Object.entries(MealTimeRanges)) {
-    const [startTime, endTime] = timeRange.split(" - ");
-    const start = dayjs(startTime, "h:mm A");
-    const end = dayjs(endTime, "h:mm A");
+  // Map meal types to their corresponding meal ranges
+  for (const mealType of mealTypes) {
+    const mealNumbers = Object.entries(MealTimeRanges).filter(
+      ([mealNumber, _]) =>
+        mealNumber.toLowerCase().includes(mealType.toLowerCase())
+    );
 
-    // Check if the current time falls between the start and end times of the range
-    if (dayjs(time, "h:mm A").isBetween(start, end, null, "[)")) {
-      // Special handling for lunch/dinner which maps to two values
-      if (mealType === MealType.lunch) {
-        return time >= "6:00 PM" ? MealType.dinner : MealType.lunch; // Adjust based on time of day
+    for (const [mealNumber, timeRange] of mealNumbers) {
+      const [startTime, endTime] = timeRange.split(" - ");
+      const start = dayjs(startTime, "h:mm A");
+      const end = dayjs(endTime, "h:mm A");
+
+      // Check if the time falls between the start and end times of the range
+      if (time.isBetween(start, end, "minute", "[)")) {
+        // Handle lunch and dinner ambiguity
+        if (mealType === MealType.lunch || mealType === MealType.dinner) {
+          const isLunch = time.isBefore(dayjs("6:00 PM", "h:mm A"));
+          return isLunch ? MealType.lunch : MealType.dinner;
+        }
+
+        return mealType;
       }
-      return mealType as MealType;
     }
   }
+
+  // Default to "breakfast" if no match
   return MealType.breakfast;
 }
