@@ -17,7 +17,11 @@ import { IMealPlannerRequest } from "@/models/interfaces/edamam/meal-planner/mea
 import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import { getEnumKeysByValues } from "@/util/enum-util";
-import { getMealTypeAndTime } from "@/util/meal-utils";
+import {
+  getMealTimeRange,
+  getMealTypeAndTime,
+  isTimeInRange,
+} from "@/util/meal-utils";
 import { NextResponse } from "next/server";
 
 import dayjs from "dayjs";
@@ -142,120 +146,96 @@ export async function POST(req: Request) {
       );
 
       if (favouriteRecipes?.length) {
-        fetchedRecipes = fetchedRecipes.map((recipe) => {
+        fetchedRecipes = fetchedRecipes.map((fetchedRecipe) => {
           const matchingFavorite = favouriteRecipes?.find((fav) => {
             // Normalize mealTypeKey for comparison
-            const recipeMealTypes = recipe.mealTypeKey?.map((type) =>
-              type.toLowerCase()
+            const fetchedRecipeMealTypes = fetchedRecipe.mealTypeKey?.map(
+              (type) => type.toLowerCase()
             );
             const favMealTypes = fav.mealTypeKey?.map((type) =>
               type.toLowerCase()
             );
 
-            if (!recipeMealTypes || !favMealTypes) return false;
+            if (!fetchedRecipeMealTypes || !favMealTypes) return false;
 
             // Check for meal type intersection
             const hasMealTypeIntersection = favMealTypes.some((favType) =>
-              recipeMealTypes.includes(favType)
+              fetchedRecipeMealTypes.includes(favType)
             );
+
+            // TODO: Later implement time intersection, for now only where mealtype intersects
 
             if (!hasMealTypeIntersection) return false;
 
-            // Convert favorite's timeScheduled to local timezone
+            // /* Check if timeschedule falls in the same time range */
+            // // Convert favorite's timeScheduled to local timezone
             const userTimezone = dayjs.tz.guess(); // Get the user's timezone
+
             const favTimeScheduled = fav.timeScheduled
               ? dayjs(fav.timeScheduled).tz(userTimezone, true).toDate()
               : null;
 
-            // Convert recipe's timeScheduled to local timezone
-            const recipeTimeScheduled = recipe.timeScheduled
-              ? dayjs(recipe.timeScheduled).tz(userTimezone, true).toDate()
+            // Convert fetched recipe's timeScheduled to local timezone
+            const fetchedRecipeTimeScheduled = fetchedRecipe.timeScheduled
+              ? dayjs(fetchedRecipe.timeScheduled)
+                  .tz(userTimezone, true)
+                  .toDate()
               : null;
 
-            // Extract and compare meal time ranges
-            const getMealTimeRange = (
-              mealTypeKey: string
-            ): [Date, Date] | null => {
-              const matchedMealType = Object.keys(MealTimeRanges).find(
-                (key) => key.toLowerCase() === mealTypeKey.toLowerCase()
-              );
-              if (!matchedMealType) return null;
-
-              const [start, end] = MealTimeRanges[matchedMealType as MealNumber]
-                .split(" - ")
-                .map(
-                  (time) =>
-                    new Date(
-                      `1970-01-01T${
-                        new Date(`1970-01-01T${time}`)
-                          // TODO: Debug
-                          .toISOString()
-                          .split("T")[1]
-                      }`
-                    )
-                );
-
-              return [start, end];
-            };
-
             const favMealTime = favMealTypes
-              .map(getMealTimeRange)
+              .map((type) => getMealTimeRange(type, favTimeScheduled!))
               .filter(Boolean)[0];
-            const recipeMealTime = recipeMealTypes
-              .map(getMealTimeRange)
+
+            const recipeMealTime = fetchedRecipeMealTypes
+              .map((type) =>
+                getMealTimeRange(type, fetchedRecipeTimeScheduled!)
+              )
               .filter(Boolean)[0];
 
             if (!favMealTime || !recipeMealTime) return false;
 
-            const isTimeInRange = (
-              time: Date | null,
-              [start, end]: [Date, Date]
-            ): boolean => {
-              return (
-                time !== null &&
-                time.getTime() >= start.getTime() &&
-                time.getTime() <= end.getTime()
-              );
-            };
-
             const isFavInRange = favTimeScheduled
               ? isTimeInRange(favTimeScheduled, favMealTime)
               : false;
-            const isRecipeInRange = recipeTimeScheduled
-              ? isTimeInRange(recipeTimeScheduled, recipeMealTime)
+            const isfetchedRecipeInRange = fetchedRecipeTimeScheduled
+              ? isTimeInRange(fetchedRecipeTimeScheduled, recipeMealTime)
               : false;
 
-            return isFavInRange && isRecipeInRange;
+            return isFavInRange && isfetchedRecipeInRange;
           });
 
           return matchingFavorite
-            ? { ...recipe, isFavourite: true }
-            : { ...recipe, isFavourite: false };
+            ? { ...fetchedRecipe, ...matchingFavorite, isFavourite: true }
+            : { ...fetchedRecipe, isFavourite: false };
         });
       }
     }
 
     // Update the generated meal plan with replaced favorite recipes
-    generatedMealPlan?.selection.forEach((selectionItem, dayIndex) => {
-      Object.values(selectionItem.sections).forEach((section) => {
-        const sectionRecipe = fetchedRecipes.find((recipe) => {
-          // TODO: maybe remove this to see if its causing issues
-          // const isSameHour = dayjs(recipe.timeScheduled).isSame(
-          //   dayjs(startDate).add(dayIndex, "day").startOf("hour"),
-          //   "hour"
-          // );
-          recipe.uri === section._links.self.href; //&& isSameHour;
-        });
+    // generatedMealPlan?.selection.forEach((selectionItem, dayIndex) => {
+    //   Object.values(selectionItem.sections).forEach((section) => {
+    //     const sectionRecipe = fetchedRecipes.find((recipe) => {
+    //       const formattedUri = recipe.uri.replace(
+    //         recipeUriFormat,
+    //         recipeUrlFormat
+    //       );
 
-        if (sectionRecipe) {
-          const formattedUri = sectionRecipe.uri.replace(
-            recipeUriFormat,
-            recipeUrlFormat
-          );
-          section.assigned = formattedUri;
-        }
-      });
-    });
+    //       formattedUri == section._links.self.href; //&& isSameHour;
+
+    //       if (formattedUri != section._links.self.href) {
+    //         section.assigned = recipe.uri;
+    //       }
+    //     });
+
+    //     // if (sectionRecipe) {
+    //     //   // const formattedUri = sectionRecipe.uri.replace(
+    //     //   //   recipeUriFormat,
+    //     //   //   recipeUrlFormat
+    //     //   // );
+    //     //   section.assigned = sectionRecipe.uri;
+    //     // }
+    //   });
+    // });
 
     // Return the response
     return NextResponse.json({

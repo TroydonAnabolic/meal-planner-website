@@ -134,6 +134,7 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
   };
 
   // Handler for accepting the selected date-time
+  // TODO: bug fix - update mealtype and mealtypekey based on timescheduled e.g. 7am must update mealtype to be
   const handleDateTimeAccept = () => {
     if (selectedDateTime) {
       // Convert the selected time from NZT to UTC before saving

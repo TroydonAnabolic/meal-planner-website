@@ -162,3 +162,43 @@ export function getMealTypeAndTime(
     updatedDate: dayjs(date).hour(7).minute(0).toDate(), // Default breakfast time
   };
 }
+
+export const getMealTimeRange = (
+  mealTypeKey: string,
+  referenceDate: Date
+): [Date, Date] | null => {
+  const matchedMealType = Object.keys(MealTimeRanges).find(
+    (key) => key.toLowerCase() === mealTypeKey.toLowerCase()
+  );
+  if (!matchedMealType) return null;
+
+  const [startTime, endTime] =
+    MealTimeRanges[matchedMealType as MealNumber].split(" - ");
+
+  const start = dayjs(referenceDate)
+    .hour(dayjs(startTime, "h:mm A").hour())
+    .minute(dayjs(startTime, "h:mm A").minute())
+    .second(0)
+    .millisecond(0)
+    .toDate();
+
+  const end = dayjs(referenceDate)
+    .hour(dayjs(endTime, "h:mm A").hour())
+    .minute(dayjs(endTime, "h:mm A").minute())
+    .second(0)
+    .millisecond(0)
+    .toDate();
+
+  return [start, end];
+};
+
+export const isTimeInRange = (
+  time: Date | null,
+  [start, end]: [Date, Date]
+): boolean => {
+  return (
+    time !== null &&
+    time.getTime() >= start.getTime() &&
+    time.getTime() <= end.getTime()
+  );
+};

@@ -166,24 +166,27 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
     setMealPlanPreferences(updatedMealPlanPreferences);
   };
 
-  const handleToggleFavourite = (isFavourite: boolean) => {
-    if (isFavourite) {
-      setConfirmModalProps({
-        open: true,
-        title: "Use Favourites",
-        message:
-          "Favourited recipes that match the corresponding meal type (e.g. lunch/dinner) and scheduled time will replace the generated recipes in your meal plan.",
-        confirmText: "OK",
-        colorScheme: "bg-blue-600 hover:bg-blue-500",
-        onConfirm: closeConfirmModal,
-        cancelText: "",
-        onClose: () => {},
-        type: "info",
-      });
-    }
+  const handleToggleFavourite = useCallback(
+    (isFavourite: boolean) => {
+      if (isFavourite) {
+        setConfirmModalProps({
+          open: true,
+          title: "Use Favourites",
+          message:
+            "Favourited recipes that match the corresponding meal type (e.g. lunch/dinner) and scheduled time will replace the generated recipes in your meal plan.",
+          confirmText: "OK",
+          colorScheme: "bg-blue-600 hover:bg-blue-500",
+          onConfirm: closeConfirmModal,
+          cancelText: "",
+          onClose: () => {},
+          type: "info",
+        });
+      }
 
-    setUseFavouriteRecipes(isFavourite);
-  };
+      setUseFavouriteRecipes(isFavourite);
+    },
+    [setConfirmModalProps, closeConfirmModal, setUseFavouriteRecipes]
+  );
 
   const handleGenerateMealPlan = async () => {
     setIsLoading(true);
@@ -261,7 +264,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
         endDate: endDate?.toISOString() || "",
       });
 
-      setRecipes(useFavouriteRecipes ? favouriteRecipes || [] : fetchedRecipes);
+      setRecipes(fetchedRecipes);
     } catch (error: any) {
       console.error("Failed to generate meal plan:", error);
       setConfirmModalProps((prev) => ({
