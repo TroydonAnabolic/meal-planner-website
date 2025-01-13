@@ -100,11 +100,21 @@ export async function POST(req: Request) {
 
     let generatedForLunch = false;
     let counter = 0;
+    let totalRecipesProcessed = -1;
+    let dayIndex = 0;
     // assign scheduled time and meal type keys to the generated recipes
     fetchedRecipes = fetchedRecipes.map((recipe, index) => {
-      const dayIndex = Math.floor(
-        index / Object.keys(mealPlanPreferences.plan).length
-      ); // Calculate day index
+      // Increment totalRecipesProcessed for each recipe
+      totalRecipesProcessed++;
+
+      // increment day by 1 each time we reach meal type length
+      if (totalRecipesProcessed === mealTypesToGenerateFor.length) {
+        totalRecipesProcessed = 0;
+        dayIndex++;
+      }
+
+      // Calculate the day index based on total recipes and meal types
+
       const scheduledDate = new Date(
         dayjs(startDate).add(dayIndex, "day").toISOString()
       ); // Ensure it's a Date object
@@ -122,7 +132,9 @@ export async function POST(req: Request) {
       // Update the localScheduledDate to reflect the meal time
       const localScheduledDate = dayjs(updatedDate)
         .tz(userTimezone, true)
-        .toDate(); // Convert to local time
+        .toDate();
+
+      // Convert to local time
       generatedForLunch = hasGeneratedForLunch;
 
       // reset whether lunch is generated each time we enter a new day - a new day occurs when we created calculated recipe props
