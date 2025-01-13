@@ -17,10 +17,18 @@ import { IMealPlannerRequest } from "@/models/interfaces/edamam/meal-planner/mea
 import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import { getEnumKeysByValues } from "@/util/enum-util";
-import { getMealTypeByTime } from "@/util/meal-utils";
-import dayjs from "dayjs";
+import { getMealTypeAndTime } from "@/util/meal-utils";
 import { NextResponse } from "next/server";
 
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone"; // Import the timezone plugin
+import utc from "dayjs/plugin/utc"; // Import the UTC plugin
+import customParseFormat from "dayjs/plugin/customParseFormat";
+
+dayjs.extend(timezone); // Extend dayjs with the timezone plugin
+dayjs.extend(utc); // Extend dayjs with UTC plugin
+// Extend dayjs with the customParseFormat plugin
+dayjs.extend(customParseFormat);
 export async function POST(req: Request) {
   try {
     // Parse the request body
@@ -78,6 +86,17 @@ export async function POST(req: Request) {
       fetchedRecipes = await getRecipesFromUris(recipeUris);
     }
 
+    const mealTypesToGenerateFor = [
+      ...new Set(
+        generatedMealPlan.selection.flatMap((selectionItem) =>
+          Object.keys(selectionItem?.sections || {})
+        )
+      ),
+    ];
+
+    let generatedForLunch = false;
+    let counter = 0;
+    // assign scheduled time and meal type keys to the generated recipes
     fetchedRecipes = fetchedRecipes.map((recipe, index) => {
       const dayIndex = Math.floor(
         index / Object.keys(mealPlanPreferences.plan).length
@@ -86,18 +105,37 @@ export async function POST(req: Request) {
         dayjs(startDate).add(dayIndex, "day").toISOString()
       ); // Ensure it's a Date object
 
-      const mealTypeKey: MealType = getMealTypeByTime(scheduledDate);
+      // Convert the scheduled time to the user's local timezone
+      const userTimezone = dayjs.tz.guess(); // Get the user's timezone
 
+      const { mealTypeKey, hasGeneratedForLunch, updatedDate } =
+        getMealTypeAndTime(
+          scheduledDate,
+          recipe.mealType as MealType[],
+          mealTypesToGenerateFor,
+          generatedForLunch
+        );
+      // Update the localScheduledDate to reflect the meal time
+      const localScheduledDate = dayjs(updatedDate)
+        .tz(userTimezone, true)
+        .toDate(); // Convert to local time
+      generatedForLunch = hasGeneratedForLunch;
+
+      // reset whether lunch is generated each time we enter a new day - a new day occurs when we created calculated recipe props
+      counter++;
+      if (counter % mealTypesToGenerateFor.length == 0) {
+        generatedForLunch = false;
+      }
       return {
         ...recipe,
-        mealTypeKey: [mealTypeKey],
-        timeScheduled: scheduledDate, // Add optional property
+        mealTypeKey: [mealTypeKey!],
+        timeScheduled: localScheduledDate, // Add optional property
       };
     });
 
     let favouriteRecipes: IRecipeInterface[] | undefined = [];
 
-    // Handle favorite recipes
+    // Handle favorite recipes by replacing generated recipes with favorite recipes that fall on the same mealtypekey + scheduledtime range
     if (useFavouriteRecipes && clientId > 0) {
       favouriteRecipes = (await getRecipesByClientId(clientId))?.filter(
         (r) => r.isFavourite
@@ -123,7 +161,18 @@ export async function POST(req: Request) {
 
             if (!hasMealTypeIntersection) return false;
 
-            // Extract meal time ranges
+            // Convert favorite's timeScheduled to local timezone
+            const userTimezone = dayjs.tz.guess(); // Get the user's timezone
+            const favTimeScheduled = fav.timeScheduled
+              ? dayjs(fav.timeScheduled).tz(userTimezone, true).toDate()
+              : null;
+
+            // Convert recipe's timeScheduled to local timezone
+            const recipeTimeScheduled = recipe.timeScheduled
+              ? dayjs(recipe.timeScheduled).tz(userTimezone, true).toDate()
+              : null;
+
+            // Extract and compare meal time ranges
             const getMealTimeRange = (
               mealTypeKey: string
             ): [Date, Date] | null => {
@@ -139,6 +188,7 @@ export async function POST(req: Request) {
                     new Date(
                       `1970-01-01T${
                         new Date(`1970-01-01T${time}`)
+                          // TODO: Debug
                           .toISOString()
                           .split("T")[1]
                       }`
@@ -157,29 +207,27 @@ export async function POST(req: Request) {
 
             if (!favMealTime || !recipeMealTime) return false;
 
-            const favTimeScheduled = fav.timeScheduled
-              ? new Date(fav.timeScheduled).getTime()
-              : null;
-            const recipeTimeScheduled = recipe.timeScheduled
-              ? new Date(recipe.timeScheduled).getTime()
-              : null;
-
             const isTimeInRange = (
-              time: number | null,
+              time: Date | null,
               [start, end]: [Date, Date]
-            ): boolean =>
-              time !== null && time >= start.getTime() && time <= end.getTime();
+            ): boolean => {
+              return (
+                time !== null &&
+                time.getTime() >= start.getTime() &&
+                time.getTime() <= end.getTime()
+              );
+            };
 
-            const isFavInRange = isTimeInRange(favTimeScheduled, favMealTime);
-            const isRecipeInRange = isTimeInRange(
-              recipeTimeScheduled,
-              recipeMealTime
-            );
+            const isFavInRange = favTimeScheduled
+              ? isTimeInRange(favTimeScheduled, favMealTime)
+              : false;
+            const isRecipeInRange = recipeTimeScheduled
+              ? isTimeInRange(recipeTimeScheduled, recipeMealTime)
+              : false;
 
             return isFavInRange && isRecipeInRange;
           });
 
-          // Preserve original recipe if no favorite match is found
           return matchingFavorite
             ? { ...recipe, isFavourite: true }
             : { ...recipe, isFavourite: false };

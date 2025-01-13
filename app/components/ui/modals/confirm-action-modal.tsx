@@ -10,6 +10,7 @@ import {
   CheckIcon,
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 
 export type ConfirmActionModalProps = {
@@ -19,7 +20,7 @@ export type ConfirmActionModalProps = {
   message: string;
   confirmText: string;
   cancelText?: string;
-  type?: "primary" | "warning" | "error"; // Add iconColor prop
+  type?: "primary" | "warning" | "error" | "info"; // Add iconColor prop
   colorScheme?: string; // Add colorScheme prop
   onConfirm: () => void;
 };
@@ -76,6 +77,11 @@ const ConfirmActionModal: React.FC<ConfirmActionModalProps> = ({
                     />
                   ) : type === "error" ? (
                     <ExclamationTriangleIcon
+                      aria-hidden="true"
+                      className={"size-6 text-red-600"}
+                    />
+                  ) : type === "info" ? (
+                    <InformationCircleIcon
                       aria-hidden="true"
                       className={"size-6 text-red-600"}
                     />

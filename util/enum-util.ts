@@ -6,6 +6,7 @@ export function getEnumKeyByValue<T extends Record<string, string | number>>(
   const entry = entries.find(([key, val]) => val === value);
   return entry ? entry[0] : undefined;
 }
+
 // utils/reverseEnumMapping.ts
 
 /**

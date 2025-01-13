@@ -29,9 +29,11 @@ import {
 } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
-import timezone from "dayjs/plugin/timezone"; // Import timezone plugin
+import timezone from "dayjs/plugin/timezone"; // Import the timezone plugin
+import utc from "dayjs/plugin/utc"; // Import the UTC plugin
 
 dayjs.extend(timezone); // Extend dayjs with the timezone plugin
+dayjs.extend(utc); // Extend dayjs with UTC plugin
 
 type RecipeInputFieldsProps = {
   action: FormActionType | "Search";

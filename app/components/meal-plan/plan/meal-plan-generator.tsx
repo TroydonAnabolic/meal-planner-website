@@ -178,7 +178,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
         onConfirm: closeConfirmModal,
         cancelText: "",
         onClose: () => {},
-        type: "primary",
+        type: "info",
       });
     }
 

@@ -9,9 +9,18 @@ import {
 } from "@/constants/constants-enums";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import { getEnumKeyByValue } from "./enum-util";
+
+dayjs.extend(timezone);
+dayjs.extend(utc);
 // Extend dayjs with the isBetween plugin
 dayjs.extend(isBetween);
+// Extend dayjs with the customParseFormat plugin
+dayjs.extend(customParseFormat);
 
 export const groupMealsByWeek = (
   meals: IMealInterface[],
@@ -36,34 +45,120 @@ export const groupMealsByWeek = (
   return weeks;
 };
 
-export function getMealTypeByTime(date: Date, mealTypes: MealType[]): MealType {
+export function getMealTypeAndTime(
+  date: Date,
+  mealTypes: MealType[],
+  mealTypesToGenerateFor: string[], // mealtypes/mealnumbers that will generate for client
+  generatedForLunch: boolean
+): { mealTypeKey: string; hasGeneratedForLunch: boolean; updatedDate: Date } {
   const time = dayjs(date); // Parse the given date using dayjs
+  const hasLunchInMeals = mealTypesToGenerateFor.includes(MealNumber.Meal3);
 
-  // Map meal types to their corresponding meal ranges
+  // Iterate through the provided meal types to determine the range of interest
   for (const mealType of mealTypes) {
-    const mealNumbers = Object.entries(MealTimeRanges).filter(
-      ([mealNumber, _]) =>
-        mealNumber.toLowerCase().includes(mealType.toLowerCase())
+    console.log(`Meal type: ${mealType}`);
+    const mealTimeRanges = Object.entries(MealTimeRanges).filter(
+      ([mealNumber, timeRange]) => {
+        // lunch
+        if (
+          mealNumber === MealNumber.Meal3 &&
+          mealType == MealType.lunch &&
+          !generatedForLunch
+        ) {
+          return hasLunchInMeals && !generatedForLunch;
+        } else if (
+          mealNumber === MealNumber.Meal6 &&
+          mealType == MealType.dinner
+        ) {
+          const isDinner =
+            !hasLunchInMeals || (hasLunchInMeals && generatedForLunch);
+          return isDinner;
+        } else {
+          const hasMealType = mealNumber
+            .toLowerCase()
+            .includes(mealType.toLowerCase());
+          return hasMealType;
+        }
+      }
     );
 
-    for (const [mealNumber, timeRange] of mealNumbers) {
+    for (const [mealNumber, timeRange] of mealTimeRanges) {
+      // Parse the start and end times
       const [startTime, endTime] = timeRange.split(" - ");
-      const start = dayjs(startTime, "h:mm A");
+      const start = dayjs(startTime, "h:mm A"); // Works with the plugin
       const end = dayjs(endTime, "h:mm A");
 
-      // Check if the time falls between the start and end times of the range
-      if (time.isBetween(start, end, "minute", "[)")) {
-        // Handle lunch and dinner ambiguity
-        if (mealType === MealType.lunch || mealType === MealType.dinner) {
-          const isLunch = time.isBefore(dayjs("6:00 PM", "h:mm A"));
-          return isLunch ? MealType.lunch : MealType.dinner;
-        }
+      // Ensure that updatedDate is in local time and reflects the same hour and minute as start
+      const updatedDate = dayjs(date)
+        .hour(start.hour()) // Set the hour from the parsed start time
+        .minute(start.minute()) // Set the minute from the parsed start time
+        .second(0) // Reset the seconds
+        .millisecond(0) // Reset the milliseconds
+        .local() // Ensure it's in the local time zone
+        .toDate(); // Convert to a Date object
 
-        return mealType;
+      // Debug log to check the updatedDate time
+      console.log("Updated Date:", updatedDate); // Check if it matches the expected local time
+
+      // Check if it's between 12:00 PM and 2:00 PM
+      const isLunch = start.isBetween(
+        dayjs("12:00 PM", "h:mm A"),
+        dayjs("2:00 PM", "h:mm A"),
+        "minute",
+        "[)"
+      );
+
+      console.log("Is Lunch:", isLunch); // This should evaluate correctly now
+
+      switch (mealType) {
+        case MealType.breakfast:
+          return {
+            mealTypeKey: "breakfast",
+            hasGeneratedForLunch: generatedForLunch,
+            updatedDate: updatedDate,
+          };
+        case MealType.lunch:
+        case MealType.dinner:
+          if (isLunch) {
+            generatedForLunch = true;
+          }
+          return {
+            mealTypeKey: isLunch ? "lunch" : "dinner",
+            hasGeneratedForLunch: generatedForLunch,
+            updatedDate: updatedDate,
+          };
+        case MealType.brunch:
+          return {
+            mealTypeKey: "brunch",
+            hasGeneratedForLunch: generatedForLunch,
+            updatedDate: updatedDate,
+          };
+        case MealType.snack:
+          return {
+            mealTypeKey: "snack",
+            hasGeneratedForLunch: generatedForLunch,
+            updatedDate: updatedDate,
+          };
+        case MealType.teatime:
+          return {
+            mealTypeKey: "teatime",
+            hasGeneratedForLunch: generatedForLunch,
+            updatedDate: updatedDate,
+          };
+        default:
+          return {
+            mealTypeKey: "breakfast",
+            hasGeneratedForLunch: generatedForLunch,
+            updatedDate: updatedDate,
+          };
       }
     }
   }
 
-  // Default to "breakfast" if no match
-  return MealType.breakfast;
+  // Default to breakfast if no match is found
+  return {
+    mealTypeKey: "breakfast",
+    hasGeneratedForLunch: generatedForLunch,
+    updatedDate: dayjs(date).hour(7).minute(0).toDate(), // Default breakfast time
+  };
 }
