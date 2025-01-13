@@ -210,7 +210,7 @@ export async function POST(req: Request) {
               ? isTimeInRange(favTimeScheduled, favMealTime)
               : false;
             const isfetchedRecipeInRange = fetchedRecipeTimeScheduled
-              ? isTimeInRange(fetchedRecipeTimeScheduled, recipeMealTime)
+              ? isTimeInRange(favTimeScheduled, recipeMealTime)
               : false;
 
             return isFavInRange && isfetchedRecipeInRange;

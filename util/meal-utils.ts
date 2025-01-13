@@ -196,9 +196,10 @@ export const isTimeInRange = (
   time: Date | null,
   [start, end]: [Date, Date]
 ): boolean => {
-  return (
+  const isInRange =
     time !== null &&
     time.getTime() >= start.getTime() &&
-    time.getTime() <= end.getTime()
-  );
+    time.getTime() <= end.getTime();
+
+  return isInRange;
 };
