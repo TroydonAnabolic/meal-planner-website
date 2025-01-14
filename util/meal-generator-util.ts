@@ -9,7 +9,6 @@ import {
 import { transformLabel } from "./generic-utils";
 import { DayOfTheWeek, MealType } from "@/constants/constants-enums";
 import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
-import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import dayjs, { Dayjs } from "dayjs";
 import { mapRecipeToMeal } from "./mappers";
@@ -19,6 +18,7 @@ import {
   recipeUriFormat,
   recipeUrlFormat,
 } from "@/constants/constants-objects";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 // utils/transformMealPlan.ts
 
 /**
@@ -289,12 +289,13 @@ export const generateMealsForPlan = (
 
         // Assign the day of the week for the meal
         mappedMeal.dayOfTheWeek = currentDate.day() as unknown as DayOfTheWeek;
-
+        //TODO: check if bug occurs here breakfast, lunch lunch
+        mappedMeal.mealTypeKey = recipe.mealTypeKey;
         // Assign mealTypeKey based on the recipe's mealType
-        mappedMeal.mealTypeKey = getEnumKeysByValues(
-          MealType,
-          recipe.mealType as MealType[]
-        );
+        // mappedMeal.mealTypeKey = getEnumKeysByValues(
+        //   MealType,
+        //   recipe.mealType as MealType[]
+        // );
 
         // Add the mapped meal to the meals array with a default mealPlanId
         meals.push({

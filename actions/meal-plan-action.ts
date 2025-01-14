@@ -108,7 +108,7 @@ async function fillMealPlanRecipesAndMeals(
   if (resultMealPlan) {
     recipes.forEach(async (recipe) => {
       recipe.mealPlanId = resultMealPlan?.id;
-      recipe.image = "/aiimages/food/default-food.svg";
+      //recipe.image = "/aiimages/food/default-food.svg";
       recipe.clientId = mealPlan.clientId;
       recipe.mealTypeKey = getEnumKeysByValues(
         MealType,

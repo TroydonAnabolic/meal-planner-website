@@ -4,8 +4,8 @@ import {
   IRecipeInterface,
   RecipeNutrient,
 } from "@/models/interfaces/recipe/recipe";
-import { IMealInterface, IMealNutrient } from "@/models/interfaces/meal/Meal";
 import { MealNumber, MealType } from "@/constants/constants-enums";
+import { IMealInterface, IMealNutrient } from "@/models/interfaces/meal/Meal";
 
 /**
  * Maps a recipe to a meal, scaling nutrients by recipe yield.

@@ -8,6 +8,8 @@ type MealsSummaryProps = {
   meals: IMealInterface[];
 };
 
+// TODO: Update TOTAL LOGIC Display total calories and remaining calories (look into summing meals.timeConsumed for consumed today and summing meals.timeScheduled for today for total calories, get the difference of both for remaining, do it for all macros.
+
 const MealsSummary: React.FC<MealsSummaryProps> = ({ meals }) => {
   const totalMeals = meals.length;
 

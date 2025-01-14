@@ -77,10 +77,10 @@ async function fillMealPlanRecipesAndMeals(
           ? ((recipe.images.id = 0), (recipe.images.recipeId = 0))
           : undefined;
         recipe.clientId = mealPlan.clientId;
-        recipe.mealTypeKey = getEnumKeysByValues(
-          MealType,
-          recipe.mealType as MealType[]
-        );
+        // recipe.mealTypeKey = getEnumKeysByValues(
+        //   MealType,
+        //   recipe.mealType as MealType[]
+        // );
         recipe.ingredients?.forEach(async (ingr) => {
           // make sure all ids are 0 to create recipes and related
           ingr.id = 0;
