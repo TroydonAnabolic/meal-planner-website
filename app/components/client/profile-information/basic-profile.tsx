@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 
-import { GenderType, ActivityLevel } from "@/models/Client";
-import { IClientInterface } from "@/models/interfaces/client/client";
 import TextInput from "../../ui/inputs/text-input";
 import SelectDropdown from "../../ui/inputs/select-dropdown";
 import DateInput from "../../ui/inputs/date-input";
+import { IClientInterface } from "../../../../models/interfaces/client/client"; // "// /models/interfaces/client/client";
+import { GenderType, ActivityLevel } from "@/constants/constants-enums";
 
 interface BasicProfileProps {
   client: IClientInterface;

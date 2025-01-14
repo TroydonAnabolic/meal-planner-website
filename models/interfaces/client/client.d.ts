@@ -1,5 +1,4 @@
 import { Countries } from "@/constants/constants-enums";
-import { GenderType, ActivityLevel } from "@/models/Client";
 import ClientSettingsDto from "@/models/client-settings";
 import { IClientSettingsInterface } from "./client-settings";
 

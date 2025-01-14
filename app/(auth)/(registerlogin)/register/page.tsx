@@ -8,7 +8,6 @@ import PricingGrid from "@/app/components/ui/subscribe/pricing-sections";
 import { Countries } from "@/constants/constants-enums";
 import { tiers } from "@/constants/constants-objects";
 import { registerAction } from "@/lib/client/client-side/register";
-import { ActivityLevel, GenderType } from "@/models/Client";
 import { Tier } from "@/types/subscribe";
 import Link from "next/link";
 import { useState } from "react";

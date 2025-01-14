@@ -1,4 +1,15 @@
-import { getEnumKeyByValue } from "@/util/enum-util";
+export enum ActivityLevel {
+  Sedentary = "Sedentary",
+  LightlyActive = "LightlyActive",
+  Active = "Active",
+  VeryActive = "VeryActive",
+  HighlyActive = "HighlyActive",
+}
+
+export enum GenderType {
+  Male = "Male",
+  Female = "Female",
+}
 
 export enum HealthGoals {
   WeightLoss = "Weight Loss",

@@ -36,6 +36,8 @@ export const mapAttributesToUser = (
     givenName: "",
     familyName: "",
     phoneNumber: "",
+    isStripeBasicActive: false,
+    stripeCustomerId: "",
   };
 
   attributes.forEach((attribute) => {
@@ -70,6 +72,8 @@ export const mapAttributes = (attributes: AttributeType[]): User => {
     givenName: "",
     familyName: "",
     phoneNumber: "",
+    isStripeBasicActive: false,
+    stripeCustomerId: "",
   };
 
   attributes.forEach((attribute) => {
