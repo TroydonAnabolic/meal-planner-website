@@ -109,7 +109,7 @@ const ConfirmActionModal: React.FC<ConfirmActionModalProps> = ({
               <button
                 type="button"
                 onClick={handleConfirm}
-                className={`inline-flex w-full justify-center rounded-md ${colorScheme} px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto`}
+                className={`inline-flex w-full justify-center rounded-md ${colorScheme} px-3 py-2 mr-4 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto`}
               >
                 {confirmText}
               </button>

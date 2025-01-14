@@ -125,7 +125,7 @@ export async function addRecipe(
  */
 export async function addMealPlanRecipes(
   recipes: IRecipeInterface[]
-): Promise<IRecipeInterface | undefined> {
+): Promise<IRecipeInterface[] | undefined> {
   const response = await instance.post(
     `${DIETAPI_BASE}/recipes/mealPlan`,
     recipes

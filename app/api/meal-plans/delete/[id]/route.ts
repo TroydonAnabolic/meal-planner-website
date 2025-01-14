@@ -5,11 +5,11 @@ import { NextResponse } from "next/server";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { mealPlanId: string } }
+  { params }: { params: { id: string } }
 ) {
-  const { mealPlanId } = params;
+  const { id } = params;
 
-  if (!mealPlanId || isNaN(Number(mealPlanId))) {
+  if (!id || isNaN(Number(id))) {
     return NextResponse.json(
       { error: "Invalid meal plan ID." },
       { status: 400 }
@@ -17,11 +17,11 @@ export async function DELETE(
   }
 
   try {
-    const id = Number(mealPlanId);
-    await deleteMealPlan(id);
+    const mealPlanId = Number(id);
+    await deleteMealPlan(mealPlanId);
 
     return NextResponse.json(
-      { message: `Meal plan with ID ${mealPlanId} deleted successfully.` },
+      { message: `Meal plan with ID ${id} deleted successfully.` },
       { status: 200 }
     );
   } catch (error) {

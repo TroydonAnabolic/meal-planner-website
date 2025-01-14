@@ -66,39 +66,15 @@ const MealPlan: React.FC<MealPlanProps> = ({
   );
   // sets selected meal plan
   useEffect(() => {
-    if (!mealPlanData) return;
-    const today = dayjs();
-    const initialMealPlan = getCurrentMealPlan(
-      mealPlanData,
-      today,
-      mealPlans,
-      defaultMealPlan
-    );
-    setSelectedMealPlan(initialMealPlan);
-    setSelectedLabel(
-      initialMealPlan.id === 0
-        ? "New Meal Plan"
-        : `${dayjs(initialMealPlan.startDate).format("DD/MM/YYYY")} - ${dayjs(
-            initialMealPlan.endDate
-          ).format("DD/MM/YYYY")}`
-    );
-  }, [mealPlanData, mealPlans]);
-
-  // sets selected recipes
-  useEffect(() => {
-    const fetchRecipes = async () => {
-      if (selectedMealPlan.id === 0) {
+    const fetchAndSetRecipes = async (mealPlan: IMealPlan) => {
+      if (mealPlan.id === 0) {
         setRecipes([]);
         return;
       }
       setLoading(true);
       try {
-        const response = await exponentialBackoffFetch(() =>
-          fetch(`/api/recipes/${selectedMealPlan.id}`)
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch recipes.");
-        }
+        const response = await fetch(`/api/recipes/${mealPlan.id}`);
+        if (!response.ok) throw new Error("Failed to fetch recipes.");
         const data: IRecipeInterface[] = await response.json();
         setRecipes(data);
       } catch (error) {
@@ -109,8 +85,26 @@ const MealPlan: React.FC<MealPlanProps> = ({
       }
     };
 
-    fetchRecipes();
-  }, [selectedMealPlan.id]);
+    if (mealPlanData) {
+      const today = dayjs();
+      const initialMealPlan = getCurrentMealPlan(
+        mealPlanData,
+        today,
+        mealPlans,
+        defaultMealPlan
+      );
+      setSelectedMealPlan(initialMealPlan);
+      setSelectedLabel(
+        initialMealPlan.id === 0
+          ? "New Meal Plan"
+          : `${dayjs(initialMealPlan.startDate).format("DD/MM/YYYY")} - ${dayjs(
+              initialMealPlan.endDate
+            ).format("DD/MM/YYYY")}`
+      );
+
+      fetchAndSetRecipes(initialMealPlan); // Fetch recipes for the selected meal plan.
+    }
+  }, [mealPlanData, mealPlans]);
 
   const handleAfterPrint = React.useCallback(() => {
     console.log("`onAfterPrint` called");

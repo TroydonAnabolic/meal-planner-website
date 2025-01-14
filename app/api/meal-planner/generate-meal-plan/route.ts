@@ -28,6 +28,7 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone"; // Import the timezone plugin
 import utc from "dayjs/plugin/utc"; // Import the UTC plugin
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import { formatUri } from "@/util/meal-generator-util";
 
 dayjs.extend(timezone); // Extend dayjs with the timezone plugin
 dayjs.extend(utc); // Extend dayjs with UTC plugin
@@ -150,6 +151,9 @@ export async function POST(req: Request) {
     });
 
     let favouriteRecipes: IRecipeInterface[] | undefined = [];
+    // Track replacements
+
+    const replacements: { fetchedUri: string; favoriteUri: string }[] = [];
 
     // Handle favorite recipes by replacing generated recipes with favorite recipes that fall on the same mealtypekey + scheduledtime range
     if (useFavouriteRecipes && clientId > 0) {
@@ -216,39 +220,33 @@ export async function POST(req: Request) {
             return isFavInRange && isfetchedRecipeInRange;
           });
 
-          return matchingFavorite
-            ? { ...fetchedRecipe, ...matchingFavorite, isFavourite: true }
-            : { ...fetchedRecipe, isFavourite: false };
+          if (matchingFavorite) {
+            replacements.push({
+              fetchedUri: fetchedRecipe.uri,
+              favoriteUri: matchingFavorite.uri,
+            });
+            return { ...fetchedRecipe, ...matchingFavorite, isFavourite: true };
+          } else {
+            return { ...fetchedRecipe, isFavourite: false };
+          }
         });
       }
     }
 
     // Update the generated meal plan with replaced favorite recipes
-    // generatedMealPlan?.selection.forEach((selectionItem, dayIndex) => {
-    //   Object.values(selectionItem.sections).forEach((section) => {
-    //     const sectionRecipe = fetchedRecipes.find((recipe) => {
-    //       const formattedUri = recipe.uri.replace(
-    //         recipeUriFormat,
-    //         recipeUrlFormat
-    //       );
+    generatedMealPlan?.selection.forEach((selectionItem) => {
+      Object.values(selectionItem.sections).forEach((section) => {
+        const formattedSectionUri = formatUri(section._links.self.href);
 
-    //       formattedUri == section._links.self.href; //&& isSameHour;
-
-    //       if (formattedUri != section._links.self.href) {
-    //         section.assigned = recipe.uri;
-    //       }
-    //     });
-
-    //     // if (sectionRecipe) {
-    //     //   // const formattedUri = sectionRecipe.uri.replace(
-    //     //   //   recipeUriFormat,
-    //     //   //   recipeUrlFormat
-    //     //   // );
-    //     //   section.assigned = sectionRecipe.uri;
-    //     // }
-    //   });
-    // });
-
+        const replacement = replacements.find(
+          (r) => formattedSectionUri === formatUri(r.fetchedUri)
+        );
+        if (replacement) {
+          section.assigned = replacement.favoriteUri;
+          section._links.self.href = formatUri(replacement.favoriteUri); // Update the section URI
+        }
+      });
+    });
     // Return the response
     return NextResponse.json({
       generatedMealPlan,

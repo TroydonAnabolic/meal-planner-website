@@ -11,6 +11,8 @@ import { addMealPlanRecipes, updateMealPlanRecipes } from "@/lib/recipe";
 import { getEnumKeyByValue, getEnumKeysByValues } from "@/util/enum-util";
 import { MealType } from "@/constants/constants-enums";
 import { IMealInterface } from "@/models/interfaces/meal/Meal";
+import { revalidatePath } from "next/cache";
+import { ROUTES } from "@/constants/routes";
 
 /**
  * Creates a meal plan based on the provided recipes, generator response, and other parameters.
@@ -47,7 +49,7 @@ export async function createMealPlan(
       errors.general = "Error adding or updating meal plan.";
       return { success: false, errors };
     }
-
+    revalidatePath(ROUTES.MEAL_PLANNER.MEAL_PLAN);
     return { success: true };
   } catch (error: any) {
     if (isRedirectError(error)) {
@@ -64,23 +66,51 @@ async function fillMealPlanRecipesAndMeals(
   mealPlan: IMealPlan,
   meals: IMealInterface[]
 ) {
-  if (resultMealPlan) {
-    recipes.forEach(async (recipe) => {
-      recipe.mealPlanId = resultMealPlan?.id;
-      recipe.image = "/aiimages/food/default-food.svg";
-      recipe.clientId = mealPlan.clientId;
-      recipe.mealTypeKey = getEnumKeysByValues(
-        MealType,
-        recipe.mealType as MealType[]
-      );
-    });
-    meals.forEach(async (meal) => {
-      meal.mealPlanId = resultMealPlan?.id;
-      meal.image = "/aiimages/food/default-food.svg";
-      meal.clientId = mealPlan.clientId;
-    });
+  try {
+    if (resultMealPlan) {
+      recipes.forEach(async (recipe) => {
+        // make sure all ids are 0 to create recipes and related
+        recipe.id = 0;
+        recipe.mealPlanId = resultMealPlan?.id;
+        // recipe.image = "/aiimages/food/default-food.svg";
+        recipe.images
+          ? ((recipe.images.id = 0), (recipe.images.recipeId = 0))
+          : undefined;
+        recipe.clientId = mealPlan.clientId;
+        recipe.mealTypeKey = getEnumKeysByValues(
+          MealType,
+          recipe.mealType as MealType[]
+        );
+        recipe.ingredients?.forEach(async (ingr) => {
+          // make sure all ids are 0 to create recipes and related
+          ingr.id = 0;
+          ingr.recipeId = 0;
+        });
+      });
 
-    await addMealPlanRecipes(recipes);
-    await addMealPlanMeals(meals);
+      meals.forEach(async (meal) => {
+        meal.id = 0;
+        meal.mealPlanId = resultMealPlan?.id;
+        //  meal.image = "/aiimages/food/default-food.svg";
+        meal.clientId = mealPlan.clientId;
+        meal.ingredients?.forEach(async (ingr) => {
+          // make sure all ids are 0 to create recipes and related
+          ingr.id = 0;
+          ingr.mealId = 0;
+        });
+      });
+
+      const recipesAdded = await addMealPlanRecipes(recipes);
+      if (recipesAdded?.length) {
+        await addMealPlanMeals(meals);
+      }
+    }
+  } catch (error: any) {
+    console.log(
+      "Error occurred saving meal plan recipes and meals" + error.message
+    );
+    throw new Error(
+      "Error occurred saving meal plan recipes and meals" + error.message
+    );
   }
 }

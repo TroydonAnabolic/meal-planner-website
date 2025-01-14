@@ -1,3 +1,5 @@
+import { IRecipeInterface } from "../recipe/recipe";
+
 export interface Link {
   title: string;
   href: string;
@@ -22,6 +24,7 @@ export interface IMealPlan {
   clientId: number;
   startDate: string;
   endDate: string;
+  recipes?: IRecipeInterface[];
+  meals?: IMealInterface[];
   selection: SelectionItem[];
-  //autoLogMeals: boolean;
 }

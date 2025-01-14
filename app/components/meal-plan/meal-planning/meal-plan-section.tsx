@@ -23,6 +23,8 @@ import {
   getDefaultMealPlan,
 } from "@/util/meal-plan-utils";
 import GlowyBanner from "../../ui/banner/banner-with-glow";
+import { revalidatePath } from "next/cache";
+import { ROUTES } from "@/constants/routes";
 
 type MealPlanSectionProps = {
   initialMealPlan: IMealPlan;
@@ -228,53 +230,61 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
             </div>
           </form>
 
-          <form>
-            {/* Delete Meal Plan Button */}
-            <div className="flex justify-end mt-4">
-              <button
-                type="button"
-                onClick={() =>
-                  setConfirmModalProps({
-                    open: true,
-                    title: "Delete Meal Plan",
-                    message: `Are you sure you want to delete the meal plan "${selectedLabel}"? This action cannot be undone.`,
-                    confirmText: "Delete",
-                    cancelText: "Cancel",
-                    colorScheme: "danger",
-                    onConfirm: async () => {
-                      try {
-                        setLoading(true);
-                        const response = await fetch(
-                          `/api/meal-plans/delete/${selectedMealPlan.id}`,
-                          {
-                            method: "DELETE",
+          {selectedMealPlan && selectedMealPlan.id > 0 && (
+            <form>
+              {/* Delete Meal Plan Button */}
+              <div className="flex justify-end mt-4">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setConfirmModalProps({
+                      open: true,
+                      title: "Delete Meal Plan",
+                      message: `Are you sure you want to delete the meal plan "${selectedLabel}"? This action cannot be undone.`,
+                      confirmText: "Delete",
+                      cancelText: "Cancel",
+                      colorScheme: "bg-red-600 hover:bg-red-500",
+                      onConfirm: async () => {
+                        try {
+                          setLoading(true);
+                          const response = await fetch(
+                            `/api/meal-plans/delete/${selectedMealPlan.id}`,
+                            {
+                              method: "DELETE",
+                            }
+                          );
+                          if (!response.ok) {
+                            throw new Error("Failed to delete the meal plan.");
                           }
-                        );
-                        if (!response.ok) {
-                          throw new Error("Failed to delete the meal plan.");
+
+                          revalidatePath(ROUTES.MEAL_PLANNER.MEAL_PLAN);
+
+                          setMealPlans((prev) =>
+                            prev.filter(
+                              (plan) => plan.id !== selectedMealPlan.id
+                            )
+                          );
+                          setSelectedMealPlan(defaultMealPlan);
+                          setSelectedLabel("New Meal Plan");
+                        } catch (error) {
+                          console.error(error);
+                          alert("Error deleting the meal plan.");
+                        } finally {
+                          setLoading(false);
+                          closeConfirmModal();
                         }
-                        setMealPlans((prev) =>
-                          prev.filter((plan) => plan.id !== selectedMealPlan.id)
-                        );
-                        setSelectedMealPlan(defaultMealPlan);
-                        setSelectedLabel("New Meal Plan");
-                      } catch (error) {
-                        console.error(error);
-                        alert("Error deleting the meal plan.");
-                      } finally {
-                        setLoading(false);
-                        closeConfirmModal();
-                      }
-                    },
-                    onClose: closeConfirmModal,
-                  })
-                }
-                className="w-60 px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-              >
-                Delete Meal Plan
-              </button>
-            </div>
-          </form>
+                      },
+                      onClose: closeConfirmModal,
+                      type: "warning",
+                    })
+                  }
+                  className="w-60 px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  Delete Meal Plan
+                </button>
+              </div>
+            </form>
+          )}
         </div>
         {/* Recreate Meals for meal plan */}
         <form action={recreateMealsAction} className="space-y-6 mt-8 border ">

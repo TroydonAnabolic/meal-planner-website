@@ -1,7 +1,6 @@
 import MealPlan from "@/app/components/meal-plan/meal-planning/meal-plan";
 import { auth } from "@/auth";
 import { getMealPlansByClientId } from "@/lib/meal-plan";
-import { getRecipesByMealPlanId } from "@/lib/recipe";
 import { Metadata } from "next";
 import React from "react";
 
@@ -13,12 +12,11 @@ const MealPlansPage = async (props: MealPlanSectionPageProps) => {
   // const clientData = await getClient(session?.user.userId!);
   const mealPlans = await getMealPlansByClientId(clientId);
   // get meal plan id from meal plans whose date falls between todays date
-  const mealPlanId = mealPlans?.find(
+  const recipesData = mealPlans?.find(
     (plan) =>
       new Date(plan.startDate).getTime() <= new Date().getTime() &&
       new Date(plan.endDate).getTime() >= new Date().getTime()
-  )?.id;
-  const recipesData = await getRecipesByMealPlanId(mealPlanId as number);
+  )?.recipes;
 
   return (
     <>

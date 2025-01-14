@@ -15,6 +15,10 @@ import dayjs, { Dayjs } from "dayjs";
 import { mapRecipeToMeal } from "./mappers";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
 import { getEnumKeysByValues } from "./enum-util";
+import {
+  recipeUriFormat,
+  recipeUrlFormat,
+} from "@/constants/constants-objects";
 // utils/transformMealPlan.ts
 
 /**
@@ -31,6 +35,11 @@ const stringArrayKeys: (keyof AllMealFilter | keyof MealFilter)[] = [
   "source-name",
   "meal", // Added 'meal' for MealFilter
 ];
+
+// Format the fetchedUri to match the section._links.self.href format
+export const formatUri = (uri: string): string => {
+  return uri.replace(recipeUriFormat, recipeUrlFormat);
+};
 
 /**
  * Recursively transforms all string arrays in AllMealFilter.
