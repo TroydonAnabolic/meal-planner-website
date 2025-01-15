@@ -9,11 +9,10 @@ import {
   generateEmptySelections,
   getCurrentMealPlan,
   getDefaultMealPlan,
-  renderMealPlanToHTML,
 } from "@/util/meal-plan-utils";
 import dayjs from "dayjs";
-import { exponentialBackoffFetch } from "@/lib/http/exponential-back-off";
 import { ConfirmActionModalProps } from "../../ui/modals/confirm-action-modal";
+import ReactDOMServer from "react-dom/server";
 
 interface MealPlanProps {
   mealPlanData: IMealPlan[] | undefined;
@@ -121,6 +120,10 @@ const MealPlan: React.FC<MealPlanProps> = ({
     onAfterPrint: handleAfterPrint,
     onBeforePrint: handleBeforePrint,
   });
+
+  const renderMealPlanToHTML = (mealPlanSection: any): string => {
+    return ReactDOMServer.renderToStaticMarkup(mealPlanSection);
+  };
 
   const handleEmailMealPlan = React.useCallback(async () => {
     const mealPlanHtml = renderMealPlanToHTML(MealPlanContainer());

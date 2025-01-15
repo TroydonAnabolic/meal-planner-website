@@ -1,4 +1,5 @@
 import { IRecipeInterface } from "../recipe/recipe";
+import { IMealInterface } from "../meal/Meal";
 
 export interface Link {
   title: string;

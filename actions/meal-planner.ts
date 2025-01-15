@@ -101,7 +101,18 @@ async function fillMealPlanRecipesAndMeals(
       });
 
       const recipesAdded = await addMealPlanRecipes(recipes);
-      if (recipesAdded?.length) {
+      if (recipesAdded?.length && meals?.length) {
+        meals.forEach((m) => {
+          // Find the recipe that matches the meal's timeScheduled date
+          const matchingRecipe = recipesAdded.find(
+            (r) => r.timeScheduled!.getTime() === m.timeScheduled.getTime()
+          );
+
+          if (matchingRecipe) {
+            m.recipeId = matchingRecipe.id; // Assign recipeId to the meal
+          }
+        });
+
         await addMealPlanMeals(meals);
       }
     }

@@ -1,8 +1,9 @@
 // app/utils/mealPlanUtils.ts
 
+import { Nutrients } from "@/constants/constants-enums";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import dayjs, { Dayjs } from "dayjs";
-import ReactDOMServer from "react-dom/server";
 
 export const generateEmptySelections = (
   startDate: Dayjs,
@@ -84,6 +85,40 @@ export function getDefaultMealPlan(clientId: number): IMealPlan {
   };
 }
 
-export const renderMealPlanToHTML = (mealPlanSection: any): string => {
-  return ReactDOMServer.renderToStaticMarkup(mealPlanSection);
-};
+export function computeNutritionalSummary(
+  meals: IMealInterface[],
+  today: Date
+) {
+  const summary: Record<
+    string,
+    { total: number; consumed: number; remaining: number }
+  > = {};
+
+  // Initialize summary for each nutrient in the enum
+  Object.values(Nutrients).forEach((nutrientKey) => {
+    summary[nutrientKey] = { total: 0, consumed: 0, remaining: 0 };
+  });
+
+  meals.forEach((meal) => {
+    const isToday = dayjs(meal.timeScheduled).isSame(today, "day");
+    const isConsumedToday =
+      meal.timeConsumed && dayjs(meal.timeConsumed).isSame(today, "day");
+
+    if (isToday && meal.nutrients) {
+      for (const [key, nutrient] of Object.entries(meal.nutrients)) {
+        if (summary[key]) {
+          summary[key].total += nutrient.quantity;
+          if (isConsumedToday) {
+            summary[key].consumed += nutrient.quantity;
+          }
+        }
+      }
+    }
+  });
+
+  // Calculate remaining nutrients
+  Object.keys(summary).forEach((key) => {
+    summary[key].remaining = summary[key].total - summary[key].consumed;
+  });
+  return summary;
+}

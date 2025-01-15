@@ -10,7 +10,6 @@ import {
   IRecipeInterface,
   RecipeNutrient,
 } from "@/models/interfaces/recipe/recipe";
-// utils/scaleNutrients.ts
 
 /**
  * Scales the recipe's base nutrients based on the provided scaling factor.
@@ -267,4 +266,42 @@ export const updateRecipeNutrients = (
   };
 
   return updatedRecipe;
+};
+
+export const nutrientNames: Record<string, string> = {
+  [Nutrients.SUGAR_added]: "Added sugar",
+  [Nutrients.CA]: "Calcium, Ca",
+  [Nutrients.CHOCDF_net]: "Carbohydrate (net)",
+  [Nutrients.CHOCDF]: "Carbohydrate, by difference",
+  [Nutrients.CHOLE]: "Cholesterol",
+  [Nutrients.ENERC_KCAL]: "Energy",
+  [Nutrients.FAMS]: "Fatty acids, total monounsaturated",
+  [Nutrients.FAPU]: "Fatty acids, total polyunsaturated",
+  [Nutrients.FASAT]: "Fatty acids, total saturated",
+  [Nutrients.FATRN]: "Fatty acids, total trans",
+  [Nutrients.FIBTG]: "Fiber, total dietary",
+  [Nutrients.FOLDFE]: "Folate, DFE",
+  [Nutrients.FOLFD]: "Folate, food",
+  [Nutrients.FOLAC]: "Folic acid",
+  [Nutrients.FE]: "Iron, Fe",
+  [Nutrients.MG]: "Magnesium",
+  [Nutrients.NIA]: "Niacin",
+  [Nutrients.P]: "Phosphorus, P",
+  [Nutrients.K]: "Potassium, K",
+  [Nutrients.PROCNT]: "Protein",
+  [Nutrients.RIBF]: "Riboflavin",
+  [Nutrients.NA]: "Sodium, Na",
+  [Nutrients.SUGAR_alcohol]: "Sugar alcohols",
+  [Nutrients.SUGAR]: "Sugars, total",
+  [Nutrients.THIA]: "Thiamin",
+  [Nutrients.FAT]: "Total lipid (fat)",
+  [Nutrients.VITA_RAE]: "Vitamin A, RAE",
+  [Nutrients.VITB12]: "Vitamin B-12",
+  [Nutrients.VITB6A]: "Vitamin B-6",
+  [Nutrients.VITC]: "Vitamin C, total ascorbic acid",
+  [Nutrients.VITD]: "Vitamin D (D2 + D3)",
+  [Nutrients.TOCPHA]: "Vitamin E (alpha-tocopherol)",
+  [Nutrients.VITK1]: "Vitamin K (phylloquinone)",
+  [Nutrients.WATER]: "Water",
+  [Nutrients.ZN]: "Zinc, Zn",
 };

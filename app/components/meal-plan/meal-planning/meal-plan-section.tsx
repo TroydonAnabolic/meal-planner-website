@@ -19,12 +19,15 @@ import ActionPanelButton from "../../action-panel/action-panel-button";
 import { exponentialBackoffFetch } from "@/lib/http/exponential-back-off";
 import LabelDropdown from "../../ui/inputs/label-dropdown";
 import {
+  computeNutritionalSummary,
   generateEmptySelections,
   getDefaultMealPlan,
 } from "@/util/meal-plan-utils";
 import GlowyBanner from "../../ui/banner/banner-with-glow";
 import { revalidatePath } from "next/cache";
 import { ROUTES } from "@/constants/routes";
+import NutritionSummary from "./nutritional-summary";
+import HorizontalScrollContainer from "../../ui/scrolls/horizontal-scroll-container/horizontal-scroll-container";
 
 type MealPlanSectionProps = {
   initialMealPlan: IMealPlan;
@@ -44,7 +47,6 @@ type MealPlanSectionProps = {
   >;
 };
 
-// TODO: Try to fix re-renders, and generate tests to do manual and automatically
 const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
   (
     {
@@ -68,6 +70,20 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
     const [loading, setLoading] = useState<boolean>(false);
     const [isBannedOpen, setIsBannedOpen] = useState<boolean>(true);
     const defaultMealPlan: IMealPlan = getDefaultMealPlan(clientId);
+    const [nutritionSummary, setNutritionSummary] = useState<
+      Record<string, { total: number; consumed: number; remaining: number }>
+    >({});
+
+    useEffect(() => {
+      if (selectedMealPlan?.meals) {
+        const today = new Date();
+        const summary = computeNutritionalSummary(
+          selectedMealPlan.meals,
+          today
+        );
+        setNutritionSummary(summary);
+      }
+    }, [selectedMealPlan]);
 
     const closeConfirmModal = useCallback(() => {
       setConfirmModalProps({
@@ -203,20 +219,33 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
                   {recipesError}
                 </div>
               )}
-              {/* Render RecipeList when recipes are loaded */}
-              {!recipesLoading && !recipesError && (
-                <div className="mt-6">
-                  <RecipeList
-                    recipes={recipes}
-                    mealPlan={selectedMealPlan}
-                    //   clientData={clientData}
-                    startDate={dayjs(selectedMealPlan.startDate)}
-                    endDate={dayjs(selectedMealPlan.endDate)}
-                    allowEmptyRows={true}
-                    mode={selectedMealPlan.id === 0 ? "add" : "edit"} // Set mode based on meal plan
-                  />
+              <div className="flex space-x-4 mt-6">
+                <div className="w-7/10">
+                  {/* Render RecipeList when recipes are loaded */}
+                  {!recipesLoading && !recipesError && (
+                    <div className="mt-6">
+                      <HorizontalScrollContainer>
+                        <RecipeList
+                          recipes={recipes}
+                          mealPlan={selectedMealPlan}
+                          //   clientData={clientData}
+                          startDate={dayjs(selectedMealPlan.startDate)}
+                          endDate={dayjs(selectedMealPlan.endDate)}
+                          allowEmptyRows={true}
+                          mode={selectedMealPlan.id === 0 ? "add" : "edit"} // Set mode based on meal plan
+                        />
+                      </HorizontalScrollContainer>
+                    </div>
+                  )}
                 </div>
-              )}
+                {/* Nutrition Summary */}
+
+                <div className="w-3/10">
+                  {nutritionSummary && (
+                    <NutritionSummary summary={nutritionSummary} />
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Submit Button */}
