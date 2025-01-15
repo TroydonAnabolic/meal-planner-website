@@ -104,9 +104,23 @@ async function fillMealPlanRecipesAndMeals(
       if (recipesAdded?.length && meals?.length) {
         meals.forEach((m) => {
           // Find the recipe that matches the meal's timeScheduled date
-          const matchingRecipe = recipesAdded.find(
-            (r) => r.timeScheduled!.getTime() === m.timeScheduled.getTime()
-          );
+          const matchingRecipe = recipesAdded.find((r) => {
+            const recipeTime =
+              r.timeScheduled instanceof Date
+                ? r.timeScheduled
+                : r.timeScheduled
+                ? new Date(r.timeScheduled)
+                : null;
+
+            const mealTime =
+              m.timeScheduled instanceof Date
+                ? m.timeScheduled
+                : m.timeScheduled
+                ? new Date(m.timeScheduled)
+                : null;
+
+            return recipeTime!.getTime() === mealTime!.getTime();
+          });
 
           if (matchingRecipe) {
             m.recipeId = matchingRecipe.id; // Assign recipeId to the meal

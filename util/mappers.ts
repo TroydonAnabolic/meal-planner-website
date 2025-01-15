@@ -15,7 +15,8 @@ import { IMealInterface, IMealNutrient } from "@/models/interfaces/meal/Meal";
  */
 export const mapRecipeToMeal = (
   recipe: IRecipeInterface,
-  mealPlanId: number
+  mealPlanId: number,
+  generator: boolean
 ): IMealInterface => {
   const scaledNutrients = scaleNutrientsByYield(
     recipe.totalNutrients,
@@ -30,7 +31,6 @@ export const mapRecipeToMeal = (
     image: recipe.image,
     weight: recipe.totalWeight / recipe.yield || 0,
     mealType: recipe.mealType,
-    // mealNumber: "",
     mealTypeKey: recipe.mealTypeKey,
     nutrients: scaledNutrients,
     ingredients: recipe.ingredients.map((ingredient) => ({
@@ -40,7 +40,8 @@ export const mapRecipeToMeal = (
     ingredientLines: recipe.ingredientLines,
     foodSourceUrl: recipe.url,
     isLogged: false,
-    timeScheduled: new Date(),
+    timeScheduled:
+      recipe.timeScheduled && generator ? recipe.timeScheduled : new Date(),
   };
 };
 

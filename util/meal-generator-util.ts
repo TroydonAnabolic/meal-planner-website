@@ -282,10 +282,10 @@ export const generateMealsForPlan = (
       // If a matching recipe is found
       if (recipe) {
         // Map the recipe to a meal object using the mapRecipeToMeal function
-        const mappedMeal = mapRecipeToMeal(recipe, mealPlan.clientId);
+        const mappedMeal = mapRecipeToMeal(recipe, mealPlan.clientId, true);
 
         // Assign the scheduled time for the meal to the current date
-        mappedMeal.timeScheduled = currentDate.toDate();
+        // mappedMeal.timeScheduled = currentDate.toDate();
 
         // Assign the day of the week for the meal
         mappedMeal.dayOfTheWeek = currentDate.day() as unknown as DayOfTheWeek;
@@ -304,7 +304,7 @@ export const generateMealsForPlan = (
         });
 
         // Assign the same scheduled time to the recipe
-        recipe.timeScheduled = mappedMeal.timeScheduled;
+        // recipe.timeScheduled = mappedMeal.timeScheduled;
       }
     });
   });
