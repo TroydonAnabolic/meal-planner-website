@@ -55,7 +55,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
 
   const searchParams = useSearchParams();
   // Extract search parameters
-  const mealTypeParam = searchParams.get("mealType");
+  const mealTypeParam = searchParams.get("mealTypeKey");
   const timeScheduledParam = searchParams.get("timeScheduled");
   const mealPlanIdParam = searchParams.get("mealPlanId");
   const actionParam = searchParams.get("action");
@@ -118,7 +118,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
   useEffect(() => {
     // Update recipe state based on search parameters
     updateRecipeFromSearchParams();
-  }, [mealTypeParam, timeScheduledParam, mealPlanIdParam]);
+  }, []);
 
   const updateRecipeFromSearchParams = () => {
     setRecipe((prevRecipe) => {
@@ -129,9 +129,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
       const updatedRecipe = { ...prevRecipe };
 
       if (mealTypeParam) {
-        updatedRecipe.mealTypeKey = mealTypeParam
-          .split(",")
-          .map((type) => type.toLowerCase()) as string[];
+        updatedRecipe.mealTypeKey = [mealTypeParam];
       }
 
       if (timeScheduledParam) {
@@ -197,12 +195,9 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     recipe.baseTotalDaily = recipe.totalDaily;
     recipe.baseTotalNutrients = recipe.totalNutrients;
     recipe.baseTotalWeight = recipe.totalWeight;
-    // recipe.image = "/aiimages/food/default-food.svg";
 
     if (mealTypeParam) {
-      recipe.mealTypeKey = mealTypeParam
-        .split(",")
-        .map((type) => type.toLowerCase()) as string[];
+      recipe.mealTypeKey = [mealTypeParam];
     }
 
     if (timeScheduledParam) {
@@ -302,9 +297,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
       setRecipe(recipeToAdd);
 
       if (mealTypeParam) {
-        recipeToAdd.mealTypeKey = mealTypeParam
-          .split(",")
-          .map((type) => type.toLowerCase()) as string[];
+        recipe.mealTypeKey = [mealTypeParam];
       } else {
         recipeToAdd.mealTypeKey = getEnumKeysByValues(
           MealType,

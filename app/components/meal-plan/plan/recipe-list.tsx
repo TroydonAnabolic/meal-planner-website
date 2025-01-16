@@ -4,7 +4,7 @@ import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import Image from "next/image";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import CenteredPageNumbers from "../../ui/pagination/centered-page-numbers";
-import { MealNumber } from "@/constants/constants-enums";
+import { MealNumber, MealType } from "@/constants/constants-enums";
 import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
 import { v4 as uuidv4 } from "uuid"; // Ensure uuid is installed: npm install uuid
 import { macros } from "@/util/nutrients";
@@ -13,7 +13,7 @@ import {
   extractRecipeIdFromHref,
   extractRecipeIdFromUri,
 } from "@/util/meal-generator-util";
-import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
+import { IMealPlan, Section } from "@/models/interfaces/diet/meal-plan";
 import Link from "next/link";
 import { ROUTES } from "@/constants/routes";
 import { useSearchParams } from "next/navigation";
@@ -49,16 +49,64 @@ const RecipeList: React.FC<RecipeListProps> = ({
 
   const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIdx = startIdx + ITEMS_PER_PAGE;
-  const currentSelection = mealPlan.selection.slice(startIdx, endIdx);
+
+  // Define the MealNumber order for sorting
+  const mealNumberOrder = Object.values(MealNumber);
+
+  // Sort sections in currentSelection by MealNumber order
+  const currentSelection = useMemo(() => {
+    return mealPlan.selection.slice(startIdx, endIdx).map((selectionItem) => {
+      const sortedSections = Object.entries(selectionItem.sections)
+        .sort(([keyA], [keyB]) => {
+          const indexA = mealNumberOrder.indexOf(keyA as MealNumber);
+          const indexB = mealNumberOrder.indexOf(keyB as MealNumber);
+          return indexA - indexB;
+        })
+        .reduce((acc, [key, value]) => {
+          acc[key] = value;
+          return acc;
+        }, {} as { [key: string]: Section });
+
+      return {
+        ...selectionItem,
+        sections: sortedSections,
+      };
+    });
+  }, [mealPlan, startIdx, endIdx, mealNumberOrder]);
 
   const recipeMap = useMemo(() => {
     const map = new Map<string, IRecipeInterface>();
-    recipes.forEach((recipe) => {
-      const recipeId = extractRecipeIdFromUri(recipe.uri);
-      if (recipeId && !map.has(recipeId)) {
-        map.set(recipeId, recipe);
-      }
-    });
+
+    // Define the order of MealType based on the enum
+    const mealTypeOrder = Object.values(MealType);
+
+    recipes
+      .sort((a, b) => {
+        // Sort by timeScheduled first
+        const timeComparison = dayjs(a.timeScheduled).diff(
+          dayjs(b.timeScheduled)
+        );
+        if (timeComparison !== 0) {
+          return timeComparison;
+        }
+
+        // If timeScheduled is the same, sort by mealTypeKey order
+        const aMealTypeIndex = mealTypeOrder.findIndex((type) =>
+          a.mealTypeKey.includes(type)
+        );
+        const bMealTypeIndex = mealTypeOrder.findIndex((type) =>
+          b.mealTypeKey.includes(type)
+        );
+
+        return aMealTypeIndex - bMealTypeIndex;
+      })
+      .forEach((recipe) => {
+        const recipeId = extractRecipeIdFromUri(recipe.uri);
+        if (recipeId && !map.has(recipeId)) {
+          map.set(recipeId, recipe);
+        }
+      });
+
     return map;
   }, [recipes]);
 
@@ -99,19 +147,21 @@ const RecipeList: React.FC<RecipeListProps> = ({
   }, [currentSelection]);
 
   // Generate days based on startDate
-  const days: { day: string; date: string }[] = useMemo(() => {
-    if (!startDate || !endDate) return [];
-    const daysArray = [];
-    let current = startDate.clone();
-    while (current.isBefore(endDate) || current.isSame(endDate, "day")) {
-      daysArray.push({
-        day: current.format("dddd"),
-        date: current.format("DD/MM/YYYY"),
-      });
-      current = current.add(1, "day");
-    }
-    return daysArray.slice(startIdx, endIdx);
-  }, [startDate, endDate, startIdx, endIdx]);
+  const days: { day: string; date: string; dateTime: string }[] =
+    useMemo(() => {
+      if (!startDate || !endDate) return [];
+      const daysArray = [];
+      let current = startDate.clone();
+      while (current.isBefore(endDate) || current.isSame(endDate, "day")) {
+        daysArray.push({
+          day: current.format("dddd"),
+          date: current.format("DD/MM/YYYY"),
+          dateTime: current.format("DD/MM/YYYY HH:mm A"),
+        });
+        current = current.add(1, "day");
+      }
+      return daysArray.slice(startIdx, endIdx);
+    }, [startDate, endDate, startIdx, endIdx]);
 
   const usedRecipeIdsByGroup = useRef<Map<string, Set<string>>>(new Map());
 
@@ -206,10 +256,10 @@ const RecipeList: React.FC<RecipeListProps> = ({
                       if (![...usedRecipeIds].includes(key)) {
                         // identify how to map recipe.timeScheduled maps to dayIndex and only assign when match
                         const recipeMissing = value as IRecipeInterface;
-                        const currentScheduledTime = days[dayIndex]?.date;
+                        const currentScheduledTime = days[dayIndex]?.dateTime;
                         const recipeScheduledTime = recipeMissing.timeScheduled
                           ? dayjs(recipeMissing.timeScheduled).format(
-                              "DD/MM/YYYY"
+                              "DD/MM/YYYY HH:mm A"
                             )
                           : null;
                         const currentMealType = [
@@ -339,8 +389,8 @@ const RecipeList: React.FC<RecipeListProps> = ({
                           }?${createQueryString({
                             page: "1",
                             action: "add",
-                            mealType: mealType,
-                            timeScheduled: days[dayIndex]?.date || "",
+                            mealTypeKey: mealType.toLowerCase(),
+                            timeScheduled: days[dayIndex]?.dateTime || "",
                             mealPlanId:
                               (mealPlan as IMealPlan).id.toString() || "0",
                           })}`}

@@ -126,7 +126,7 @@ const FormModal: React.FC<FormModalProps> = ({
                       >
                         Cancel
                       </button>
-                      {formAction && buttonText && (
+                      {formAction && buttonText && buttonText != "Search" && (
                         <FormButton
                           buttonText={buttonText || "Save"}
                           buttonPendingText={"Saving..."}

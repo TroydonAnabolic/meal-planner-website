@@ -76,13 +76,6 @@ const MealSectionComponent: React.FC<MealSectionProps> = ({
     handleSectionChange,
   });
 
-  // Debugging: Log labels and nutrients
-  useEffect(() => {
-    // console.log("Labels:", labels);
-    // console.log("Selected Nutrients:", selectedNutrients);
-    // console.log("Nutrient Ranges:", nutrientRanges);
-  }, [labels, selectedNutrients, nutrientRanges]);
-
   return (
     <>
       {/* Panel With Borders for Meal Type Steps */}

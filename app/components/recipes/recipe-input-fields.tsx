@@ -382,7 +382,11 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
                       id="totalCO2Emissions"
                       name="totalCO2Emissions"
                       type="number"
-                      value={recipe.totalCO2Emissions.toFixed(1)}
+                      value={
+                        typeof recipe.totalCO2Emissions === "number"
+                          ? recipe.totalCO2Emissions.toFixed(1)
+                          : "0.0"
+                      }
                       onChange={handleInputChange}
                       readOnly={readOnly}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
@@ -392,6 +396,7 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
 
                 <SelectFoodLabels
                   data={recipe}
+                  isMealPlanRecipe={isMealPlanRecipe}
                   handleMultiSelectDropdown={handleMultiSelectDropdown}
                   readOnly={readOnly}
                 />
@@ -442,7 +447,7 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
                           orientation="portrait"
                           ampm={true}
                           minutesStep={1}
-                          disabled={isMealPlanRecipe}
+                          //disabled={isMealPlanRecipe}
                           value={selectedDateTime}
                           onChange={handleDateTimeChange}
                           className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500  text-gray-700"

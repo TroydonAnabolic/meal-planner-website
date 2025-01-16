@@ -12,6 +12,7 @@ import { LabelSection } from "@/models/interfaces/types";
 
 type SelectFoodLabelsProps<T> = {
   data: T;
+  isMealPlanRecipe?: boolean;
   readOnly?: boolean;
   labelsToShow?: LabelSection[];
   requireSelection?: boolean;
@@ -20,6 +21,7 @@ type SelectFoodLabelsProps<T> = {
 
 const SelectFoodLabels = <T,>({
   data,
+  isMealPlanRecipe,
   readOnly,
   labelsToShow = [
     "mealTypeKey",
@@ -99,6 +101,7 @@ const SelectFoodLabels = <T,>({
               <MultiSelectDropdownCheckbox
                 title={title}
                 options={options}
+                disabled={isMealPlanRecipe && title == "Meal Types"}
                 selectedValues={data[typeKey] as string[]}
                 onSelect={(selected) =>
                   handleMultiSelectDropdown(typeKey, selected)

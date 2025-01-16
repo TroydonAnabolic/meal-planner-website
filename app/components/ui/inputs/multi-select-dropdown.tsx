@@ -24,6 +24,7 @@ interface MultiSelectDropdownCheckboxProps {
   options: Option[];
   selectedValues: string[];
   onSelect: (selected: string[]) => void;
+  disabled?: boolean;
   readOnly?: boolean;
   requireSelection?: boolean;
 }
@@ -35,6 +36,7 @@ const MultiSelectDropdownCheckbox: React.FC<
   options,
   selectedValues,
   onSelect,
+  disabled = false,
   readOnly = false,
   requireSelection = false,
 }) => {
@@ -48,7 +50,7 @@ const MultiSelectDropdownCheckbox: React.FC<
         );
 
   const handleChange = (selected: any) => {
-    if (!readOnly) {
+    if (!readOnly && !disabled) {
       onSelect(Array.isArray(selected) ? selected : [selected]);
     }
   };
@@ -83,6 +85,7 @@ const MultiSelectDropdownCheckbox: React.FC<
             }}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={`Select ${title}`}
+            disabled={disabled}
             readOnly={readOnly}
             required={requireSelection}
           />
@@ -125,7 +128,7 @@ const MultiSelectDropdownCheckbox: React.FC<
                           checked={selectedValues.includes(option.value)}
                           readOnly
                           className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                          disabled={readOnly}
+                          disabled={disabled}
                           required={requireSelection}
                         />
                         <span className="ml-3 block truncate">

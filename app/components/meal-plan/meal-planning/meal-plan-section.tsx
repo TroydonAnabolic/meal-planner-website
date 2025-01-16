@@ -1,7 +1,7 @@
 // app/meal-planner/dashboard/page.tsx
 "use client";
 import React, { useState, useCallback, useEffect, forwardRef } from "react";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
@@ -16,11 +16,9 @@ import ConfirmActionModal, {
   ConfirmActionModalProps,
 } from "../../ui/modals/confirm-action-modal";
 import ActionPanelButton from "../../action-panel/action-panel-button";
-import { exponentialBackoffFetch } from "@/lib/http/exponential-back-off";
 import LabelDropdown from "../../ui/inputs/label-dropdown";
 import {
   computeNutritionalSummary,
-  generateEmptySelections,
   getDefaultMealPlan,
 } from "@/util/meal-plan-utils";
 import GlowyBanner from "../../ui/banner/banner-with-glow";

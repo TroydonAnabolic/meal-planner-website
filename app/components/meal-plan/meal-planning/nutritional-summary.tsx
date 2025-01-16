@@ -30,7 +30,9 @@ const NutritionSummary: React.FC<NutritionSummaryProps> = ({ summary }) => {
     <div className="mt-6 nutrition-summary">
       {/* Main Macros Summary */}
       <div className="mb-4">
-        <h3 className="font-semibold text-xl text-gray-800">Macros Summary</h3>
+        <h3 className="font-semibold text-xl text-gray-800">
+          Today&apos;s Macros Summary
+        </h3>
         <table className="mt-2 table-auto w-full border-collapse border border-gray-300 text-left text-gray-600">
           <thead>
             <tr>
@@ -71,7 +73,7 @@ const NutritionSummary: React.FC<NutritionSummaryProps> = ({ summary }) => {
       <div>
         <h3 className="font-semibold text-xl text-gray-800">
           {" "}
-          Nutrient Summary
+          Today&apos;s Nutrient Summary
         </h3>
         <table className="mt-2 table-auto w-full border-collapse border border-gray-300 text-left text-gray-600">
           <thead>
