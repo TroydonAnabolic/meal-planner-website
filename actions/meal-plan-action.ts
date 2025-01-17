@@ -139,7 +139,7 @@ async function fillMealPlanRecipesAndMeals(
   }
 }
 
-export async function createMealsForMealPlan(
+export async function reCreateRecipeAndMealsForMealPlan(
   recipes: IRecipeInterface[]
 ): Promise<FormResult> {
   const meals: IMealInterface[] = [];
@@ -147,14 +147,43 @@ export async function createMealsForMealPlan(
 
   recipes.forEach((r, i) => {
     const currentDate = dayjs(r.timeScheduled).add(i, "day");
-    const mappedMeal = mapRecipeToMeal(r, r.clientId, true);
+    const mappedMeal = mapRecipeToMeal(r, r.mealPlanId!, true);
     // Assign the day of the week for the meal
     mappedMeal.dayOfTheWeek = currentDate.day() as unknown as DayOfTheWeek;
     meals.push(mappedMeal);
   });
 
   try {
-    await addMealPlanMeals(meals);
+    const recipesAdded = await addMealPlanRecipes(recipes);
+    if (recipesAdded?.length && meals?.length) {
+      meals.forEach((m) => {
+        // Find the recipe that matches the meal's timeScheduled date
+        const matchingRecipe = recipesAdded.find((r) => {
+          const recipeTime =
+            r.timeScheduled instanceof Date
+              ? r.timeScheduled
+              : r.timeScheduled
+              ? new Date(r.timeScheduled)
+              : null;
+
+          const mealTime =
+            m.timeScheduled instanceof Date
+              ? m.timeScheduled
+              : m.timeScheduled
+              ? new Date(m.timeScheduled)
+              : null;
+
+          return recipeTime!.getTime() === mealTime!.getTime();
+        });
+
+        if (matchingRecipe) {
+          m.recipeId = matchingRecipe.id; // Assign recipeId to the meal
+        }
+      });
+
+      await addMealPlanMeals(meals);
+    }
+    revalidatePath(ROUTES.MEAL_PLANNER.MEAL_PLAN);
     return { success: true };
   } catch (error) {
     errors.general = "Error generating meals.";

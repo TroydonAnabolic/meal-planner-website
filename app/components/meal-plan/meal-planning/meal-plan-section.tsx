@@ -6,8 +6,7 @@ import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
 import {
-  createMealPlan,
-  createMealsForMealPlan,
+  reCreateRecipeAndMealsForMealPlan,
   submitMealPlan,
 } from "@/actions/meal-plan-action";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
@@ -135,7 +134,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
 
     async function recreateMealsAction(formData: FormData) {
       setLoading(true);
-      const result = await createMealsForMealPlan(recipes);
+      const result = await reCreateRecipeAndMealsForMealPlan(recipes);
       setFormResult(result);
       setLoading(false);
     }
