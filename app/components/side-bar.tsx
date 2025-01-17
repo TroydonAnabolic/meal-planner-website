@@ -189,7 +189,7 @@ const SideBar: React.FC<SideBarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                   <div
                     id="edamam-badge"
                     data-color="badge"
-                    className="mt-4 bg-gray-50 height-[50px]"
+                    className="mt-4 bg-gray-50 height-[50px] flex flex-col-reverse"
                   ></div>
 
                   <li className="mt-auto">

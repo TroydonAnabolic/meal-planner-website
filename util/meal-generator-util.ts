@@ -310,3 +310,47 @@ export const generateMealsForPlan = (
   });
   return meals;
 };
+
+export function reUseRecipes(
+  weeklyRecipesAddedTracker: IRecipeInterface[],
+  mealTypeKey: string,
+  dayIndex: number,
+  recipe: IRecipeInterface
+) {
+  const lastWeeksRecipeForMealType = weeklyRecipesAddedTracker.find((r) =>
+    r.mealTypeKey.some((mt) => mt == mealTypeKey)
+  );
+
+  let newYield = recipe.yield;
+  newYield--;
+  // Reuse logic: Reuse recipes if the yield is more than 1
+  // TODO: Check if yield will remain decremented
+  if (
+    // if last week had a recipe and it has yield remaining and its not the first week
+    lastWeeksRecipeForMealType &&
+    lastWeeksRecipeForMealType.yield > 0 &&
+    dayIndex != 0
+  ) {
+    newYield = lastWeeksRecipeForMealType.yield--;
+    const recipeCopy = { ...lastWeeksRecipeForMealType };
+    recipeCopy.yield--; // Decrement yield on the copy
+
+    // add last weeks recipe again to be recalc
+    weeklyRecipesAddedTracker.push(lastWeeksRecipeForMealType);
+    // TODO: see if recipe reassignment updates recipe being tracked and fetched recipes
+    recipe = { ...lastWeeksRecipeForMealType, yield: newYield };
+    // if last week had a recipe, assuming it has 1 meal remaining, we instead add this weeks generated recipe
+    // to add for next week
+  } else if (
+    lastWeeksRecipeForMealType &&
+    lastWeeksRecipeForMealType.yield > 0
+  ) {
+    lastWeeksRecipeForMealType.yield--;
+    // add this weeks recipe for mealtype to be calc with no remaining yield
+    weeklyRecipesAddedTracker.push({ ...recipe, yield: newYield });
+    // if last week did not have a recipe, we add this weeks generated recipe
+  } else {
+    weeklyRecipesAddedTracker.push({ ...recipe, yield: newYield });
+  }
+  return recipe;
+}

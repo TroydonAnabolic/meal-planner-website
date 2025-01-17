@@ -28,7 +28,7 @@ import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone"; // Import the timezone plugin
 import utc from "dayjs/plugin/utc"; // Import the UTC plugin
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { formatUri } from "@/util/meal-generator-util";
+import { formatUri, reUseRecipes } from "@/util/meal-generator-util";
 
 dayjs.extend(timezone); // Extend dayjs with the timezone plugin
 dayjs.extend(utc); // Extend dayjs with UTC plugin
@@ -103,8 +103,22 @@ export async function POST(req: Request) {
     let counter = 0;
     let totalRecipesProcessed = -1;
     let dayIndex = 0;
+    let recipeYieldMap = new Map<string, number>(); // Track remaining yield for each recipe by URI
+    let weeklyRecipesAddedTracker: IRecipeInterface[] = [];
+    // Retrieve the first entry (key-value pair)
+    let dayIndexMealTypeKeyMap = new Map<number, IRecipeInterface>(); // Track indexes for the day, that maps to a meal type
+    let currentDayRecipes: { [key: string]: IRecipeInterface } = {}; // Track assigned recipes for each day
+
     // assign scheduled time and meal type keys to the generated recipes
     fetchedRecipes = fetchedRecipes.map((recipe, index) => {
+      const recipeUri = recipe.uri;
+      // Initialize the yield for a new recipe if not already tracked
+      // if (!recipeYieldMap.has(recipeUri) ) {
+      //   recipeYieldMap.set(recipeUri, recipe.yield);
+      // }
+      // if (!recipesAddedTracker.find((r) => r.uri == rec)) {
+      //   recipeYieldMapArr.set(recipeUri, recipe.yield);
+      // }
       // Increment totalRecipesProcessed for each recipe
       totalRecipesProcessed++;
 
@@ -112,6 +126,8 @@ export async function POST(req: Request) {
       if (totalRecipesProcessed === mealTypesToGenerateFor.length) {
         totalRecipesProcessed = 0;
         dayIndex++;
+        currentDayRecipes = {}; // Reset current day recipes
+        // weeklyRecipesAddedTracker = []; //
       }
 
       // Calculate the day index based on total recipes and meal types
@@ -130,6 +146,7 @@ export async function POST(req: Request) {
           mealTypesToGenerateFor,
           generatedForLunch
         );
+
       // Update the localScheduledDate to reflect the meal time
       const localScheduledDate = dayjs(updatedDate)
         .tz(userTimezone, true)
@@ -137,6 +154,12 @@ export async function POST(req: Request) {
 
       // Convert to local time
       generatedForLunch = hasGeneratedForLunch;
+
+      // reuse recipes with > 1 yield
+      recipe = reUseRecipes(weeklyRecipesAddedTracker, mealTypeKey, dayIndex, {
+        ...recipe,
+        mealTypeKey: [mealTypeKey!],
+      });
 
       // reset whether lunch is generated each time we enter a new day - a new day occurs when we created calculated recipe props
       counter++;

@@ -37,23 +37,19 @@ const RecipeList: React.FC<RecipeListProps> = ({
   mode = "view",
 }) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const searchParams = useSearchParams();
-
-  const ITEMS_PER_PAGE = 7;
+  const ITEMS_PER_PAGE = 7; // You have 7 items per page as a constant
   const totalDays = useMemo(() => {
     if (!startDate || !endDate) return 0;
     return endDate.diff(startDate, "day") + 1;
   }, [startDate, endDate]);
 
-  const totalPages = Math.ceil(totalDays / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(totalDays / ITEMS_PER_PAGE); // Total pages based on the number of days
 
   const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIdx = startIdx + ITEMS_PER_PAGE;
 
-  // Define the MealNumber order for sorting
   const mealNumberOrder = Object.values(MealNumber);
 
-  // Sort sections in currentSelection by MealNumber order
   const currentSelection = useMemo(() => {
     return mealPlan.selection.slice(startIdx, endIdx).map((selectionItem) => {
       const sortedSections = Object.entries(selectionItem.sections)
@@ -92,23 +88,34 @@ const RecipeList: React.FC<RecipeListProps> = ({
 
         // If timeScheduled is the same, sort by mealTypeKey order
         const aMealTypeIndex = mealTypeOrder.findIndex((type) =>
-          a.mealTypeKey.includes(type)
+          a.mealTypeKey?.includes(type)
         );
         const bMealTypeIndex = mealTypeOrder.findIndex((type) =>
-          b.mealTypeKey.includes(type)
+          b.mealTypeKey?.includes(type)
         );
 
         return aMealTypeIndex - bMealTypeIndex;
       })
       .forEach((recipe) => {
         const recipeId = extractRecipeIdFromUri(recipe.uri);
-        if (recipeId && !map.has(recipeId)) {
-          map.set(recipeId, recipe);
+        if (recipeId) {
+          const compositeKey = `${recipeId}-${dayjs(
+            recipe.timeScheduled
+          ).format("YYYY-MM-DD HH:mm:ss")}`;
+          if (!map.has(compositeKey)) {
+            map.set(compositeKey, recipe);
+          }
         }
       });
 
     return map;
   }, [recipes]);
+
+  // Paginate the recipeMap
+  const paginatedRecipes = useMemo(() => {
+    const recipesArray = Array.from(recipeMap.values());
+    return recipesArray.slice(startIdx, endIdx); // Apply pagination here
+  }, [recipeMap, startIdx, endIdx]);
 
   // Extract all used recipe IDs from mealPlan
   const usedRecipeIds = useMemo(() => {
@@ -123,13 +130,6 @@ const RecipeList: React.FC<RecipeListProps> = ({
     });
     return ids;
   }, [mealPlan]);
-
-  // Find missing recipes
-  const missingRecipes = useMemo(() => {
-    return Array.from(recipeMap.entries())
-      .filter(([id]) => !usedRecipeIds.has(id))
-      .map(([, recipe]) => recipe);
-  }, [recipeMap, usedRecipeIds]);
 
   // Determine which mealTypes are present across all days
   const availableMealTypes = useMemo(() => {
@@ -235,49 +235,43 @@ const RecipeList: React.FC<RecipeListProps> = ({
                   const section = selectionItem.sections[mealType];
                   let recipe: IRecipeInterface | null = null;
 
-                  if (section) {
-                    const sectionId = extractRecipeIdFromHref(
-                      section._links.self.href
-                    );
-                    if (sectionId) {
-                      // Find the recipe by extracted ID
-                      for (let key of recipeMap.keys()) {
-                        if (key.startsWith(sectionId)) {
-                          recipe = recipeMap.get(key) || null;
-                          break;
-                        }
-                      }
-                    }
-                  }
+                  // if (section) {
+                  //   const sectionId = extractRecipeIdFromHref(
+                  //     section._links.self.href
+                  //   );
+                  //   if (sectionId) {
+                  //     // Find the recipe by extracted ID
+                  //     for (let key of recipeMap.keys()) {
+                  //       if (key.startsWith(sectionId)) {
+                  //         recipe = recipeMap.get(key) || null;
+                  //         break;
+                  //       }
+                  //     }
+                  //   }
+                  // }
 
                   // If no recipe is found, assign a missing recipe
-                  if (!recipe) {
-                    for (let [key, value] of recipeMap.entries()) {
-                      if (![...usedRecipeIds].includes(key)) {
-                        // identify how to map recipe.timeScheduled maps to dayIndex and only assign when match
-                        const recipeMissing = value as IRecipeInterface;
-                        const currentScheduledTime = days[dayIndex]?.dateTime;
-                        const recipeScheduledTime = recipeMissing.timeScheduled
-                          ? dayjs(recipeMissing.timeScheduled).format(
-                              "DD/MM/YYYY HH:mm A"
-                            )
-                          : null;
-                        const currentMealType = [
-                          mealType.toLocaleLowerCase(),
-                        ] as string[];
+                  // if (!recipe) {
+                  // Loop through recipeMap to find the correct recipe based on mealType and timeScheduled
+                  for (let [key, value] of recipeMap.entries()) {
+                    const recipeMissing = value as IRecipeInterface;
+                    const currentScheduledTime = days[dayIndex]?.date;
+                    const recipeScheduledTime = recipeMissing.timeScheduled
+                      ? dayjs(recipeMissing.timeScheduled).format("DD/MM/YYYY")
+                      : null;
 
-                        if (
-                          recipeMissing.mealTypeKey.some((k) =>
-                            currentMealType.includes(k)
-                          ) &&
-                          recipeScheduledTime == currentScheduledTime
-                        ) {
-                          recipe = value;
-                          break;
-                        }
-                      }
+                    // Match recipe by mealType and timeScheduled
+                    if (
+                      recipeMissing.mealTypeKey.some((k) =>
+                        mealType.toLowerCase().includes(k)
+                      ) &&
+                      recipeScheduledTime === currentScheduledTime
+                    ) {
+                      recipe = value;
+                      break;
                     }
                   }
+                  //}
 
                   return (
                     <td
