@@ -1,6 +1,7 @@
 "use server";
 
-import { MealType } from "@/constants/constants-enums";
+import mealPlan from "@/app/components/meal-plan/meal-planning/meal-plan";
+import { DayOfTheWeek, MealType } from "@/constants/constants-enums";
 import { ROUTES } from "@/constants/routes";
 import { fetchRecipesFromUris } from "@/lib/client/client-side/edamam";
 import { addMealPlanMeals } from "@/lib/meal";
@@ -15,6 +16,7 @@ import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import { FormResult } from "@/types/form";
 import { getEnumKeysByValues } from "@/util/enum-util";
+import { mapRecipeToMeal } from "@/util/mappers";
 import { generateMealsForPlan } from "@/util/meal-generator-util";
 import { getMealTypeFromTime } from "@/util/meal-utils";
 import dayjs from "dayjs";
@@ -134,6 +136,29 @@ async function fillMealPlanRecipesAndMeals(
 
       await addMealPlanMeals(meals);
     }
+  }
+}
+
+export async function createMealsForMealPlan(
+  recipes: IRecipeInterface[]
+): Promise<FormResult> {
+  const meals: IMealInterface[] = [];
+  const errors: { [key: string]: string } = {};
+
+  recipes.forEach((r, i) => {
+    const currentDate = dayjs(r.timeScheduled).add(i, "day");
+    const mappedMeal = mapRecipeToMeal(r, r.clientId, true);
+    // Assign the day of the week for the meal
+    mappedMeal.dayOfTheWeek = currentDate.day() as unknown as DayOfTheWeek;
+    meals.push(mappedMeal);
+  });
+
+  try {
+    await addMealPlanMeals(meals);
+    return { success: true };
+  } catch (error) {
+    errors.general = "Error generating meals.";
+    return { success: false, errors };
   }
 }
 

@@ -283,33 +283,50 @@ export const generateMealsForPlan = (
       if (recipe) {
         // Map the recipe to a meal object using the mapRecipeToMeal function
         const mappedMeal = mapRecipeToMeal(recipe, mealPlan.clientId, true);
-
-        // Assign the scheduled time for the meal to the current date
-        // mappedMeal.timeScheduled = currentDate.toDate();
-
         // Assign the day of the week for the meal
         mappedMeal.dayOfTheWeek = currentDate.day() as unknown as DayOfTheWeek;
-        //TODO: check if bug occurs here breakfast, lunch lunch
         mappedMeal.mealTypeKey = recipe.mealTypeKey;
-        // Assign mealTypeKey based on the recipe's mealType
-        // mappedMeal.mealTypeKey = getEnumKeysByValues(
-        //   MealType,
-        //   recipe.mealType as MealType[]
-        // );
 
         // Add the mapped meal to the meals array with a default mealPlanId
         meals.push({
           ...mappedMeal,
           mealPlanId: mealPlan.id || 0,
         });
-
-        // Assign the same scheduled time to the recipe
-        // recipe.timeScheduled = mappedMeal.timeScheduled;
       }
     });
   });
   return meals;
 };
+
+// export const generateMealsFromRecipes = (
+//   mealPlan: IMealPlan,
+//   recipes: IRecipeInterface[]
+// ): IMealInterface[] => {
+//   const meals: IMealInterface[] = [];
+
+//   mapRecipeToMeal;
+
+//   recipes.forEach((recipe) => {
+//     const currentDate = dayjs(mealPlan.startDate).add(dayIndex, "day");
+
+//     // Iterate over each section in the selectionItem.sections object
+//     // If a matching recipe is found
+//     if (recipe) {
+//       // Map the recipe to a meal object using the mapRecipeToMeal function
+//       const mappedMeal = mapRecipeToMeal(recipe, mealPlan.clientId, true);
+//       // Assign the day of the week for the meal
+//       mappedMeal.dayOfTheWeek = currentDate.day() as unknown as DayOfTheWeek;
+//       mappedMeal.mealTypeKey = recipe.mealTypeKey;
+
+//       // Add the mapped meal to the meals array with a default mealPlanId
+//       meals.push({
+//         ...mappedMeal,
+//         mealPlanId: mealPlan.id || 0,
+//       });
+//     }
+//   });
+//   return meals;
+// };
 
 export function reUseRecipes(
   weeklyRecipesAddedTracker: IRecipeInterface[],

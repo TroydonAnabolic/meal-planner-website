@@ -177,7 +177,7 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
     try {
       const results = await fetchEdamamRecipes(searchQuery);
       const mealsFromSearch: IMealInterface[] = results.map((recipe) =>
-        mapRecipeToMeal(recipe, meal.mealPlanId! || 0)
+        mapRecipeToMeal(recipe, meal.mealPlanId! || 0, false)
       );
 
       setSearchResults(mealsFromSearch);

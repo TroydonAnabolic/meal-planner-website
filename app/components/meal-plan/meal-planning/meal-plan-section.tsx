@@ -5,7 +5,11 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
-import { createMealPlan, submitMealPlan } from "@/actions/meal-plan-action";
+import {
+  createMealPlan,
+  createMealsForMealPlan,
+  submitMealPlan,
+} from "@/actions/meal-plan-action";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
 import { FormResult } from "@/types/form";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
@@ -131,7 +135,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
 
     async function recreateMealsAction(formData: FormData) {
       setLoading(true);
-      const result = await createMealPlan(recipes, selectedMealPlan);
+      const result = await createMealsForMealPlan(recipes);
       setFormResult(result);
       setLoading(false);
     }
