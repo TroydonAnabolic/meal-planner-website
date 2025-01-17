@@ -16,7 +16,6 @@ import { IMealPlanPreferences } from "@/models/interfaces/client/meal-planner-pr
 import { IMealPlannerRequest } from "@/models/interfaces/edamam/meal-planner/meal-planner-request";
 import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
-import { getEnumKeysByValues } from "@/util/enum-util";
 import {
   getMealTimeRange,
   getMealTypeAndTime,
@@ -103,22 +102,11 @@ export async function POST(req: Request) {
     let counter = 0;
     let totalRecipesProcessed = -1;
     let dayIndex = 0;
-    let recipeYieldMap = new Map<string, number>(); // Track remaining yield for each recipe by URI
     let weeklyRecipesAddedTracker: IRecipeInterface[] = [];
-    // Retrieve the first entry (key-value pair)
-    let dayIndexMealTypeKeyMap = new Map<number, IRecipeInterface>(); // Track indexes for the day, that maps to a meal type
     let currentDayRecipes: { [key: string]: IRecipeInterface } = {}; // Track assigned recipes for each day
 
     // assign scheduled time and meal type keys to the generated recipes
     fetchedRecipes = fetchedRecipes.map((recipe, index) => {
-      const recipeUri = recipe.uri;
-      // Initialize the yield for a new recipe if not already tracked
-      // if (!recipeYieldMap.has(recipeUri) ) {
-      //   recipeYieldMap.set(recipeUri, recipe.yield);
-      // }
-      // if (!recipesAddedTracker.find((r) => r.uri == rec)) {
-      //   recipeYieldMapArr.set(recipeUri, recipe.yield);
-      // }
       // Increment totalRecipesProcessed for each recipe
       totalRecipesProcessed++;
 

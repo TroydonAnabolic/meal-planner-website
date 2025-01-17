@@ -45,6 +45,37 @@ export const groupMealsByWeek = (
   return weeks;
 };
 
+export const getMealTypeFromTime = (
+  scheduleTime: Date | undefined
+): string[] => {
+  if (!scheduleTime) {
+    return [MealType.breakfast];
+  }
+
+  const schedule = dayjs(scheduleTime); // Convert to dayjs object
+
+  // Iterate through the MealTimeRanges to find matching ranges
+  const matchedMealTypes: string[] = Object.entries(MealTimeRanges)
+    .filter(([mealNumber, timeRange]) => {
+      const [start, end] = timeRange
+        .split(" - ")
+        .map((time) => dayjs(time, "h:mm A"));
+
+      // Check if the schedule falls within the range
+      return schedule.isBetween(start, end, "minute", "[)");
+    })
+    .map(
+      ([mealNumber]) =>
+        MealType[
+          MealNumber[
+            mealNumber as keyof typeof MealNumber
+          ].toLowerCase() as keyof typeof MealType
+        ]
+    );
+
+  return matchedMealTypes.length ? matchedMealTypes : [];
+};
+
 export function getMealTypeAndTime(
   date: Date,
   mealTypes: MealType[],

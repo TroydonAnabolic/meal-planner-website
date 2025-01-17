@@ -6,13 +6,14 @@ import TabsWithPills from "../ui/tabs-in-pills";
 import RecipeSearchResultsGrid from "./recipe-search-results-grid";
 import FormModal from "../ui/modals/form-modal";
 import RecipeInputFields from "./recipe-input-fields";
-import { getEnumKeysByValues } from "@/util/enum-util";
 import { MealType, UrlAction } from "@/constants/constants-enums";
 import { FormActionType } from "@/models/interfaces/types";
 import { usePathname, useSearchParams } from "next/navigation";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { parseDate } from "@/util/date-util";
+import { getMealTypeFromTime } from "@/util/meal-utils";
+import { getEnumKeysByValues } from "@/util/enum-util";
 
 dayjs.extend(customParseFormat);
 
@@ -187,10 +188,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
   );
 
   const handleViewRecipeToAdd = (recipe: IRecipeInterface) => {
-    recipe.mealTypeKey = getEnumKeysByValues(
-      MealType,
-      recipe.mealType as MealType[]
-    );
+    recipe.mealTypeKey = getMealTypeFromTime(undefined);
 
     recipe.baseTotalDaily = recipe.totalDaily;
     recipe.baseTotalNutrients = recipe.totalNutrients;

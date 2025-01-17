@@ -112,24 +112,10 @@ const RecipeList: React.FC<RecipeListProps> = ({
   }, [recipes]);
 
   // Paginate the recipeMap
-  const paginatedRecipes = useMemo(() => {
-    const recipesArray = Array.from(recipeMap.values());
-    return recipesArray.slice(startIdx, endIdx); // Apply pagination here
-  }, [recipeMap, startIdx, endIdx]);
-
-  // Extract all used recipe IDs from mealPlan
-  const usedRecipeIds = useMemo(() => {
-    const ids = new Set<string>();
-    mealPlan.selection.forEach((selectionItem) => {
-      Object.values(selectionItem.sections).forEach((section) => {
-        const sectionId = extractRecipeIdFromHref(section._links.self.href);
-        if (sectionId) {
-          ids.add(sectionId);
-        }
-      });
-    });
-    return ids;
-  }, [mealPlan]);
+  // const paginatedRecipes = useMemo(() => {
+  //   const recipesArray = Array.from(recipeMap.values());
+  //   return recipesArray.slice(startIdx, endIdx); // Apply pagination here
+  // }, [recipeMap, startIdx, endIdx]);
 
   // Determine which mealTypes are present across all days
   const availableMealTypes = useMemo(() => {
@@ -235,24 +221,6 @@ const RecipeList: React.FC<RecipeListProps> = ({
                   const section = selectionItem.sections[mealType];
                   let recipe: IRecipeInterface | null = null;
 
-                  // if (section) {
-                  //   const sectionId = extractRecipeIdFromHref(
-                  //     section._links.self.href
-                  //   );
-                  //   if (sectionId) {
-                  //     // Find the recipe by extracted ID
-                  //     for (let key of recipeMap.keys()) {
-                  //       if (key.startsWith(sectionId)) {
-                  //         recipe = recipeMap.get(key) || null;
-                  //         break;
-                  //       }
-                  //     }
-                  //   }
-                  // }
-
-                  // If no recipe is found, assign a missing recipe
-                  // if (!recipe) {
-                  // Loop through recipeMap to find the correct recipe based on mealType and timeScheduled
                   for (let [key, value] of recipeMap.entries()) {
                     const recipeMissing = value as IRecipeInterface;
                     const currentScheduledTime = days[dayIndex]?.date;
@@ -321,9 +289,10 @@ const RecipeList: React.FC<RecipeListProps> = ({
                                 >
                                   {recipe.totalNutrients &&
                                   recipe.totalNutrients[macro.tag]
-                                    ? `${recipe.totalNutrients[
-                                        macro.tag
-                                      ].quantity.toFixed(0)}${macro.unit}`
+                                    ? `${(
+                                        recipe.totalNutrients[macro.tag]
+                                          .quantity / recipe.yield
+                                      ).toFixed(0)}${macro.unit}`
                                     : "0g"}
                                 </span>
                               </div>
@@ -366,18 +335,6 @@ const RecipeList: React.FC<RecipeListProps> = ({
                       ) : // if there is no recipe on this cell then add it
                       allowEmptyRows && mode === "edit" ? (
                         <Link
-                          // href={`${
-                          //   ROUTES.MEAL_PLANNER.RECIPES.MANAGE_RECIPES
-                          // }?page=1&action=add&${createQueryString(
-                          //   "mealType",
-                          //   mealType
-                          // )}&${createQueryString(
-                          //   "timeScheduled",
-                          //   days[dayIndex]?.date || ""
-                          // )}&${createQueryString(
-                          //   "mealPlanId",
-                          //   (mealPlan as IMealPlan).id.toString()
-                          // )}`}
                           href={`${
                             ROUTES.MEAL_PLANNER.RECIPES.MANAGE_RECIPES
                           }?${createQueryString({

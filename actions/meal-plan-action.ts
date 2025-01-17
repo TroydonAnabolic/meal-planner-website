@@ -16,6 +16,7 @@ import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import { FormResult } from "@/types/form";
 import { getEnumKeysByValues } from "@/util/enum-util";
 import { generateMealsForPlan } from "@/util/meal-generator-util";
+import { getMealTypeFromTime } from "@/util/meal-utils";
 import dayjs from "dayjs";
 import { revalidatePath } from "next/cache";
 import { isRedirectError } from "next/dist/client/components/redirect";
@@ -110,10 +111,7 @@ async function fillMealPlanRecipesAndMeals(
       recipe.mealPlanId = resultMealPlan?.id;
       //recipe.image = "/aiimages/food/default-food.svg";
       recipe.clientId = mealPlan.clientId;
-      recipe.mealTypeKey = getEnumKeysByValues(
-        MealType,
-        recipe.mealType as MealType[]
-      );
+      recipe.mealTypeKey = getMealTypeFromTime(recipe.timeScheduled);
     });
     meals.forEach(async (meal) => {
       meal.mealPlanId = resultMealPlan?.id;

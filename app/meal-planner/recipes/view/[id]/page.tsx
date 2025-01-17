@@ -5,6 +5,7 @@ import { MealType } from "@/constants/constants-enums";
 import { getRecipeFromId } from "@/lib/server-side/edamam";
 import { IRecipeHit } from "@/models/interfaces/recipe/recipe";
 import { getEnumKeysByValues } from "@/util/enum-util";
+import { getMealTypeFromTime } from "@/util/meal-utils";
 
 export default async function Page({
   params,
@@ -15,15 +16,6 @@ export default async function Page({
 
   const recipeHit = await getRecipeFromId(id);
   const recipe = recipeHit?.recipe;
-
-  const mealtypeKey = getEnumKeysByValues(
-    MealType,
-    recipe?.mealType as MealType[]
-  );
-
-  if (recipe) {
-    recipe.mealTypeKey = mealtypeKey;
-  }
 
   if (!recipeHit) {
     return (
