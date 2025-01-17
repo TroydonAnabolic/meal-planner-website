@@ -16,7 +16,7 @@ export function initializeClientSettings(clientData: IClientInterface) {
   };
 
   const defaultMealPlanPreference: IMealPlanPreferences = {
-    size: 0,
+    size: 7,
     plan: {},
     clientSettingsId: clientData.ClientSettingsDto?.id || 0,
   };
