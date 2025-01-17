@@ -313,8 +313,39 @@ export const generateMealsForPlan = (
 
 export function reUseRecipes(
   weeklyRecipesAddedTracker: IRecipeInterface[],
+  recipeYieldTracker: Record<string, number>,
   mealTypeKey: string,
-  dayIndex: number,
+  recipe: IRecipeInterface
+) {
+  // Check if the recipe was already added for the meal type and has yield left
+  const existingRecipe = weeklyRecipesAddedTracker.find(
+    (r) => r.mealTypeKey.includes(mealTypeKey) && recipeYieldTracker[r.uri] > 0 //&&
+    //r.uri === recipe.uri // Match by recipe URI
+  );
+
+  if (existingRecipe) {
+    // Reuse the existing recipe
+    recipeYieldTracker[existingRecipe.uri]--;
+    return { ...existingRecipe, timeScheduled: recipe.timeScheduled };
+  }
+
+  // If no matching reusable recipe is found, use the current recipe
+  recipeYieldTracker[recipe.uri] = recipeYieldTracker[recipe.uri]
+    ? recipeYieldTracker[recipe.uri] - 1
+    : recipe.yield - 1;
+
+  // Add the recipe to the tracker for reuse
+  weeklyRecipesAddedTracker.push({
+    ...recipe,
+    yield: recipeYieldTracker[recipe.uri],
+  });
+  return recipe;
+}
+
+export function reUseRecipes2(
+  weeklyRecipesAddedTracker: IRecipeInterface[],
+  recipeYieldTracker: Record<string, number>,
+  mealTypeKey: string,
   recipe: IRecipeInterface
 ) {
   const lastWeeksRecipeForMealType = weeklyRecipesAddedTracker.find((r) =>
@@ -328,17 +359,15 @@ export function reUseRecipes(
   if (
     // if last week had a recipe and it has yield remaining and its not the first week
     lastWeeksRecipeForMealType &&
-    lastWeeksRecipeForMealType.yield > 0 &&
-    dayIndex != 0
+    lastWeeksRecipeForMealType.yield > 0
   ) {
-    newYield = lastWeeksRecipeForMealType.yield--;
     const recipeCopy = { ...lastWeeksRecipeForMealType };
     recipeCopy.yield--; // Decrement yield on the copy
 
     // add last weeks recipe again to be recalc
-    weeklyRecipesAddedTracker.push(lastWeeksRecipeForMealType);
+    weeklyRecipesAddedTracker.push(recipeCopy);
     // TODO: see if recipe reassignment updates recipe being tracked and fetched recipes
-    recipe = { ...lastWeeksRecipeForMealType, yield: newYield };
+    recipe = { ...recipeCopy };
     // if last week had a recipe, assuming it has 1 meal remaining, we instead add this weeks generated recipe
     // to add for next week
   } else if (

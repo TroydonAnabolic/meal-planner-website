@@ -42,11 +42,11 @@ async function getCertificate() {
   try {
     const base64Cert = await getCertificate();
     const caCert = Buffer.from(base64Cert, "base64");
-    const allowSelfSignedCerts = process.env.ALLOW_SELF_SIGNED_CERTS === "true";
+    const isProd = process.env.NODE_ENV === "production";
     // !allowSelfSignedCerts Ensure certificate verification is enabled
     const httpsAgent = new https.Agent({
-      ca: caCert, // Trust only the specified certificate
-      rejectUnauthorized: true,
+      ca: isProd ? caCert : undefined, // Trust only the specified certificate
+      rejectUnauthorized: isProd ? true : false, //
     });
 
     // Set Axios global defaults

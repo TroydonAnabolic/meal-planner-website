@@ -42,12 +42,12 @@ export interface RecipeNutrients {
 
 export interface IRecipeInterface {
   id: number;
-  mealId?: number;
   mealPlanId: number | null;
   clientId: number;
   uri: string;
   label: string;
   image: string;
+  mealId?: number;
   images?: RecipeImages;
   source: string;
   url: string;

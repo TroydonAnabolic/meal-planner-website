@@ -139,7 +139,7 @@ export async function POST(req: Request) {
       // Convert the scheduled time to the user's local timezone
       const userTimezone = dayjs.tz.guess(); // Get the user's timezone
 
-      const { mealTypeKey, hasGeneratedForLunch, updatedDate } =
+      const { mealTypeKey, hasGeneratedForDinner, updatedDate } =
         getMealTypeAndTime(
           scheduledDate,
           recipe.mealType as MealType[],
@@ -153,13 +153,13 @@ export async function POST(req: Request) {
         .toDate();
 
       // Convert to local time
-      generatedForLunch = hasGeneratedForLunch;
+      generatedForLunch = hasGeneratedForDinner;
 
       // reuse recipes with > 1 yield
-      recipe = reUseRecipes(weeklyRecipesAddedTracker, mealTypeKey, dayIndex, {
-        ...recipe,
-        mealTypeKey: [mealTypeKey!],
-      });
+      // recipe = reUseRecipes(weeklyRecipesAddedTracker, mealTypeKey, {
+      //   ...recipe,
+      //   mealTypeKey: [mealTypeKey!],
+      // });
 
       // reset whether lunch is generated each time we enter a new day - a new day occurs when we created calculated recipe props
       counter++;
@@ -177,16 +177,18 @@ export async function POST(req: Request) {
     // Track replacements
 
     const replacements: { fetchedUri: string; favoriteUri: string }[] = [];
-
+    weeklyRecipesAddedTracker = [];
+    const recipeYieldTracker: Record<string, number> = {};
     // Handle favorite recipes by replacing generated recipes with favorite recipes that fall on the same mealtypekey + scheduledtime range
+    // TOO Imple
     if (useFavouriteRecipes && clientId > 0) {
       favouriteRecipes = (await getRecipesByClientId(clientId))?.filter(
         (r) => r.isFavourite
       );
 
       if (favouriteRecipes?.length) {
-        fetchedRecipes = fetchedRecipes.map((fetchedRecipe) => {
-          const matchingFavorite = favouriteRecipes?.find((fav) => {
+        fetchedRecipes = fetchedRecipes.map((fetchedRecipe, index) => {
+          let matchingFavorite = favouriteRecipes?.find((fav) => {
             // Normalize mealTypeKey for comparison
             const fetchedRecipeMealTypes = fetchedRecipe.mealTypeKey?.map(
               (type) => type.toLowerCase()
@@ -248,12 +250,38 @@ export async function POST(req: Request) {
               fetchedUri: fetchedRecipe.uri,
               favoriteUri: matchingFavorite.uri,
             });
-            return { ...fetchedRecipe, ...matchingFavorite, isFavourite: true };
+
+            return reUseRecipes(
+              weeklyRecipesAddedTracker,
+              recipeYieldTracker,
+              matchingFavorite.mealTypeKey[0],
+              {
+                ...matchingFavorite,
+              }
+            );
           } else {
-            return { ...fetchedRecipe, isFavourite: false };
+            return reUseRecipes(
+              weeklyRecipesAddedTracker,
+              recipeYieldTracker,
+              fetchedRecipe.mealTypeKey[0],
+              {
+                ...fetchedRecipe,
+              }
+            );
           }
         });
       }
+    } else {
+      fetchedRecipes = fetchedRecipes.map((fetchedRecipe, index) => {
+        return reUseRecipes(
+          weeklyRecipesAddedTracker,
+          recipeYieldTracker,
+          fetchedRecipe.mealTypeKey[0],
+          {
+            ...fetchedRecipe,
+          }
+        );
+      });
     }
 
     // Update the generated meal plan with replaced favorite recipes

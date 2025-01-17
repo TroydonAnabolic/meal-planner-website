@@ -49,10 +49,9 @@ export function getMealTypeAndTime(
   date: Date,
   mealTypes: MealType[],
   mealTypesToGenerateFor: string[], // mealtypes/mealnumbers that will generate for client
-  generatedForLunch: boolean
-): { mealTypeKey: string; hasGeneratedForLunch: boolean; updatedDate: Date } {
-  const time = dayjs(date); // Parse the given date using dayjs
-  const hasLunchInMeals = mealTypesToGenerateFor.includes(MealNumber.Meal3);
+  generatedForDinner: boolean
+): { mealTypeKey: string; hasGeneratedForDinner: boolean; updatedDate: Date } {
+  const hasDinnerInMeals = mealTypesToGenerateFor.includes(MealNumber.Meal6);
 
   // Iterate through the provided meal types to determine the range of interest
   for (const mealType of mealTypes) {
@@ -61,18 +60,18 @@ export function getMealTypeAndTime(
       ([mealNumber, timeRange]) => {
         // lunch
         if (
-          mealNumber === MealNumber.Meal3 &&
-          mealType == MealType.lunch &&
-          !generatedForLunch
-        ) {
-          return hasLunchInMeals && !generatedForLunch;
-        } else if (
           mealNumber === MealNumber.Meal6 &&
-          mealType == MealType.dinner
+          mealType == MealType.dinner &&
+          !generatedForDinner
         ) {
-          const isDinner =
-            !hasLunchInMeals || (hasLunchInMeals && generatedForLunch);
-          return isDinner;
+          return hasDinnerInMeals && !generatedForDinner;
+        } else if (
+          mealNumber === MealNumber.Meal3 &&
+          mealType == MealType.lunch
+        ) {
+          const isLunch =
+            !hasDinnerInMeals || (hasDinnerInMeals && generatedForDinner);
+          return isLunch;
         } else {
           const hasMealType = mealNumber
             .toLowerCase()
@@ -101,54 +100,54 @@ export function getMealTypeAndTime(
       console.log("Updated Date:", updatedDate); // Check if it matches the expected local time
 
       // Check if it's between 12:00 PM and 2:00 PM
-      const isLunch = start.isBetween(
-        dayjs("12:00 PM", "h:mm A"),
-        dayjs("2:00 PM", "h:mm A"),
+      const isDinner = start.isBetween(
+        dayjs("9:00 PM", "h:mm A"),
+        dayjs("11:00 PM", "h:mm A"),
         "minute",
         "[)"
       );
 
-      console.log("Is Lunch:", isLunch); // This should evaluate correctly now
+      console.log("isDinner:", isDinner); // This should evaluate correctly now
 
       switch (mealType) {
         case MealType.breakfast:
           return {
             mealTypeKey: "breakfast",
-            hasGeneratedForLunch: generatedForLunch,
+            hasGeneratedForDinner: generatedForDinner,
             updatedDate: updatedDate,
           };
         case MealType.lunch:
         case MealType.dinner:
-          if (isLunch) {
-            generatedForLunch = true;
+          if (isDinner) {
+            generatedForDinner = true;
           }
           return {
-            mealTypeKey: isLunch ? "lunch" : "dinner",
-            hasGeneratedForLunch: generatedForLunch,
+            mealTypeKey: isDinner ? "dinner" : "lunch",
+            hasGeneratedForDinner: generatedForDinner,
             updatedDate: updatedDate,
           };
         case MealType.brunch:
           return {
             mealTypeKey: "brunch",
-            hasGeneratedForLunch: generatedForLunch,
+            hasGeneratedForDinner: generatedForDinner,
             updatedDate: updatedDate,
           };
         case MealType.snack:
           return {
             mealTypeKey: "snack",
-            hasGeneratedForLunch: generatedForLunch,
+            hasGeneratedForDinner: generatedForDinner,
             updatedDate: updatedDate,
           };
         case MealType.teatime:
           return {
             mealTypeKey: "teatime",
-            hasGeneratedForLunch: generatedForLunch,
+            hasGeneratedForDinner: generatedForDinner,
             updatedDate: updatedDate,
           };
         default:
           return {
             mealTypeKey: "breakfast",
-            hasGeneratedForLunch: generatedForLunch,
+            hasGeneratedForDinner: generatedForDinner,
             updatedDate: updatedDate,
           };
       }
@@ -158,7 +157,7 @@ export function getMealTypeAndTime(
   // Default to breakfast if no match is found
   return {
     mealTypeKey: "breakfast",
-    hasGeneratedForLunch: generatedForLunch,
+    hasGeneratedForDinner: generatedForDinner,
     updatedDate: dayjs(date).hour(7).minute(0).toDate(), // Default breakfast time
   };
 }

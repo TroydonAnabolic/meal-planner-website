@@ -105,7 +105,7 @@ export const MealTimeRanges: Record<MealNumber, string> = {
   [MealNumber.Meal3]: "12:00 PM - 2:00 PM",
   [MealNumber.Meal4]: "3:00 PM - 4:00 PM",
   [MealNumber.Meal5]: "6:00 PM - 8:00 PM",
-  [MealNumber.Meal6]: "9:00 PM - 10:00 PM",
+  [MealNumber.Meal6]: "9:00 PM - 11:00 PM",
 };
 
 export enum MealType {
