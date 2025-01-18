@@ -9,10 +9,12 @@ import { addMealPlan, updateMealPlan } from "@/lib/meal-plan";
 import { addMealPlanMeals, updateMealPlanMeals } from "@/lib/meal";
 import { addMealPlanRecipes, updateMealPlanRecipes } from "@/lib/recipe";
 import { getEnumKeyByValue, getEnumKeysByValues } from "@/util/enum-util";
-import { MealType } from "@/constants/constants-enums";
+import { DayOfTheWeek, MealType } from "@/constants/constants-enums";
 import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import { revalidatePath } from "next/cache";
 import { ROUTES } from "@/constants/routes";
+import dayjs from "dayjs";
+import { mapRecipeToMeal } from "@/util/mappers";
 
 /**
  * Creates a meal plan based on the provided recipes, generator response, and other parameters.
@@ -35,7 +37,8 @@ export async function createMealPlan(
 
   try {
     let resultMealPlan: IMealPlan | undefined;
-    const meals = generateMealsForPlan(mealPlan, recipes);
+    //const meals = generateMealsForPlan(mealPlan, recipes);
+    const meals: IMealInterface[] = [];
 
     if (mealPlan.id) {
       resultMealPlan = await updateMealPlan(mealPlan);
@@ -68,8 +71,8 @@ async function fillMealPlanRecipesAndMeals(
 ) {
   try {
     if (resultMealPlan) {
-      recipes.forEach(async (recipe) => {
-        // make sure all ids are 0 to create recipes and related
+      recipes.forEach(async (recipe, i) => {
+        // make sure all ids are 0 to create recipes and related to counter favorite
         recipe.id = 0;
         recipe.mealPlanId = resultMealPlan?.id;
         // recipe.image = "/aiimages/food/default-food.svg";
@@ -77,10 +80,6 @@ async function fillMealPlanRecipesAndMeals(
           ? ((recipe.images.id = 0), (recipe.images.recipeId = 0))
           : undefined;
         recipe.clientId = mealPlan.clientId;
-        // recipe.mealTypeKey = getEnumKeysByValues(
-        //   MealType,
-        //   recipe.mealType as MealType[]
-        // );
         recipe.ingredients?.forEach(async (ingr) => {
           // make sure all ids are 0 to create recipes and related
           ingr.id = 0;
@@ -88,20 +87,29 @@ async function fillMealPlanRecipesAndMeals(
         });
       });
 
-      meals.forEach(async (meal) => {
-        meal.id = 0;
-        meal.mealPlanId = resultMealPlan?.id;
-        //  meal.image = "/aiimages/food/default-food.svg";
-        meal.clientId = mealPlan.clientId;
-        meal.ingredients?.forEach(async (ingr) => {
-          // make sure all ids are 0 to create recipes and related
-          ingr.id = 0;
-          ingr.mealId = 0;
-        });
-      });
+      // meals.forEach(async (meal) => {
+      //   meal.id = 0;
+      //   meal.mealPlanId = resultMealPlan?.id;
+      //   //  meal.image = "/aiimages/food/default-food.svg";
+      //   meal.clientId = mealPlan.clientId;
+      //   meal.ingredients?.forEach(async (ingr) => {
+      //     // make sure all ids are 0 to create recipes and related
+      //     ingr.id = 0;
+      //     ingr.mealId = 0;
+      //   });
+      // });
 
       const recipesAdded = await addMealPlanRecipes(recipes);
-      if (recipesAdded?.length && meals?.length) {
+
+      if (recipesAdded?.length) {
+        recipesAdded?.forEach(async (recipe, i) => {
+          const currentDate = dayjs(recipe.timeScheduled).add(i, "day");
+          const mappedMeal = mapRecipeToMeal(recipe, recipe.mealPlanId!, true);
+          mappedMeal.dayOfTheWeek =
+            currentDate.day() as unknown as DayOfTheWeek;
+          meals.push(mappedMeal);
+        });
+
         meals.forEach((m) => {
           // Find the recipe that matches the meal's timeScheduled date
           const matchingRecipe = recipesAdded.find((r) => {
@@ -127,7 +135,7 @@ async function fillMealPlanRecipesAndMeals(
           }
         });
 
-        await addMealPlanMeals(meals);
+        const addedMeals = await addMealPlanMeals(meals);
       }
     }
   } catch (error: any) {

@@ -326,6 +326,24 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
                               );
                               setSelectedMealPlan(defaultMealPlan);
                               setSelectedLabel("New Meal Plan");
+
+                              setConfirmModalProps((prev) => ({
+                                ...prev,
+                                open: true,
+                                title: "Meal Plan Deleted",
+                                message: "Meal Plan has been deleted",
+                                confirmText: "OK",
+                                onConfirm: () => {
+                                  console.log(
+                                    "confirmModalProps",
+                                    confirmModalProps
+                                  );
+                                  closeConfirmModal();
+                                },
+                                cancelText: "",
+                                onClose: () => {},
+                                colorScheme: "bg-green-600 hover:bg-yellow-500",
+                              }));
                             } catch (error) {
                               console.error(error);
                               alert("Error deleting the meal plan.");
