@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { fetchRecipesToExclude } from "@/lib/client/client-side/edamam";
+import { fetchRecipesToExclude } from "@/lib/client-side/edamam";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";

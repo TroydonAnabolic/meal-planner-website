@@ -21,7 +21,7 @@ import { IClientInterface } from "@/models/interfaces/client/client";
 import { isEmailNotConfirmedException } from "@/util/error-util";
 import { adminDeleteUser, fetchCognitoAttributes } from "./cognito-actions";
 import { FormResult } from "@/types/form";
-import { deleteClient, storeClient } from "@/lib/client/client";
+import { deleteClient, storeClient } from "@/lib/client-side/client";
 import { ISignUpResult } from "amazon-cognito-identity-js";
 import { ROUTES } from "@/constants/routes";
 import { stripeCancelSubscription } from "@/lib/stripe";

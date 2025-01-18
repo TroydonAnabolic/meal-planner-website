@@ -11,22 +11,16 @@ import {
   IFoodNutrients,
   IFoodNutrientsResponse,
 } from "@/models/interfaces/edamam/food/nutrients-response";
-import {
-  IRecipeResponse,
-  IRecipeResponseData,
-} from "@/models/interfaces/edamam/recipe/recipe-response";
+import { IRecipeResponseData } from "@/models/interfaces/edamam/recipe/recipe-response";
 import { IMealPlannerRequest } from "@/models/interfaces/edamam/meal-planner/meal-planner-request";
-import {
-  GeneratorResponse,
-  IMealPlannerResponse,
-} from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
+import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
 import { transformMealPlanLabels } from "@/util/meal-generator-util";
 import {
   ShoppingListEntry,
   ShoppingListRequest,
 } from "@/models/interfaces/edamam/meal-planner/shopping-list-request";
 import { IRecipeRequest } from "@/models/interfaces/recipe/recipes-request";
-import { exponentialBackoffFetch } from "../../http/exponential-back-off";
+import { exponentialBackoffFetch } from "../http/exponential-back-off";
 import qs from "qs";
 import { IShoppingListResult } from "@/models/interfaces/edamam/meal-planner/shopping-list-response";
 import Bottleneck from "bottleneck"; // Install via npm install bottleneck
@@ -230,7 +224,7 @@ export async function fetchRecipeFromURI(
         }
       ),
     5,
-    60000
+    6000
   );
 
   if (!recipeResponse.ok) {

@@ -39,6 +39,7 @@ type RecipesGridProps = {
   clientId: number; // Client ID for associating recipes
 };
 
+// TODO: show only one recipe per meal plan for meal plan recipes
 const RecipesGrid: React.FC<RecipesGridProps> = ({ recipesData, clientId }) => {
   const pathname = usePathname();
 

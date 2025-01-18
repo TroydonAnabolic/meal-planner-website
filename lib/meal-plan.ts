@@ -4,7 +4,9 @@ import {
   DIETAPI_BASE,
 } from "@/constants/constants-urls";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
+import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import axios from "axios";
+import { fetchRecipesFromUris } from "./client-side/edamam";
 
 const instance = axios.create({
   baseURL: BACKEND_URL_LIVE,

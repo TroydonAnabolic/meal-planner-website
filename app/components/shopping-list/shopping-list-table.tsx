@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { IShoppingListResult } from "@/models/interfaces/edamam/meal-planner/shopping-list-response";
 import { getUnitOfMeasureFromUrl } from "@/constants/constants-enums";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
-import { generateConsolidatedShoppingList } from "@/lib/client/client-side/edamam";
+import { generateConsolidatedShoppingList } from "@/lib/client-side/edamam";
 
 interface ShoppingListTableProps {
   recipes: IRecipeInterface[];

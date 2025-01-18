@@ -3,7 +3,8 @@
 import mealPlan from "@/app/components/meal-plan/meal-planning/meal-plan";
 import { DayOfTheWeek, MealType } from "@/constants/constants-enums";
 import { ROUTES } from "@/constants/routes";
-import { fetchRecipesFromUris } from "@/lib/client/client-side/edamam";
+import { fetchRecipesFromUris } from "@/lib/client-side/edamam";
+import { generateRecipesForMealPlan } from "@/lib/client-side/meal-plan";
 import { addMealPlanMeals } from "@/lib/meal";
 import { addMealPlan, updateMealPlan } from "@/lib/meal-plan";
 import { addMealPlanRecipes } from "@/lib/recipe";
@@ -86,22 +87,6 @@ export const submitMealPlan = async (
   }
 };
 
-const generateRecipesForMealPlan = async (
-  mealPlan: IMealPlan
-): Promise<IRecipeInterface[]> => {
-  const recipeUris: string[] = mealPlan.selection.flatMap((selectionItem) =>
-    Object.values(selectionItem.sections).map(
-      (section) => section._links.self.href
-    )
-  );
-
-  const fetchedRecipes: IRecipeInterface[] = await fetchRecipesFromUris(
-    recipeUris
-  );
-
-  return fetchedRecipes;
-};
-
 async function fillMealPlanRecipesAndMeals(
   resultMealPlan: IMealPlan | undefined,
   recipes: IRecipeInterface[],
@@ -136,58 +121,6 @@ async function fillMealPlanRecipesAndMeals(
 
       await addMealPlanMeals(meals);
     }
-  }
-}
-
-export async function reCreateRecipeAndMealsForMealPlan(
-  recipes: IRecipeInterface[]
-): Promise<FormResult> {
-  const meals: IMealInterface[] = [];
-  const errors: { [key: string]: string } = {};
-
-  recipes.forEach((r, i) => {
-    const currentDate = dayjs(r.timeScheduled).add(i, "day");
-    const mappedMeal = mapRecipeToMeal(r, r.mealPlanId!, true);
-    // Assign the day of the week for the meal
-    mappedMeal.dayOfTheWeek = currentDate.day() as unknown as DayOfTheWeek;
-    meals.push(mappedMeal);
-  });
-
-  try {
-    const recipesAdded = await addMealPlanRecipes(recipes);
-    if (recipesAdded?.length && meals?.length) {
-      meals.forEach((m) => {
-        // Find the recipe that matches the meal's timeScheduled date
-        const matchingRecipe = recipesAdded.find((r) => {
-          const recipeTime =
-            r.timeScheduled instanceof Date
-              ? r.timeScheduled
-              : r.timeScheduled
-              ? new Date(r.timeScheduled)
-              : null;
-
-          const mealTime =
-            m.timeScheduled instanceof Date
-              ? m.timeScheduled
-              : m.timeScheduled
-              ? new Date(m.timeScheduled)
-              : null;
-
-          return recipeTime!.getTime() === mealTime!.getTime();
-        });
-
-        if (matchingRecipe) {
-          m.recipeId = matchingRecipe.id; // Assign recipeId to the meal
-        }
-      });
-
-      await addMealPlanMeals(meals);
-    }
-    revalidatePath(ROUTES.MEAL_PLANNER.MEAL_PLAN);
-    return { success: true };
-  } catch (error) {
-    errors.general = "Error generating meals.";
-    return { success: false, errors };
   }
 }
 

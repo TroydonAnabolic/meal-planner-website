@@ -1,4 +1,3 @@
-import axios from "@/axiosConfig";
 import {
   EDAMAM_BASE,
   EDAMAM_MEALPLANNER_API,

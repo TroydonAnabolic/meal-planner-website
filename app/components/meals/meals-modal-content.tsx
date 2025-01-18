@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 
 import { IMealInterface } from "@/models/interfaces/meal/Meal";
-import { fetchEdamamRecipes } from "@/lib/client/client-side/edamam";
+import { fetchEdamamRecipes } from "@/lib/client-side/edamam";
 import TabsWithPills from "../ui/tabs-in-pills";
 import FormModal from "../ui/modals/form-modal";
 import { getEnumKeysByValues } from "@/util/enum-util";

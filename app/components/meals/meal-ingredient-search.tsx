@@ -7,7 +7,7 @@ import {
   IHint,
 } from "@/models/interfaces/edamam/food/food-response";
 import { convertToGrams, debounce } from "@/util/generic-utils";
-import { fetchFood } from "@/lib/client/client-side/edamam";
+import { fetchFood } from "@/lib/client-side/edamam";
 import { IFoodIngredient } from "@/models/interfaces/edamam/food/nutrients-request";
 
 import {

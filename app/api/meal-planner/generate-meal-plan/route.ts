@@ -272,6 +272,7 @@ export async function POST(req: Request) {
       });
     }
 
+    //TODO: test if first seciton's assigned prop matches fetchedRecipes to see if custom is assinged correctly
     // Update the generated meal plan with replaced favorite recipes
     generatedMealPlan?.selection.forEach((selectionItem) => {
       Object.values(selectionItem.sections).forEach((section) => {

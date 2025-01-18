@@ -12,9 +12,9 @@ import {
   GetUserCommand,
   InitiateAuthCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
-import { getClientUnsafe } from "./lib/client/client-side/client";
+import { getClientUnsafe } from "./lib/client-side/client/client";
 import Stripe from "stripe";
-import { getClient, updateClient } from "./lib/client/client";
+import { getClient, updateClient } from "./lib/client-side/client";
 
 const cognitoConfig: CognitoIdentityProviderClientConfig = {
   region: process.env.NEXT_PUBLIC_COGNITO_REGION, // Your AWS region

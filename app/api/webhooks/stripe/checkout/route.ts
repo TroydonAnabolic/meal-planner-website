@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { getClient, updateClient } from "@/lib/client/client";
+import { getClient, updateClient } from "@/lib/client-side/client";
 import { auth } from "@/auth";
 
 type METADATA = {

@@ -5,10 +5,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
-import {
-  reCreateRecipeAndMealsForMealPlan,
-  submitMealPlan,
-} from "@/actions/meal-plan-action";
+import { submitMealPlan } from "@/actions/meal-plan-action";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
 import { FormResult } from "@/types/form";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
@@ -29,6 +26,7 @@ import { revalidatePath } from "next/cache";
 import { ROUTES } from "@/constants/routes";
 import NutritionSummary from "./nutritional-summary";
 import HorizontalScrollContainer from "../../ui/scrolls/horizontal-scroll-container/horizontal-scroll-container";
+import { reCreateRecipeAndMealsForMealPlan } from "@/lib/client-side/meal-plan";
 
 type MealPlanSectionProps = {
   initialMealPlan: IMealPlan;
@@ -132,12 +130,14 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
       setLoading(false);
     }
 
-    async function recreateMealsAction(formData: FormData) {
+    const handleRecreateMeals = async () => {
+      console.log("Recreating meals");
       setLoading(true);
-      const result = await reCreateRecipeAndMealsForMealPlan(recipes);
+      setFormResult({ errors: { loading: "Loading..." } });
+      const result = await reCreateRecipeAndMealsForMealPlan(selectedMealPlan);
       setFormResult(result);
       setLoading(false);
-    }
+    };
 
     return (
       <div
@@ -155,6 +155,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
             />
           </div>
         )}
+
         {/* Meal Plan Selector */}
         <div className="mb-6 w-1/3 max-w-xs">
           <LabelDropdown
@@ -259,92 +260,98 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
               </button>
             </div>
           </form>
-
-          {selectedMealPlan && selectedMealPlan.id > 0 && (
-            <form>
-              {/* Delete Meal Plan Button */}
-              <div className="flex justify-end mt-4">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setConfirmModalProps({
-                      open: true,
-                      title: "Delete Meal Plan",
-                      message: `Are you sure you want to delete the meal plan "${selectedLabel}"? This action cannot be undone.`,
-                      confirmText: "Delete",
-                      cancelText: "Cancel",
-                      colorScheme: "bg-red-600 hover:bg-red-500",
-                      onConfirm: async () => {
-                        try {
-                          setLoading(true);
-                          const response = await fetch(
-                            `/api/meal-plans/delete/${selectedMealPlan.id}`,
-                            {
-                              method: "DELETE",
-                            }
-                          );
-                          if (!response.ok) {
-                            throw new Error("Failed to delete the meal plan.");
-                          }
-
-                          revalidatePath(ROUTES.MEAL_PLANNER.MEAL_PLAN);
-
-                          setMealPlans((prev) =>
-                            prev.filter(
-                              (plan) => plan.id !== selectedMealPlan.id
-                            )
-                          );
-                          setSelectedMealPlan(defaultMealPlan);
-                          setSelectedLabel("New Meal Plan");
-                        } catch (error) {
-                          console.error(error);
-                          alert("Error deleting the meal plan.");
-                        } finally {
-                          setLoading(false);
-                          closeConfirmModal();
-                        }
-                      },
-                      onClose: closeConfirmModal,
-                      type: "warning",
-                    })
-                  }
-                  className="w-60 px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                  Delete Meal Plan
-                </button>
+          {/* Delete Meal Plan Button and Form Result */}
+          <div className="flex justify-between items-center mt-4">
+            {/* Form Result */}
+            {formResult ? (
+              <div
+                className={`p-4 rounded-md ${
+                  formResult.success
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                {formResult.success
+                  ? "Meal plan saved successfully!"
+                  : formResult?.errors?.general
+                  ? formResult.errors.general
+                  : formResult?.errors?.loading}
               </div>
-            </form>
-          )}
+            ) : (
+              <div className="flex-grow"></div> // Spacer div
+            )}
+            {selectedMealPlan && selectedMealPlan.id > 0 && (
+              <form>
+                <div className="flex justify-end mt-4">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setConfirmModalProps({
+                        open: true,
+                        title: "Delete Meal Plan",
+                        message: `Are you sure you want to delete the meal plan "${selectedLabel}"? This action cannot be undone.`,
+                        confirmText: "Delete",
+                        cancelText: "Cancel",
+                        colorScheme: "bg-red-600 hover:bg-red-500",
+                        onConfirm: async () => {
+                          try {
+                            setLoading(true);
+                            const response = await fetch(
+                              `/api/meal-plans/delete/${selectedMealPlan.id}`,
+                              {
+                                method: "DELETE",
+                              }
+                            );
+                            if (!response.ok) {
+                              throw new Error(
+                                "Failed to delete the meal plan."
+                              );
+                            }
+
+                            revalidatePath(ROUTES.MEAL_PLANNER.MEAL_PLAN);
+
+                            setMealPlans((prev) =>
+                              prev.filter(
+                                (plan) => plan.id !== selectedMealPlan.id
+                              )
+                            );
+                            setSelectedMealPlan(defaultMealPlan);
+                            setSelectedLabel("New Meal Plan");
+                          } catch (error) {
+                            console.error(error);
+                            alert("Error deleting the meal plan.");
+                          } finally {
+                            setLoading(false);
+                            closeConfirmModal();
+                          }
+                        },
+                        onClose: closeConfirmModal,
+                        type: "warning",
+                      })
+                    }
+                    className="w-60 px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    Delete Meal Plan
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         </div>
+
         {/* Recreate Meals for meal plan */}
-        <form action={recreateMealsAction} className="space-y-6 mt-8 border ">
+        <div className="space-y-6 mt-8 border ">
           {/* Action Panel for Submitting the Form */}
           <ActionPanelButton
             title="Recreate Meal Plans"
             description="Review your meal selections and submit your meal plan, this will replace all meals for current meal plan."
             buttonText="Recreate Meals"
-            type="submit"
-            onClick={() => {
-              /* Optional: Additional click handling */
-            }}
+            type="button"
+            onClick={() => handleRecreateMeals()}
             className="bg-white text-black"
           />
-        </form>
+        </div>
 
-        {/* Form Result */}
-        {formResult && (
-          <div
-            className={`mt-4 p-4 rounded-md ${
-              formResult.success
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}
-          >
-            {formResult.success
-              ? "Meal plan saved successfully!"
-              : formResult.errors?.general}
-          </div>
-        )}
         {confirmModalProps.open && (
           <ConfirmActionModal
             open={confirmModalProps.open}
