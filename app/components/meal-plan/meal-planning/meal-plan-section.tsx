@@ -134,7 +134,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
     const handleRecreateMeals = async () => {
       console.log("Recreating meals");
       setLoading(true);
-      setFormResult({ errors: { loading: "Loading..." } });
+      setFormResult({ errors: { loading: "Re-creating Meals..." } });
       const result = await reCreateMealsForMealPlan(recipes);
       setFormResult(result);
       setLoading(false);

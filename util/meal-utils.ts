@@ -50,14 +50,13 @@ export const getScheduledTimeFromMealTypeKey = (
 ): Date => {
   // Use an array of tuples to handle potential duplicate values
   const mealNumberMapping: [keyof typeof MealType, MealNumber][] = [
-    [MealType.breakfast as keyof typeof MealType, MealNumber.Meal1],
-    [MealType.brunch as keyof typeof MealType, MealNumber.Meal2],
-    [MealType.lunch as keyof typeof MealType, MealNumber.Meal3],
-    [MealType.dinner as keyof typeof MealType, MealNumber.Meal6],
-    [MealType.snack as keyof typeof MealType, MealNumber.Meal4],
-    [MealType.teatime as keyof typeof MealType, MealNumber.Meal5],
+    ["breakfast", MealNumber.Meal1],
+    ["brunch", MealNumber.Meal2],
+    ["lunch", MealNumber.Meal3],
+    ["dinner", MealNumber.Meal6],
+    ["snack", MealNumber.Meal4],
+    ["teatime", MealNumber.Meal5],
   ];
-
   // Find the corresponding MealNumber
   const mealNumberTuple = mealNumberMapping.find(
     ([key]) => key === mealTypeKey

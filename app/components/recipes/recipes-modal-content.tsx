@@ -306,7 +306,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
       setRecipe(recipeToAdd);
 
       if (mealTypeParam) {
-        recipe.mealTypeKey = [mealTypeParam];
+        recipeToAdd.mealTypeKey = [mealTypeParam];
       } else {
         recipeToAdd.mealTypeKey = getEnumKeysByValues(
           MealType,
