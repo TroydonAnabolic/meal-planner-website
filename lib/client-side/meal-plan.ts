@@ -78,7 +78,7 @@ export async function reCreateMealsForMealPlan(
 
       const mealsAdded = await storeMealPlanMeals(meals);
     }
-    revalidatePath(ROUTES.MEAL_PLANNER.MEAL_PLAN);
+    //revalidatePath(ROUTES.MEAL_PLANNER.MEAL_PLAN);
     return { success: true };
   } catch (error) {
     errors.general = "Error generating meals.";

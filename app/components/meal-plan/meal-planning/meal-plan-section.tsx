@@ -317,7 +317,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
                                 );
                               }
 
-                              revalidatePath(ROUTES.MEAL_PLANNER.MEAL_PLAN);
+                              // revalidatePath(ROUTES.MEAL_PLANNER.MEAL_PLAN);
 
                               setMealPlans((prev) =>
                                 prev.filter(
