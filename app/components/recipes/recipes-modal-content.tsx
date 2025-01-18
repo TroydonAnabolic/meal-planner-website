@@ -12,7 +12,10 @@ import { usePathname, useSearchParams } from "next/navigation";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { parseDate } from "@/util/date-util";
-import { getMealTypeFromTime } from "@/util/meal-utils";
+import {
+  getMealTypeFromTime,
+  getScheduledTimeFromMealTypeKey,
+} from "@/util/meal-utils";
 import { getEnumKeysByValues } from "@/util/enum-util";
 
 dayjs.extend(customParseFormat);
@@ -134,7 +137,11 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
       }
 
       if (timeScheduledParam) {
-        updatedRecipe.timeScheduled = parseDate(timeScheduledParam);
+        const scheduledTime = getScheduledTimeFromMealTypeKey(
+          mealTypeParam as keyof typeof MealType
+        );
+        updatedRecipe.timeScheduled = scheduledTime;
+        //recipeToAdd.timeScheduled = parseDate(timeScheduledParam);
       }
 
       if (mealPlanIdParam) {
@@ -199,7 +206,11 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     }
 
     if (timeScheduledParam) {
-      recipe.timeScheduled = parseDate(timeScheduledParam);
+      const scheduledTime = getScheduledTimeFromMealTypeKey(
+        mealTypeParam as keyof typeof MealType
+      );
+      recipe.timeScheduled = scheduledTime;
+      //recipeToAdd.timeScheduled = parseDate(timeScheduledParam);
     }
 
     if (mealPlanIdParam) {
@@ -304,7 +315,11 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
       }
 
       if (timeScheduledParam) {
-        recipeToAdd.timeScheduled = parseDate(timeScheduledParam);
+        const scheduledTime = getScheduledTimeFromMealTypeKey(
+          mealTypeParam as keyof typeof MealType
+        );
+        recipeToAdd.timeScheduled = scheduledTime;
+        //recipeToAdd.timeScheduled = parseDate(timeScheduledParam);
       }
 
       if (mealPlanIdParam) {

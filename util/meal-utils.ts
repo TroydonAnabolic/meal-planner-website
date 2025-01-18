@@ -45,6 +45,55 @@ export const groupMealsByWeek = (
   return weeks;
 };
 
+export const getScheduledTimeFromMealTypeKey = (
+  mealTypeKey: keyof typeof MealType
+): Date => {
+  // Use an array of tuples to handle potential duplicate values
+  const mealNumberMapping: [keyof typeof MealType, MealNumber][] = [
+    [MealType.breakfast as keyof typeof MealType, MealNumber.Meal1],
+    [MealType.brunch as keyof typeof MealType, MealNumber.Meal2],
+    [MealType.lunch as keyof typeof MealType, MealNumber.Meal3],
+    [MealType.dinner as keyof typeof MealType, MealNumber.Meal6],
+    [MealType.snack as keyof typeof MealType, MealNumber.Meal4],
+    [MealType.teatime as keyof typeof MealType, MealNumber.Meal5],
+  ];
+
+  // Find the corresponding MealNumber
+  const mealNumberTuple = mealNumberMapping.find(
+    ([key]) => key === mealTypeKey
+  );
+
+  if (!mealNumberTuple) {
+    throw new Error(`Invalid MealType: ${mealTypeKey}`);
+  }
+
+  const mealNumber = mealNumberTuple[1];
+
+  // Get the time range for the MealNumber
+  const timeRange = MealTimeRanges[mealNumber];
+
+  if (!timeRange) {
+    throw new Error(`No time range defined for MealNumber: ${mealNumber}`);
+  }
+
+  // Extract the start time (first part of the range)
+  const startTime = timeRange.split(" - ")[0];
+
+  // Create a Date object for today with the extracted time
+  const [time, period] = startTime.split(" ");
+  const [hours, minutes] = time.split(":").map(Number);
+
+  let hoursIn24Format = period === "PM" && hours !== 12 ? hours + 12 : hours;
+  if (period === "AM" && hours === 12) {
+    hoursIn24Format = 0; // Handle midnight (12:00 AM)
+  }
+
+  const today = new Date();
+  today.setHours(hoursIn24Format, minutes, 0, 0); // Set extracted time
+
+  return today;
+};
+
 export const getMealTypeFromTime = (
   scheduleTime: Date | undefined
 ): string[] => {
