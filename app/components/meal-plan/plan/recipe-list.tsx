@@ -233,6 +233,7 @@ const RecipeList: React.FC<RecipeListProps> = ({
                       recipeMissing.mealTypeKey.some((k) =>
                         mealType.toLowerCase().includes(k)
                       ) &&
+                      !recipeMissing.isFavourite &&
                       recipeScheduledTime === currentScheduledTime
                     ) {
                       recipe = value;

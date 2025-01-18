@@ -185,12 +185,9 @@ export async function POST(req: Request) {
               fetchedRecipeMealTypes.includes(favType)
             );
 
-            // TODO: Later implement time intersection, for now only where mealtype intersects
-
-            if (!hasMealTypeIntersection) return false;
-
-            // /* Check if timeschedule falls in the same time range */
-            // // Convert favorite's timeScheduled to local timezone
+            return hasMealTypeIntersection;
+            // TODO: Later implement time intersection, when user specifies they want time intersect too option
+            /* Check if timeschedule falls in the same time range 
             const userTimezone = dayjs.tz.guess(); // Get the user's timezone
 
             const favTimeScheduled = fav.timeScheduled
@@ -224,6 +221,7 @@ export async function POST(req: Request) {
               : false;
 
             return isFavInRange && isfetchedRecipeInRange;
+            */
           });
 
           if (matchingFavorite) {

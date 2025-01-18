@@ -14,29 +14,26 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Bugs
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Currently the meal plans can only use one meal plan active
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Feature Guide
 
-## Learn More
+Meal Planner:
 
-To learn more about Next.js, take a look at the following resources:
+- Generate recipes based on user preferences
+- Choose to use favorited recipes as part of the meal generation, favorited
+  recipes must have a meal type and time scheduled assigned. The time scheduled
+  for the favorited meal must align
+- To generate a new meal plan that falls in the same date range, user must
+  first delete meal plan, then create one. Otherwise create in a time range
+  that does not fall inside any given meal plan for that user.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Meal Plan
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
-
-## Stlye guide
-
-Font Colors: Matched to dashboard's hierarchy (text-gray-800, text-gray-600, text-cyan-700).
-Button Styles: Aligned button colors and hover states (bg-cyan-600, hover:bg-cyan-500).
-Input Borders and Focus States: Made similar to form elements used in the dashboard (border-gray-300, focus:ring-cyan-500).
+- Replace recipes with desired recipe by editing it from the meal plan link, it
+  will direct you to the recipes modal pre-filled, do not change the time
+  scheduled or meal type. Once created, go back to the meal plan page and click
+  on recreate meals. This will replace all meals that match that recipe.
+-
