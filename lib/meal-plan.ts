@@ -1,12 +1,11 @@
+import axios from "@/axiosConfig";
 import {
   BACKEND_URL_LIVE,
   APIM_HEADERS,
   DIETAPI_BASE,
 } from "@/constants/constants-urls";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
-import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
-import axios from "axios";
-import { fetchRecipesFromUris } from "./client-side/edamam";
+//import axios from "axios";
 
 const instance = axios.create({
   baseURL: BACKEND_URL_LIVE,

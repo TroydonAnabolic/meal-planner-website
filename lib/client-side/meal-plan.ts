@@ -27,24 +27,18 @@ export const generateRecipesForMealPlan = async (
   return fetchedRecipes;
 };
 
-export async function reCreateRecipeAndMealsForMealPlan(
-  mealPlan: IMealPlan
+// TODO: Include option to exclude recreating logged meals
+export async function reCreateMealsForMealPlan(
+  recipes: IRecipeInterface[]
 ): Promise<FormResult> {
   const meals: IMealInterface[] = [];
   const errors: { [key: string]: string } = {};
 
   // TODO: check date for meal plan recipes for second meal must be 12th,
   // last date must be 18th
-  const recipes = await generateRecipesForMealPlan(mealPlan);
+  //const recipes = await generateRecipesForMealPlan(mealPlan);
 
   recipes.forEach((r, i) => {
-    r.clientId = mealPlan.clientId;
-    r.mealPlanId = mealPlan.id;
-    r.ingredients = r.ingredients.map((ingredient) => ({
-      ...ingredient, // Spread the existing properties
-      recipeId: r.id, // Correctly assign the recipeId
-    }));
-
     const currentDate = dayjs(r.timeScheduled).add(i, "day");
     const mappedMeal = mapRecipeToMeal(r, r.mealPlanId!, true);
     // Assign the day of the week for the meal
@@ -54,12 +48,12 @@ export async function reCreateRecipeAndMealsForMealPlan(
 
   try {
     // Call the meal plan API endpoint
-    const recipesAdded = await storeMealPlanRecipes(recipes);
+    // const recipesAdded = await storeMealPlanRecipes(recipes);
 
-    if (recipesAdded?.length && meals?.length) {
+    if (recipes?.length && meals?.length) {
       meals.forEach((m) => {
         // Find the recipe that matches the meal's timeScheduled date
-        const matchingRecipe = recipesAdded.find((r) => {
+        const matchingRecipe = recipes.find((r) => {
           const recipeTime =
             r.timeScheduled instanceof Date
               ? r.timeScheduled

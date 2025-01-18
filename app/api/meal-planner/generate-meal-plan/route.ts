@@ -143,13 +143,6 @@ export async function POST(req: Request) {
       // Convert to local time
       generatedForLunch = hasGeneratedForDinner;
 
-      // reuse recipes with > 1 yield
-      // recipe = reUseRecipes(weeklyRecipesAddedTracker, mealTypeKey, {
-      //   ...recipe,
-      //   mealTypeKey: [mealTypeKey!],
-      // });
-
-      // reset whether lunch is generated each time we enter a new day - a new day occurs when we created calculated recipe props
       counter++;
       if (counter % mealTypesToGenerateFor.length == 0) {
         generatedForLunch = false;
