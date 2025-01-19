@@ -40,6 +40,7 @@ type MealPlanSectionProps = {
   selectedLabel: string;
   setSelectedLabel: React.Dispatch<React.SetStateAction<string>>;
   recipes: IRecipeInterface[];
+  fetchAndSetRecipes: (mealPlan: IMealPlan) => Promise<void>;
   clientId: number;
   confirmModalProps: ConfirmActionModalProps;
   setConfirmModalProps: React.Dispatch<
@@ -60,6 +61,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
       selectedLabel,
       setSelectedLabel,
       recipes,
+      fetchAndSetRecipes,
       clientId,
       confirmModalProps,
       setConfirmModalProps,
@@ -109,7 +111,10 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
       const id = Number(selectedId);
       const selected = mealPlans.find((plan) => plan.id === id);
       if (selected) {
+        // set new plan to selected
         setSelectedMealPlan(selected);
+        // fetch and set recipes for newly selected plan
+        fetchAndSetRecipes(selected);
         setSelectedLabel(
           `${dayjs(selected.startDate).format("DD/MM/YYYY")} - ${dayjs(
             selected.endDate
@@ -151,17 +156,17 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
           </div>
         )}
         <div>
-          {isBannedOpen && (
+          {/* {isBannedOpen && (
             <div className="mb-2">
               <GlowyBanner
                 title={"Warning"}
                 subtitle={
-                  "Existing bug - when you refresh the page you have to close browser and reopen, and clear your browser cache."
+                  "Existing bug - Meal Planner must generate new meal plans. - Avoid manual creation"
                 }
                 onDismiss={() => setIsBannedOpen(false)}
               />
             </div>
-          )}
+          )} */}
 
           {/* Meal Plan Selector */}
           <div className="mb-6 w-1/3 max-w-xs">

@@ -1,7 +1,7 @@
 "use client";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 import MealPlanSection from "./meal-plan-section";
 import { useSession } from "next-auth/react";
@@ -63,14 +63,15 @@ const MealPlan: React.FC<MealPlanProps> = ({
   const [selectedMealPlan, setSelectedMealPlan] = useState<IMealPlan>(
     initialMealPlan || defaultMealPlan
   );
-  // sets selected meal plan
-  useEffect(() => {
-    const fetchAndSetRecipes = async (mealPlan: IMealPlan) => {
+
+  // Memoized fetch function
+  const fetchAndSetRecipes = useCallback(
+    async (mealPlan: IMealPlan) => {
       if (mealPlan.id === 0) {
         setRecipes([]);
         return;
       }
-      setLoading(true);
+      setRecipesLoading(true);
       try {
         const response = await fetch(`/api/recipes/${mealPlan.id}`);
         if (!response.ok) throw new Error("Failed to fetch recipes.");
@@ -80,10 +81,14 @@ const MealPlan: React.FC<MealPlanProps> = ({
         console.error(error);
         setRecipesError("Failed to fetch recipes.");
       } finally {
-        setLoading(false);
+        setRecipesLoading(false);
       }
-    };
+    },
+    [] // Dependencies are empty since it doesn't rely on anything outside its scope
+  );
 
+  // sets selected meal plan
+  useEffect(() => {
     if (mealPlanData) {
       const today = dayjs();
       const initialMealPlan = getCurrentMealPlan(
@@ -229,6 +234,7 @@ const MealPlan: React.FC<MealPlanProps> = ({
           selectedLabel={selectedLabel}
           setSelectedLabel={setSelectedLabel}
           recipes={recipes}
+          fetchAndSetRecipes={fetchAndSetRecipes}
           clientId={clientId}
           confirmModalProps={confirmModalProps}
           setConfirmModalProps={setConfirmModalProps}
