@@ -69,14 +69,19 @@ const MultiSelectDropdownCheckbox: React.FC<
         </Label>
         <div
           className="relative w-full cursor-default overflow-hidden rounded-md border border-gray-300 bg-white text-gray-500 text-left shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          title={options
-            .filter((opt) => selectedValues.includes(opt.value))
-            .map((opt) => opt.label)
-            .join(", ")}
+          title={
+            selectedValues
+              ? options
+                  .filter((opt) => selectedValues.includes(opt.value))
+                  .map((opt) => opt.label)
+                  .join(", ")
+              : "No values selected"
+          }
         >
           <ComboboxInput
             className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
             displayValue={() => {
+              if (!selectedValues) return "No values selected"; // Handle undefined case
               const selectedLabels = options
                 .filter((opt) => selectedValues.includes(opt.value))
                 .map((opt) => opt.label);
@@ -125,7 +130,11 @@ const MultiSelectDropdownCheckbox: React.FC<
                         <input
                           title="Select"
                           type="checkbox"
-                          checked={selectedValues.includes(option.value)}
+                          checked={
+                            selectedValues
+                              ? selectedValues?.includes(option.value)
+                              : "No values selected"
+                          }
                           readOnly
                           className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                           disabled={disabled}

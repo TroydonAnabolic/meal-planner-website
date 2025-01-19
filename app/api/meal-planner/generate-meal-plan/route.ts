@@ -115,7 +115,6 @@ export async function POST(req: Request) {
         totalRecipesProcessed = 0;
         dayIndex++;
         currentDayRecipes = {}; // Reset current day recipes
-        // weeklyRecipesAddedTracker = []; //
       }
 
       // Calculate the day index based on total recipes and meal types
@@ -161,68 +160,27 @@ export async function POST(req: Request) {
     weeklyRecipesAddedTracker = [];
     const recipeYieldTracker: Record<string, number> = {};
     // Handle favorite recipes by replacing generated recipes with favorite recipes that fall on the same mealtypekey + scheduledtime range
-    // TOO Imple
     if (useFavouriteRecipes && clientId > 0) {
       favouriteRecipes = (await getRecipesByClientId(clientId))?.filter(
         (r) => r.isFavourite
       );
 
       if (favouriteRecipes?.length) {
+        // reset index to reassign breakfast meal times
+        // dayIndex = 0;
+        // totalRecipesProcessed = -1;
+
         fetchedRecipes = fetchedRecipes.map((fetchedRecipe, index) => {
-          let matchingFavorite = favouriteRecipes?.find((fav) => {
-            // Normalize mealTypeKey for comparison
-            const fetchedRecipeMealTypes = fetchedRecipe.mealTypeKey?.map(
-              (type) => type.toLowerCase()
-            );
-            const favMealTypes = fav.mealTypeKey?.map((type) =>
-              type.toLowerCase()
-            );
+          // if (totalRecipesProcessed === mealTypesToGenerateFor.length) {
+          //   totalRecipesProcessed = 0;
+          //   dayIndex++;
+          //   currentDayRecipes = {}; // Reset current day recipes
+          // }
 
-            if (!fetchedRecipeMealTypes || !favMealTypes) return false;
-
-            // Check for meal type intersection
-            const hasMealTypeIntersection = favMealTypes.some((favType) =>
-              fetchedRecipeMealTypes.includes(favType)
-            );
-
-            return hasMealTypeIntersection;
-            // TODO: Later implement time intersection, when user specifies they want time intersect too option
-            /* Check if timeschedule falls in the same time range 
-            const userTimezone = dayjs.tz.guess(); // Get the user's timezone
-
-            const favTimeScheduled = fav.timeScheduled
-              ? dayjs(fav.timeScheduled).tz(userTimezone, true).toDate()
-              : null;
-
-            // Convert fetched recipe's timeScheduled to local timezone
-            const fetchedRecipeTimeScheduled = fetchedRecipe.timeScheduled
-              ? dayjs(fetchedRecipe.timeScheduled)
-                  .tz(userTimezone, true)
-                  .toDate()
-              : null;
-
-            const favMealTime = favMealTypes
-              .map((type) => getMealTimeRange(type, favTimeScheduled!))
-              .filter(Boolean)[0];
-
-            const recipeMealTime = fetchedRecipeMealTypes
-              .map((type) =>
-                getMealTimeRange(type, fetchedRecipeTimeScheduled!)
-              )
-              .filter(Boolean)[0];
-
-            if (!favMealTime || !recipeMealTime) return false;
-
-            const isFavInRange = favTimeScheduled
-              ? isTimeInRange(favTimeScheduled, favMealTime)
-              : false;
-            const isfetchedRecipeInRange = fetchedRecipeTimeScheduled
-              ? isTimeInRange(favTimeScheduled, recipeMealTime)
-              : false;
-
-            return isFavInRange && isfetchedRecipeInRange;
-            */
-          });
+          let matchingFavorite = getMatchingRecipe(
+            favouriteRecipes,
+            fetchedRecipe
+          );
 
           if (matchingFavorite) {
             replacements.push({
@@ -230,12 +188,18 @@ export async function POST(req: Request) {
               favoriteUri: matchingFavorite.uri,
             });
 
+            // create a copy of time schedule
+            var updatedRecipe = {
+              ...matchingFavorite,
+              timeScheduled: fetchedRecipe.timeScheduled,
+            };
+
             return reUseRecipes(
               weeklyRecipesAddedTracker,
               recipeYieldTracker,
-              matchingFavorite.mealTypeKey[0],
+              updatedRecipe.mealTypeKey[0],
               {
-                ...matchingFavorite,
+                ...updatedRecipe,
               }
             );
           } else {
@@ -291,4 +255,25 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
+}
+function getMatchingRecipe(
+  favouriteRecipes: IRecipeInterface[] | undefined,
+  fetchedRecipe: IRecipeInterface
+) {
+  return favouriteRecipes?.find((fav) => {
+    // Normalize mealTypeKey for comparison
+    const fetchedRecipeMealTypes = fetchedRecipe.mealTypeKey?.map((type) =>
+      type.toLowerCase()
+    );
+    const favMealTypes = fav.mealTypeKey?.map((type) => type.toLowerCase());
+
+    if (!fetchedRecipeMealTypes || !favMealTypes) return false;
+
+    // Check for meal type intersection
+    const hasMealTypeIntersection = favMealTypes.some((favType) =>
+      fetchedRecipeMealTypes.includes(favType)
+    );
+
+    return hasMealTypeIntersection;
+  });
 }

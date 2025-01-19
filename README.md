@@ -16,7 +16,9 @@ bun dev
 
 ## Bugs
 
-Currently the meal plans can only use one meal plan active
+- Currently the meal plans can only use one meal plan active
+- Creating a new meal plan must be done through the meal plan generator,
+  a new meal plan through manual creation is not tested.
 
 ## Feature Guide
 
