@@ -481,7 +481,7 @@ const MealsGrid: React.FC<MealsGridProps> = ({ mealsData, client }) => {
             placeholder="Search meals..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-4 py-2 border rounded-md w-full sm:w-1/3 text-gray-700"
+            className="px-4 py-2 mr-4 border rounded-md w-full sm:w-1/3 text-gray-700"
           />
 
           {/* Toggle Consumed Meals */}

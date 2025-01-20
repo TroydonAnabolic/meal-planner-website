@@ -25,6 +25,7 @@ export interface IMealPlan {
   clientId: number;
   startDate: string;
   endDate: string;
+  autoLogMeals: boolean;
   recipes?: IRecipeInterface[];
   meals?: IMealInterface[];
   selection: SelectionItem[];

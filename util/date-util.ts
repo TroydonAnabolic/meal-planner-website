@@ -1,4 +1,9 @@
-// utils/date.ts
+import timezone from "dayjs/plugin/timezone"; // Import the timezone plugin
+import utc from "dayjs/plugin/utc"; // Import the UTC plugin
+import customParseFormat from "dayjs/plugin/customParseFormat";
+
+dayjs.extend(timezone); // Extend dayjs with the timezone plugin
+dayjs.extend(utc); // Extend dayjs with UTC plugin
 
 export function calculateAge(birthday: Date): number {
   const today = new Date();
@@ -13,6 +18,17 @@ export function calculateAge(birthday: Date): number {
   }
 
   return age;
+}
+
+// Convert a UTC date string to the user's local time zone
+export function getLocalTimeFromUtc(utcDate: string | Date): Date {
+  const userTimezone = dayjs.tz.guess();
+  return dayjs(utcDate).tz(userTimezone, true).toDate();
+}
+
+// Convert a local date to UTC for backend processing
+export function getUtcTimeFromLocal(localDate: string | Date): string {
+  return dayjs(localDate).utc().toISOString();
 }
 
 export const parseDate = (

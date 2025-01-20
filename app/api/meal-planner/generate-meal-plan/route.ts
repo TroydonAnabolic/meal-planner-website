@@ -23,11 +23,12 @@ import {
 } from "@/util/meal-utils";
 import { NextResponse } from "next/server";
 
+import { formatUri, reUseRecipes } from "@/util/meal-generator-util";
+import { getLocalTimeFromUtc } from "@/util/date-util";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone"; // Import the timezone plugin
 import utc from "dayjs/plugin/utc"; // Import the UTC plugin
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { formatUri, reUseRecipes } from "@/util/meal-generator-util";
 
 dayjs.extend(timezone); // Extend dayjs with the timezone plugin
 dayjs.extend(utc); // Extend dayjs with UTC plugin
@@ -123,9 +124,6 @@ export async function POST(req: Request) {
         dayjs(startDate).add(dayIndex, "day").toISOString()
       ); // Ensure it's a Date object
 
-      // Convert the scheduled time to the user's local timezone
-      const userTimezone = dayjs.tz.guess(); // Get the user's timezone
-
       const { mealTypeKey, hasGeneratedForDinner, updatedDate } =
         getMealTypeAndTime(
           scheduledDate,
@@ -134,10 +132,8 @@ export async function POST(req: Request) {
           generatedForLunch
         );
 
-      // Update the localScheduledDate to reflect the meal time
-      const localScheduledDate = dayjs(updatedDate)
-        .tz(userTimezone, true)
-        .toDate();
+      // Convert the scheduled time to the user's local timezone
+      const localScheduledDate = getLocalTimeFromUtc(updatedDate);
 
       // Convert to local time
       generatedForLunch = hasGeneratedForDinner;
@@ -256,6 +252,7 @@ export async function POST(req: Request) {
     );
   }
 }
+
 function getMatchingRecipe(
   favouriteRecipes: IRecipeInterface[] | undefined,
   fetchedRecipe: IRecipeInterface

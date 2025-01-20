@@ -33,10 +33,6 @@ type Props = {};
 //   // activityLevel: ActivityLevel.Active,
 // };
 
-function classNames(...classes: (string | false)[]): string {
-  return classes.filter(Boolean).join(" ");
-}
-
 const RegistrationPage = (props: Props) => {
   const [formData, formAction, isPending] = useFormState(registerAction, {
     errors: {},

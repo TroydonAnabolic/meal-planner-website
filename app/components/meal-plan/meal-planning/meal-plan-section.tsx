@@ -28,6 +28,7 @@ import NutritionSummary from "./nutritional-summary";
 import HorizontalScrollContainer from "../../ui/scrolls/horizontal-scroll-container/horizontal-scroll-container";
 import { reCreateMealsForMealPlan } from "@/lib/client-side/meal-plan";
 import { FoodLoader } from "../../loader/food-loader";
+import ToggleInput from "../../ui/inputs/toggle-input";
 
 type MealPlanSectionProps = {
   initialMealPlan: IMealPlan;
@@ -75,6 +76,12 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
     const [nutritionSummary, setNutritionSummary] = useState<
       Record<string, { total: number; consumed: number; remaining: number }>
     >({});
+    const [autoLogMeals, setAutoLogMeals] = useState(false);
+
+    const toggleAutoLogMeals = () => {
+      setAutoLogMeals(!autoLogMeals);
+      setSelectedMealPlan({ ...selectedMealPlan, autoLogMeals: autoLogMeals });
+    };
 
     useEffect(() => {
       if (selectedMealPlan?.meals) {
@@ -169,7 +176,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
           )} */}
 
           {/* Meal Plan Selector */}
-          <div className="mb-6 w-1/3 max-w-xs">
+          <div className="mb-6 w-1/3 max-w-xs ">
             <LabelDropdown
               label="Select Meal Plan"
               name="mealPlan"
@@ -196,25 +203,39 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
             <h2 className="text-2xl font-bold mb-4 text-gray-800">Meal Plan</h2>
 
             <form action={formAction} className="space-y-6 mt-10">
-              <div className="flex justify-around p-4">
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    format="DD/MM/YYYY"
-                    label="Start Date"
-                    className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={dayjs(selectedMealPlan.startDate)}
-                    disabled
-                    // onChange={handleStartDateChange}
-                  />
-                  <DatePicker
-                    format="DD/MM/YYYY"
-                    label="End Date"
-                    className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={dayjs(selectedMealPlan.endDate)}
-                    // onChange={handleEndDateChange}
-                    disabled
-                  />
-                </LocalizationProvider>
+              <div className="container mx-auto p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className=" p-4">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        format="DD/MM/YYYY"
+                        label="Start Date"
+                        className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-md"
+                        value={dayjs(selectedMealPlan.startDate)}
+                        disabled
+                        // onChange={handleStartDateChange}
+                      />
+                      <DatePicker
+                        format="DD/MM/YYYY"
+                        label="End Date"
+                        className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-md"
+                        value={dayjs(selectedMealPlan.endDate)}
+                        // onChange={handleEndDateChange}
+                        disabled
+                      />
+                    </LocalizationProvider>
+                  </div>
+
+                  <div className="bg-blue-100 p-4 shadow-md">
+                    {" "}
+                    <ToggleInput
+                      label="Setup Auto Logging"
+                      subLabel="Setup automatic meal logging. This will automatically log your meals once the hour has passed. Enabled by default."
+                      enabled={autoLogMeals}
+                      onChange={toggleAutoLogMeals}
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Selection Items */}
