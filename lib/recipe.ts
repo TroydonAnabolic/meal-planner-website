@@ -5,6 +5,7 @@ import {
   DIETAPI_BASE,
 } from "@/constants/constants-urls";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
+import { getLocalTimeFromUtc, getUtcTimeFromLocal } from "@/util/date-util";
 
 function dateTransformer(data: any, headers?: any): any {
   if (data instanceof Date) {
@@ -57,11 +58,19 @@ export async function getRecipesByClientId(
     // Assuming your API response matches the Recipe interface
     const recipes: IRecipeInterface[] = response.data;
     // assign recipe.totalNutrients, recipe.totalDaily, to recipe.baseTotalNutrients, recipe.baseTotalDaily
-    recipes.forEach((recipe) => {
-      recipe.baseTotalNutrients = recipe.totalNutrients;
-      recipe.baseTotalDaily = recipe.totalDaily;
-      recipe.baseTotalWeight = recipe.totalWeight;
-    });
+    if (recipes) {
+      for (const recipe of recipes) {
+        recipe.baseTotalNutrients = recipe.totalNutrients;
+        recipe.baseTotalDaily = recipe.totalDaily;
+        recipe.baseTotalWeight = recipe.totalWeight;
+        if (recipe.timeScheduled) {
+          const localTimeScheduled = await getLocalTimeFromUtc(
+            recipe.timeScheduled
+          );
+          recipe.timeScheduled = localTimeScheduled;
+        }
+      }
+    }
 
     return recipes;
   } catch (error) {
@@ -85,11 +94,19 @@ export async function getRecipesByMealPlanId(
     // Assuming your API response matches the Recipe interface
     const recipes: IRecipeInterface[] = response.data;
     // assign recipe.totalNutrients, recipe.totalDaily, to recipe.baseTotalNutrients, recipe.baseTotalDaily
-    recipes.forEach((recipe) => {
-      recipe.baseTotalNutrients = recipe.totalNutrients;
-      recipe.baseTotalDaily = recipe.totalDaily;
-      recipe.baseTotalWeight = recipe.totalWeight;
-    });
+    if (recipes) {
+      for (const recipe of recipes) {
+        recipe.baseTotalNutrients = recipe.totalNutrients;
+        recipe.baseTotalDaily = recipe.totalDaily;
+        recipe.baseTotalWeight = recipe.totalWeight;
+        if (recipe.timeScheduled) {
+          const localTimeScheduled = await getLocalTimeFromUtc(
+            recipe.timeScheduled
+          );
+          recipe.timeScheduled = localTimeScheduled;
+        }
+      }
+    }
 
     return recipes;
   } catch (error) {
@@ -107,6 +124,11 @@ export async function addRecipe(
   recipe: IRecipeInterface
 ): Promise<IRecipeInterface | undefined> {
   try {
+    if (recipe.timeScheduled) {
+      const utcTime = await getUtcTimeFromLocal(recipe.timeScheduled); // Await if async
+      recipe.timeScheduled = new Date(utcTime!);
+    }
+
     const response = await instance.post(`${DIETAPI_BASE}/recipes`, recipe);
 
     const addedRecipe: IRecipeInterface = response.data;
@@ -126,6 +148,13 @@ export async function addRecipe(
 export async function addMealPlanRecipes(
   recipes: IRecipeInterface[]
 ): Promise<IRecipeInterface[] | undefined> {
+  // convert to local before storing in the db
+  for (const recipe of recipes) {
+    if (recipe.timeScheduled) {
+      const utcTime = await getUtcTimeFromLocal(recipe.timeScheduled); // Await if async
+      recipe.timeScheduled = new Date(utcTime!);
+    }
+  }
   const response = await instance.post(
     `${DIETAPI_BASE}/recipes/mealPlan`,
     recipes
@@ -142,6 +171,12 @@ export async function addMealPlanRecipes(
 export async function updateMealPlanRecipes(
   recipes: IRecipeInterface[]
 ): Promise<IRecipeInterface | undefined> {
+  for (const recipe of recipes) {
+    if (recipe.timeScheduled) {
+      const utcTime = await getUtcTimeFromLocal(recipe.timeScheduled); // Await if async
+      recipe.timeScheduled = new Date(utcTime!);
+    }
+  }
   const response = await instance.put(
     `${DIETAPI_BASE}/recipes/mealPlan`,
     recipes
@@ -149,10 +184,15 @@ export async function updateMealPlanRecipes(
   return response.data;
 }
 
-export async function updateRecipe(recipeData: IRecipeInterface) {
+export async function updateRecipe(recipe: IRecipeInterface) {
+  if (recipe.timeScheduled) {
+    const utcTime = await getUtcTimeFromLocal(recipe.timeScheduled); // Await if async
+    recipe.timeScheduled = new Date(utcTime!);
+  }
+
   const response = await instance.put(
     `${BACKEND_URL_LIVE}/${DIETAPI_BASE}/recipes`,
-    recipeData
+    recipe
   );
   const updatedRecipe: IRecipeInterface = response.data;
 

@@ -27,7 +27,13 @@ export function getLocalTimeFromUtc(utcDate: string | Date): Date {
 }
 
 // Convert a local date to UTC for backend processing
-export function getUtcTimeFromLocal(localDate: string | Date): string {
+export function getUtcTimeFromLocal(
+  localDate: string | Date | undefined
+): string | undefined {
+  if (!localDate || isNaN(new Date(localDate).getTime())) {
+    // Return undefined if the date is invalid or undefined
+    return undefined;
+  }
   return dayjs(localDate).utc().toISOString();
 }
 

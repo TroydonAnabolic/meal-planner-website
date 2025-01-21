@@ -76,7 +76,10 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
     const [nutritionSummary, setNutritionSummary] = useState<
       Record<string, { total: number; consumed: number; remaining: number }>
     >({});
-    const [autoLogMeals, setAutoLogMeals] = useState(false);
+
+    const [autoLogMeals, setAutoLogMeals] = useState(
+      selectedMealPlan.autoLogMeals
+    );
 
     const toggleAutoLogMeals = () => {
       setAutoLogMeals(!autoLogMeals);
@@ -92,7 +95,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
         );
         setNutritionSummary(summary);
       }
-    }, [selectedMealPlan]);
+    }, [selectedMealPlan, recipes]);
 
     const closeConfirmModal = useCallback(() => {
       setConfirmModalProps({

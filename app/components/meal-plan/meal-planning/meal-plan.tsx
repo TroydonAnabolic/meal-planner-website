@@ -13,6 +13,7 @@ import {
 import dayjs from "dayjs";
 import { ConfirmActionModalProps } from "../../ui/modals/confirm-action-modal";
 import ReactDOMServer from "react-dom/server";
+import { getUtcTimeFromLocal } from "@/util/date-util";
 
 interface MealPlanProps {
   mealPlanData: IMealPlan[] | undefined;
@@ -75,8 +76,16 @@ const MealPlan: React.FC<MealPlanProps> = ({
       try {
         const response = await fetch(`/api/recipes/${mealPlan.id}`);
         if (!response.ok) throw new Error("Failed to fetch recipes.");
-        const data: IRecipeInterface[] = await response.json();
-        setRecipes(data);
+        const fetchedRecipes: IRecipeInterface[] = await response.json();
+
+        // for (const recipe of fetchedRecipes) {
+        //   if (recipe.timeScheduled) {
+        //     const utcTime = await getUtcTimeFromLocal(recipe.timeScheduled); // Await if async
+        //     recipe.timeScheduled = new Date(utcTime!);
+        //   }
+        // }
+
+        setRecipes(fetchedRecipes);
       } catch (error) {
         console.error(error);
         setRecipesError("Failed to fetch recipes.");

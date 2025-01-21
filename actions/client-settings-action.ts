@@ -45,6 +45,7 @@ export async function saveMealPlanPreference(
   } catch (error: any) {
     if (isRedirectError(error)) {
       throw error;
+      return { success: false, errors };
     }
 
     return { success: false, errors };

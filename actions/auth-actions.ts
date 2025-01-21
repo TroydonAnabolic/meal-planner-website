@@ -108,7 +108,6 @@ export async function register(
     return newClient;
   } catch (error) {
     throw error; // Ensure errors are propagated
-    console.error("Error during signup:", error);
   }
 }
 

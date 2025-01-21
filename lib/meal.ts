@@ -9,7 +9,11 @@ import {
   DIETAPI_BASE,
 } from "@/constants/constants-urls";
 import axios from "@/axiosConfig";
-import { getDayOfWeek } from "@/util/date-util";
+import {
+  getDayOfWeek,
+  getLocalTimeFromUtc,
+  getUtcTimeFromLocal,
+} from "@/util/date-util";
 import { IMealInterface } from "@/models/interfaces/meal/Meal";
 
 function dateTransformer(data: any, headers?: any): any {
@@ -62,14 +66,20 @@ export async function getMealsByClientId(
     const response = await instance.get(`${DIETAPI_BASE}/meals/mymeals`, {
       params: { clientId },
     });
-    const meals: IMealInterface[] = response.data.map(
-      (meal: IMealInterface) => ({
-        ...meal,
-        dayOfTheWeek: meal.timeScheduled
-          ? getDayOfWeek(new Date(meal.timeScheduled))
-          : "Unscheduled",
-      })
-    );
+    const meals: IMealInterface[] = [];
+
+    for (const meal of response.data as IMealInterface[]) {
+      if (meal.timeScheduled) {
+        const mealScheduleTimeLocal = getLocalTimeFromUtc(meal.timeScheduled);
+        meal.timeScheduled = mealScheduleTimeLocal;
+      }
+      if (meal.timeConsumed) {
+        const mealConsumedTimeLocal = getLocalTimeFromUtc(meal.timeConsumed);
+        meal.timeConsumed = new Date(mealConsumedTimeLocal);
+      }
+      meals.push(meal);
+    }
+
     return meals;
   } catch (error) {
     console.error("Error fetching meals:", error);
@@ -92,14 +102,19 @@ export async function getMealsByMealPlanId(
     const response = await instance.get(`${DIETAPI_BASE}/meals/mealPlan`, {
       params: { mealPlanId },
     });
-    const meals: IMealInterface[] = response.data.map(
-      (meal: IMealInterface) => ({
-        ...meal,
-        dayOfTheWeek: meal.timeScheduled
-          ? getDayOfWeek(new Date(meal.timeScheduled))
-          : "Unscheduled",
-      })
-    );
+    const meals: IMealInterface[] = [];
+
+    for (const meal of response.data as IMealInterface[]) {
+      if (meal.timeScheduled) {
+        const mealScheduleTimeLocal = getLocalTimeFromUtc(meal.timeScheduled);
+        meal.timeScheduled = mealScheduleTimeLocal;
+        if (meal.timeConsumed) {
+          const mealConsumedTimeLocal = getLocalTimeFromUtc(meal.timeConsumed);
+          meal.timeConsumed = new Date(mealConsumedTimeLocal);
+        }
+      }
+    }
+
     return meals;
   } catch (error) {
     console.error("Error fetching meals:", error);
@@ -117,6 +132,18 @@ export async function addMeal(
   meal: IMealInterface
 ): Promise<IMealInterface | undefined> {
   try {
+    if (meal.timeScheduled) {
+      const timeScheduledUtcTime = await getUtcTimeFromLocal(
+        meal.timeScheduled
+      ); // Await if async
+      meal.timeScheduled = new Date(timeScheduledUtcTime!);
+    }
+
+    if (meal.timeConsumed) {
+      const timeConsumedUtcTime = await getUtcTimeFromLocal(meal.timeConsumed); // Await if async
+      meal.timeConsumed = new Date(timeConsumedUtcTime!);
+    }
+
     const response = await instance.post(`${DIETAPI_BASE}/meals`, meal);
     const addedMeal: IMealInterface = response.data;
     return addedMeal;
@@ -133,9 +160,21 @@ export async function addMeal(
  * @returns The saved IMealInterface object, or undefined if failed.
  */
 export async function addMealPlanMeals(
-  meal: IMealInterface[]
+  meals: IMealInterface[]
 ): Promise<IMealInterface | undefined> {
-  const response = await instance.post(`${DIETAPI_BASE}/meals/mealPlan`, meal);
+  for (const meal of meals) {
+    if (meal.timeScheduled) {
+      const timeScheduledUtcTime = await getUtcTimeFromLocal(
+        meal.timeScheduled
+      ); // Await if async
+      meal.timeScheduled = new Date(timeScheduledUtcTime!);
+    }
+    if (meal.timeConsumed) {
+      const timeConsumedUtcTime = await getUtcTimeFromLocal(meal.timeConsumed); // Await if async
+      meal.timeConsumed = new Date(timeConsumedUtcTime!);
+    }
+  }
+  const response = await instance.post(`${DIETAPI_BASE}/meals/mealPlan`, meals);
   return response.data;
 }
 
@@ -146,9 +185,19 @@ export async function addMealPlanMeals(
  * @returns The saved IMealInterface object, or undefined if failed.
  */
 export async function updateMealPlanMeals(
-  meal: IMealInterface[]
+  meals: IMealInterface[]
 ): Promise<IMealInterface | undefined> {
-  const response = await instance.put(`${DIETAPI_BASE}/meals/mealPlan`, meal);
+  for (const meal of meals) {
+    if (meal.timeScheduled) {
+      const utcTime = await getUtcTimeFromLocal(meal.timeScheduled); // Await if async
+      meal.timeScheduled = new Date(utcTime!);
+    }
+    if (meal.timeConsumed) {
+      const timeConsumedUtcTime = await getUtcTimeFromLocal(meal.timeConsumed); // Await if async
+      meal.timeConsumed = new Date(timeConsumedUtcTime!);
+    }
+  }
+  const response = await instance.put(`${DIETAPI_BASE}/meals/mealPlan`, meals);
   return response.data;
 }
 
@@ -162,6 +211,15 @@ export async function updateMeal(
   meal: IMealInterface
 ): Promise<IMealInterface | undefined> {
   try {
+    if (meal.timeScheduled) {
+      const utcTime = await getUtcTimeFromLocal(meal.timeScheduled); // Await if async
+      meal.timeScheduled = new Date(utcTime!);
+    }
+    if (meal.timeConsumed) {
+      const timeConsumedUtcTime = await getUtcTimeFromLocal(meal.timeConsumed); // Await if async
+      meal.timeConsumed = new Date(timeConsumedUtcTime!);
+    }
+
     const response = await instance.put(`${DIETAPI_BASE}/meals`, meal);
     const updatedMeal: IMealInterface = response.data;
     return updatedMeal;

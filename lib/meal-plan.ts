@@ -5,7 +5,7 @@ import {
   DIETAPI_BASE,
 } from "@/constants/constants-urls";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
-//import axios from "axios";
+import { getLocalTimeFromUtc } from "@/util/date-util";
 
 const instance = axios.create({
   baseURL: BACKEND_URL_LIVE,
@@ -22,8 +22,24 @@ export async function getMealPlansByClientId(
     const response = await instance.get(`${DIETAPI_BASE}/mealPlan`, {
       params: { clientId },
     });
-    const mealPlan: IMealPlan[] = response.data;
-    return mealPlan;
+    const mealPlans: IMealPlan[] = response.data;
+
+    if (mealPlans) {
+      for (const mealPlan of mealPlans) {
+        if (mealPlan.recipes) {
+          for (const recipe of mealPlan.recipes) {
+            if (recipe.timeScheduled) {
+              const localTimeScheduled = await getLocalTimeFromUtc(
+                recipe.timeScheduled
+              );
+              recipe.timeScheduled = localTimeScheduled;
+            }
+          }
+        }
+      }
+    }
+
+    return mealPlans;
   } catch (error: any) {
     console.error("Error getting meal plan:", error);
     return undefined;
@@ -39,7 +55,20 @@ export async function getMealPlansByClientId(
 export async function addMealPlan(
   mealPlan: IMealPlan
 ): Promise<IMealPlan | undefined> {
+  // TODO: Do the recipe add along with the meal plan add
+  // if (mealPlan.recipes) {
+  //   for (const recipe of mealPlan?.recipes) {
+  //     if (recipe.timeScheduled) {
+  //       const localTimeScheduled = await getLocalTimeFromUtc(
+  //         recipe.timeScheduled
+  //       );
+  //       recipe.timeScheduled = localTimeScheduled;
+  //     }
+  //   }
+  // }
+
   const response = await instance.post(`${DIETAPI_BASE}/mealPlan`, mealPlan);
+
   const addedMealPlan: IMealPlan = response.data;
   return addedMealPlan;
 }

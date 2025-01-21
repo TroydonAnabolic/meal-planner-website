@@ -28,7 +28,7 @@ import Bottleneck from "bottleneck"; // Install via npm install bottleneck
 // Initialize Bottleneck limiter
 const limiter = new Bottleneck({
   maxConcurrent: 1, // Maximum number of concurrent API calls
-  minTime: 50, // Minimum time between requests in ms
+  minTime: 1000, // Minimum time between requests in ms
 });
 
 /**

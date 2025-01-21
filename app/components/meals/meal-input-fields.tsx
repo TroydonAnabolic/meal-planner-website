@@ -284,7 +284,13 @@ const MealInputFields: React.FC<MealInputFieldsProps> = ({
                   requireSelection={true}
                 />
 
-                <div className="space-y-6">
+                <div className="">
+                  <label
+                    htmlFor="scheduledTime"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Meal Scheduled Time
+                  </label>
                   {/* Time Scheduled Field */}
                   <div className="mt-1 flex items-center">
                     <input
@@ -316,7 +322,7 @@ const MealInputFields: React.FC<MealInputFieldsProps> = ({
                   </div>
 
                   {/* Time Consumed Field */}
-                  <div>
+                  <div className="">
                     <label
                       htmlFor="consumedTime"
                       className="block text-sm font-medium text-gray-700"

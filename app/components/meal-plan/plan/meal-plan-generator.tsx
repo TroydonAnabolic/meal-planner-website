@@ -262,6 +262,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
         clientId: clientData.Id,
         startDate: startDate?.toISOString() || "",
         endDate: endDate?.toISOString() || "",
+        autoLogMeals: true,
       });
 
       setRecipes(fetchedRecipes);

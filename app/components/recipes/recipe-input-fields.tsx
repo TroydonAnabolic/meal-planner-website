@@ -31,7 +31,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import timezone from "dayjs/plugin/timezone"; // Import the timezone plugin
 import utc from "dayjs/plugin/utc"; // Import the UTC plugin
-import { getUtcTimeFromLocal } from "@/util/date-util";
+import { getLocalTimeFromUtc, getUtcTimeFromLocal } from "@/util/date-util";
 
 dayjs.extend(timezone); // Extend dayjs with the timezone plugin
 dayjs.extend(utc); // Extend dayjs with UTC plugin
@@ -138,17 +138,9 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
   // TODO: bug fix - update mealtype and mealtypekey based on timescheduled e.g. 7am must update mealtype to be
   const handleDateTimeAccept = () => {
     if (selectedDateTime) {
-      // Convert the selected time from NZT to UTC before saving
-      // const userTimezone = dayjs.tz.guess(); // e.g., "Pacific/Auckland"
-      // getUtcTimeFromLocal;
-      // const timeInUTC1 = selectedDateTime.tz(userTimezone, true).utc();
-
-      const timeInUTC = getUtcTimeFromLocal(selectedDateTime.toDate());
-
-      // Convert the selected time from the user's local timezone to UTC
       setRecipe!((prevRecipe) => ({
         ...prevRecipe!,
-        timeScheduled: timeInUTC, // Save the UTC time to the database
+        timeScheduled: selectedDateTime.toDate(), // Save the UTC time to the database
       }));
       setIsPickerOpen(false);
     }
@@ -173,14 +165,7 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
 
   useEffect(() => {
     if (recipe.timeScheduled) {
-      // Get the user's timezone from the browser
-      const userTimezone = dayjs.tz.guess(); // e.g., "Pacific/Auckland"
-
-      // Convert UTC time to the user's local time
-      const timeInLocal = dayjs(recipe.timeScheduled)
-        .utc()
-        .tz(userTimezone, true);
-      setSelectedDateTime(timeInLocal);
+      setSelectedDateTime(dayjs(recipe.timeScheduled));
     }
   }, [recipe.timeScheduled]);
 

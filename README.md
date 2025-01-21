@@ -22,6 +22,12 @@ bun dev
 
 ## Feature Guide
 
+API Calls:
+
+- When dealing with dates included in api calls, always convert to utc
+  before storing, and convert to local when retrieving. This will allow
+  users who live or travel to other state/countries to consistently show the date based, on their browser engine.
+
 Meal Planner:
 
 - Generate recipes based on user preferences

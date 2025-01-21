@@ -15,6 +15,7 @@ import { revalidatePath } from "next/cache";
 import { ROUTES } from "@/constants/routes";
 import dayjs from "dayjs";
 import { mapRecipeToMeal } from "@/util/mappers";
+import { getUtcTimeFromLocal } from "@/util/date-util";
 
 /**
  * Creates a meal plan based on the provided recipes, generator response, and other parameters.
@@ -71,72 +72,63 @@ async function fillMealPlanRecipesAndMeals(
 ) {
   try {
     if (resultMealPlan) {
-      recipes.forEach(async (recipe, i) => {
-        // make sure all ids are 0 to create recipes and related to counter favorite
+      for (const recipe of recipes) {
         recipe.id = 0;
         recipe.mealPlanId = resultMealPlan?.id;
         // recipe.image = "/aiimages/food/default-food.svg";
-        recipe.images
-          ? ((recipe.images.id = 0), (recipe.images.recipeId = 0))
-          : undefined;
+        if (recipe.images) {
+          recipe.images.id = 0;
+          recipe.images.recipeId = 0;
+        }
         recipe.clientId = mealPlan.clientId;
-        recipe.ingredients?.forEach(async (ingr) => {
-          // make sure all ids are 0 to create recipes and related
+
+        for (const ingr of recipe.ingredients || []) {
           ingr.id = 0;
           ingr.recipeId = 0;
-        });
-      });
+        }
+      }
 
-      // meals.forEach(async (meal) => {
-      //   meal.id = 0;
-      //   meal.mealPlanId = resultMealPlan?.id;
-      //   //  meal.image = "/aiimages/food/default-food.svg";
-      //   meal.clientId = mealPlan.clientId;
-      //   meal.ingredients?.forEach(async (ingr) => {
-      //     // make sure all ids are 0 to create recipes and related
-      //     ingr.id = 0;
-      //     ingr.mealId = 0;
-      //   });
-      // });
-
+      // TODO: Do the recipe add along with the meal plan add
       const recipesAdded = await addMealPlanRecipes(recipes);
 
       if (recipesAdded?.length) {
-        recipesAdded?.forEach(async (recipe, i) => {
-          const currentDate = dayjs(recipe.timeScheduled).add(i, "day");
+        for (const recipe of recipesAdded) {
+          const currentDate = dayjs(recipe.timeScheduled);
           const mappedMeal = mapRecipeToMeal(recipe, recipe.mealPlanId!, true);
-          mappedMeal.dayOfTheWeek =
-            currentDate.day() as unknown as DayOfTheWeek;
+
+          // Get the day of the week as a string from the date
+          mappedMeal.dayOfTheWeek = currentDate.format("dddd") as DayOfTheWeek;
+
           meals.push(mappedMeal);
-        });
-
-        meals.forEach((m) => {
-          // Find the recipe that matches the meal's timeScheduled date
-          const matchingRecipe = recipesAdded.find((r) => {
-            const recipeTime =
-              r.timeScheduled instanceof Date
-                ? r.timeScheduled
-                : r.timeScheduled
-                ? new Date(r.timeScheduled)
-                : null;
-
-            const mealTime =
-              m.timeScheduled instanceof Date
-                ? m.timeScheduled
-                : m.timeScheduled
-                ? new Date(m.timeScheduled)
-                : null;
-
-            return recipeTime!.getTime() === mealTime!.getTime();
-          });
-
-          if (matchingRecipe) {
-            m.recipeId = matchingRecipe.id; // Assign recipeId to the meal
-          }
-        });
-
-        const addedMeals = await addMealPlanMeals(meals);
+        }
       }
+
+      meals.forEach((m) => {
+        // Find the recipe that matches the meal's timeScheduled date
+        const matchingRecipe = recipesAdded?.find((r) => {
+          const recipeTime =
+            r.timeScheduled instanceof Date
+              ? r.timeScheduled
+              : r.timeScheduled
+              ? new Date(r.timeScheduled)
+              : null;
+
+          const mealTime =
+            m.timeScheduled instanceof Date
+              ? m.timeScheduled
+              : m.timeScheduled
+              ? new Date(m.timeScheduled)
+              : null;
+
+          return recipeTime!.getTime() === mealTime!.getTime();
+        });
+
+        if (matchingRecipe) {
+          m.recipeId = matchingRecipe.id; // Assign recipeId to the meal
+        }
+      });
+
+      const addedMeals = await addMealPlanMeals(meals);
     }
   } catch (error: any) {
     console.log(
