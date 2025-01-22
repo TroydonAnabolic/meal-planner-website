@@ -69,6 +69,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
     },
     ref
   ) => {
+    console.log("Recipes time schedule: " + recipes[0].timeScheduled);
     const [formResult, setFormResult] = useState<FormResult | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [isBannedOpen, setIsBannedOpen] = useState<boolean>(true);

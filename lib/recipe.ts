@@ -64,9 +64,7 @@ export async function getRecipesByClientId(
         recipe.baseTotalDaily = recipe.totalDaily;
         recipe.baseTotalWeight = recipe.totalWeight;
         if (recipe.timeScheduled) {
-          const localTimeScheduled = await getLocalTimeFromUtc(
-            recipe.timeScheduled
-          );
+          const localTimeScheduled = getLocalTimeFromUtc(recipe.timeScheduled);
           recipe.timeScheduled = localTimeScheduled;
         }
       }
@@ -100,9 +98,7 @@ export async function getRecipesByMealPlanId(
         recipe.baseTotalDaily = recipe.totalDaily;
         recipe.baseTotalWeight = recipe.totalWeight;
         if (recipe.timeScheduled) {
-          const localTimeScheduled = await getLocalTimeFromUtc(
-            recipe.timeScheduled
-          );
+          const localTimeScheduled = getLocalTimeFromUtc(recipe.timeScheduled);
           recipe.timeScheduled = localTimeScheduled;
         }
       }
@@ -125,7 +121,7 @@ export async function addRecipe(
 ): Promise<IRecipeInterface | undefined> {
   try {
     if (recipe.timeScheduled) {
-      const utcTime = await getUtcTimeFromLocal(recipe.timeScheduled); // Await if async
+      const utcTime = getUtcTimeFromLocal(recipe.timeScheduled); // Await if async
       recipe.timeScheduled = new Date(utcTime!);
     }
 
@@ -151,7 +147,7 @@ export async function addMealPlanRecipes(
   // convert to local before storing in the db
   for (const recipe of recipes) {
     if (recipe.timeScheduled) {
-      const utcTime = await getUtcTimeFromLocal(recipe.timeScheduled); // Await if async
+      const utcTime = getUtcTimeFromLocal(recipe.timeScheduled); // Await if async
       recipe.timeScheduled = new Date(utcTime!);
     }
   }
@@ -173,7 +169,7 @@ export async function updateMealPlanRecipes(
 ): Promise<IRecipeInterface | undefined> {
   for (const recipe of recipes) {
     if (recipe.timeScheduled) {
-      const utcTime = await getUtcTimeFromLocal(recipe.timeScheduled); // Await if async
+      const utcTime = getUtcTimeFromLocal(recipe.timeScheduled); // Await if async
       recipe.timeScheduled = new Date(utcTime!);
     }
   }
@@ -186,7 +182,7 @@ export async function updateMealPlanRecipes(
 
 export async function updateRecipe(recipe: IRecipeInterface) {
   if (recipe.timeScheduled) {
-    const utcTime = await getUtcTimeFromLocal(recipe.timeScheduled); // Await if async
+    const utcTime = getUtcTimeFromLocal(recipe.timeScheduled); // Await if async
     recipe.timeScheduled = new Date(utcTime!);
   }
 

@@ -38,13 +38,15 @@ export async function reCreateMealsForMealPlan(
   // last date must be 18th
   //const recipes = await generateRecipesForMealPlan(mealPlan);
 
-  recipes.forEach((r, i) => {
-    const currentDate = dayjs(r.timeScheduled).add(i, "day");
-    const mappedMeal = mapRecipeToMeal(r, r.mealPlanId!, true);
-    // Assign the day of the week for the meal
-    mappedMeal.dayOfTheWeek = currentDate.day() as unknown as DayOfTheWeek;
-    meals.push(mappedMeal);
-  });
+  recipes
+    .sort((a, b) => dayjs(a.timeScheduled).diff(dayjs(b.timeScheduled))) // Sort by timeScheduled
+    .forEach((r, i) => {
+      const currentDate = dayjs(r.timeScheduled);
+      const mappedMeal = mapRecipeToMeal(r, r.mealPlanId!, true);
+      // Assign the day of the week for the meal
+      mappedMeal.dayOfTheWeek = currentDate.format("dddd") as DayOfTheWeek;
+      meals.push(mappedMeal);
+    });
 
   try {
     // Call the meal plan API endpoint

@@ -66,7 +66,7 @@ const MealPlan: React.FC<MealPlanProps> = ({
   );
 
   // Memoized fetch function
-  const fetchAndSetRecipes = useCallback(
+  const fetchAndSetRecipes = 
     async (mealPlan: IMealPlan) => {
       if (mealPlan.id === 0) {
         setRecipes([]);
@@ -93,7 +93,7 @@ const MealPlan: React.FC<MealPlanProps> = ({
         setRecipesLoading(false);
       }
     },
-    [] // Dependencies are empty since it doesn't rely on anything outside its scope
+    [selectedMealPlan, recipesData] // Dependencies are empty since it doesn't rely on anything outside its scope
   );
 
   // sets selected meal plan
@@ -117,7 +117,7 @@ const MealPlan: React.FC<MealPlanProps> = ({
 
       fetchAndSetRecipes(initialMealPlan); // Fetch recipes for the selected meal plan.
     }
-  }, [mealPlanData, mealPlans]);
+  };//, [mealPlanData, mealPlans]);
 
   const handleAfterPrint = React.useCallback(() => {
     console.log("`onAfterPrint` called");

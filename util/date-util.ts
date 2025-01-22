@@ -22,8 +22,8 @@ export function calculateAge(birthday: Date): number {
 
 // Convert a UTC date string to the user's local time zone
 export function getLocalTimeFromUtc(utcDate: string | Date): Date {
-  const userTimezone = dayjs.tz.guess();
-  return dayjs(utcDate).tz(userTimezone, true).toDate();
+  const userTimezone = dayjs.tz.guess(); // Detect user's timezone
+  return dayjs.utc(utcDate).tz(userTimezone).toDate();
 }
 
 // Convert a local date to UTC for backend processing
