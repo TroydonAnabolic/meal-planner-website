@@ -1,5 +1,5 @@
 import { adminDeleteUser } from "@/actions/cognito-actions";
-import { deleteClientUnsafe } from "./client-side/client/client";
+import { deleteClientUnsafe } from "./client-side/client";
 import { IClientInterface } from "@/models/interfaces/client/client";
 import { FormResult } from "@/types/form";
 import axios from "axios";

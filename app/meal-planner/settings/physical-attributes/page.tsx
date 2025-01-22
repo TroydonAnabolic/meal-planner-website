@@ -2,7 +2,7 @@ import BiometricsSection from "@/app/components/client/physical-attributes/biome
 import CookingAndHealthSection from "@/app/components/client/physical-attributes/cooking-preferences";
 import MedicalSection from "@/app/components/client/physical-attributes/medical-section";
 import { auth } from "@/auth";
-import { getClient } from "@/lib/client-side/client";
+import { getClient } from "@/lib/server-side/client";
 import { initializeClientSettings } from "@/util/client-settings-util";
 import React from "react";
 

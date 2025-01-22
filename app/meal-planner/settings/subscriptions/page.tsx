@@ -1,7 +1,7 @@
 import BudgetPreferencesSection from "@/app/components/client/billing/budget-contraints";
 import SubscriptionsSection from "@/app/components/client/billing/subscriptions";
 import { auth } from "@/auth";
-import { getClient } from "@/lib/client-side/client";
+import { getClient } from "@/lib/server-side/client";
 import { initializeClientSettings } from "@/util/client-settings-util";
 
 type Props = {};

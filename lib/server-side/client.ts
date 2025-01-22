@@ -1,18 +1,18 @@
+import axios from "@/axiosConfig";
 import {
   ACCOUNTAPI_BASE,
-  APIM_HEADERS_PUBLIC,
+  APIM_HEADERS,
   BACKEND_URL_LIVE,
 } from "@/constants/constants-urls";
 import { IClientInterface } from "@/models/interfaces/client/client";
 import { constructClientObjectFromResponse } from "@/util/client-util";
-import axios from "axios";
 
 const instance = axios.create({
   baseURL: BACKEND_URL_LIVE,
-  headers: APIM_HEADERS_PUBLIC,
+  headers: APIM_HEADERS,
 });
 
-export async function getClientUnsafe(userID: string) {
+export async function getClient(userID: string) {
   const response = await instance.get(`${ACCOUNTAPI_BASE}/clients/v2`, {
     params: { userID: userID },
   });
@@ -22,7 +22,17 @@ export async function getClientUnsafe(userID: string) {
   return clientObj;
 }
 
-export async function updateClientUnsafe(clientData: IClientInterface) {
+export async function storeClient(clientData: IClientInterface) {
+  const response = await instance.post(
+    `${ACCOUNTAPI_BASE}/clients`,
+    clientData
+  );
+
+  const id = response.data.id;
+  return id;
+}
+
+export async function updateClient(clientData: IClientInterface) {
   try {
     const response = await instance.put(
       `${ACCOUNTAPI_BASE}/clients`,
@@ -35,7 +45,7 @@ export async function updateClientUnsafe(clientData: IClientInterface) {
   }
 }
 
-export async function deleteClientUnsafe(userID: string) {
+export async function deleteClient(userID: string) {
   try {
     const response = await instance.delete(`${ACCOUNTAPI_BASE}/clients`, {
       params: { userID: userID },

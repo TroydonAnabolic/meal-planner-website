@@ -1,6 +1,6 @@
 import MealsGrid from "@/app/components/meals/meals-grid";
 import { auth } from "@/auth";
-import { getClient } from "@/lib/client-side/client";
+import { getClient } from "@/lib/server-side/client";
 import { getMealsByClientId } from "@/lib/meal";
 import { Metadata } from "next";
 import React from "react";

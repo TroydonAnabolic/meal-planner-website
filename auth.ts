@@ -12,9 +12,7 @@ import {
   GetUserCommand,
   InitiateAuthCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
-import { getClientUnsafe } from "./lib/client-side/client/client";
-import Stripe from "stripe";
-import { getClient, updateClient } from "./lib/client-side/client";
+import { getClientUnsafe } from "./lib/client-side/client";
 
 const cognitoConfig: CognitoIdentityProviderClientConfig = {
   region: process.env.NEXT_PUBLIC_COGNITO_REGION, // Your AWS region
@@ -71,6 +69,7 @@ const providers: Provider[] = [
           givenName: "",
           familyName: "",
           phoneNumber: "",
+          profilePicUrl: "",
         };
 
         if (userAttributes) {
@@ -196,6 +195,7 @@ export const config: NextAuthConfig = {
           givenName: token.givenName as string,
           familyName: token.familyName as string,
           phoneNumber: token.phoneNumber as string,
+          profilePicUrl: token.profilePicUrl as string,
           stripeCustomerId: token.stripeCustomerId as string,
           isStripeBasicActive: token.isStripeBasicActive as boolean,
           idToken: token.idToken as string,

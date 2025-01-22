@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 import { NextRequest, NextResponse } from "next/server";
-import { getClient, updateClient } from "@/lib/client-side/client";
+import { getClient, updateClient } from "@/lib/server-side/client";
 import { ROUTES } from "@/constants/routes";
 import { auth, unstable_update } from "@/auth";
 

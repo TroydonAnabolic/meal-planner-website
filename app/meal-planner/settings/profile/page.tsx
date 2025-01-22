@@ -3,7 +3,7 @@ import LogoutAllUsers from "@/app/components/auth/logout-all-sessions";
 import ChangePassword from "@/app/components/auth/change-password";
 import ProfileInformation from "@/app/components/client/profile-information/profile-information";
 import { auth } from "@/auth";
-import { getClient } from "@/lib/client-side/client";
+import { getClient } from "@/lib/server-side/client";
 import React from "react";
 
 type Props = {};

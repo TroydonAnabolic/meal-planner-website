@@ -1,5 +1,5 @@
 import { auth, unstable_update } from "@/auth";
-import { getClient, updateClient } from "@/lib/client-side/client";
+import { getClient, updateClient } from "@/lib/server-side/client";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 

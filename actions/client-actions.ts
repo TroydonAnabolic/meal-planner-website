@@ -1,6 +1,6 @@
 "use server";
 
-import { updateClient } from "@/lib/client-side/client";
+import { updateClient } from "@/lib/server-side/client";
 import { IClientInterface } from "@/models/interfaces/client/client";
 import { FormResult } from "@/types/form";
 import { revalidatePath } from "next/cache";

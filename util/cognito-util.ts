@@ -36,6 +36,7 @@ export const mapAttributesToUser = (
     givenName: "",
     familyName: "",
     phoneNumber: "",
+    profilePicUrl: "",
     isStripeBasicActive: false,
     stripeCustomerId: "",
   };
@@ -72,6 +73,7 @@ export const mapAttributes = (attributes: AttributeType[]): User => {
     givenName: "",
     familyName: "",
     phoneNumber: "",
+    profilePicUrl: "",
     isStripeBasicActive: false,
     stripeCustomerId: "",
   };

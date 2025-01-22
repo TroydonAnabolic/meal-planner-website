@@ -1,6 +1,6 @@
 import PlanMeal from "@/app/components/meal-plan/plan/plan-meal";
 import { auth } from "@/auth";
-import { getClient } from "@/lib/client-side/client";
+import { getClient } from "@/lib/server-side/client";
 import { initializeClientSettings } from "@/util/client-settings-util";
 import { Metadata } from "next";
 import React from "react";

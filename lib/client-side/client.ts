@@ -1,18 +1,81 @@
-import axios from "@/axiosConfig";
 import {
   ACCOUNTAPI_BASE,
-  APIM_HEADERS,
+  APIM_HEADERS_PUBLIC,
   BACKEND_URL_LIVE,
 } from "@/constants/constants-urls";
 import { IClientInterface } from "@/models/interfaces/client/client";
 import { constructClientObjectFromResponse } from "@/util/client-util";
+import axios from "axios";
 
 const instance = axios.create({
   baseURL: BACKEND_URL_LIVE,
-  headers: APIM_HEADERS,
+  headers: APIM_HEADERS_PUBLIC,
 });
 
-export async function getClient(userID: string) {
+/**
+ * Fetches recipes by client ID.
+ *
+ * @param clientId - The ID of the client.
+ * @returns An array of IRecipeInterface objects or undefined.
+ */
+export async function fetchClientByUserId(
+  clientId: number
+): Promise<IClientInterface | undefined> {
+  try {
+    const response = await fetch(
+      `/api/client/get-client?clientId=${clientId}`,
+      {
+        method: "GET",
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch client");
+    }
+
+    const client: IClientInterface = await response.json();
+
+    return client;
+  } catch (error) {
+    console.error("Error fetching client by user id:", error);
+  }
+}
+
+/**
+ * Saves client to the database.
+ *
+ * @param clientToAdd - The client object.
+ * @returns An array of IRecipeInterface objects or undefined.
+ */
+export async function saveClient(
+  clientToAdd: IClientInterface
+): Promise<IClientInterface | undefined> {
+  try {
+    const response = await fetch(`/api/client/save-client`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(clientToAdd), // Send data in the body
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to store client");
+    }
+
+    const client: IClientInterface = await response.json();
+
+    if (!client) {
+      throw new Error("Failed to store client");
+    }
+
+    return client;
+  } catch (error) {
+    console.error("Error storing client:", error);
+  }
+}
+
+export async function getClientUnsafe(userID: string) {
   const response = await instance.get(`${ACCOUNTAPI_BASE}/clients/v2`, {
     params: { userID: userID },
   });
@@ -22,17 +85,7 @@ export async function getClient(userID: string) {
   return clientObj;
 }
 
-export async function storeClient(clientData: IClientInterface) {
-  const response = await instance.post(
-    `${ACCOUNTAPI_BASE}/clients`,
-    clientData
-  );
-
-  const id = response.data.id;
-  return id;
-}
-
-export async function updateClient(clientData: IClientInterface) {
+export async function updateClientUnsafe(clientData: IClientInterface) {
   try {
     const response = await instance.put(
       `${ACCOUNTAPI_BASE}/clients`,
@@ -45,7 +98,7 @@ export async function updateClient(clientData: IClientInterface) {
   }
 }
 
-export async function deleteClient(userID: string) {
+export async function deleteClientUnsafe(userID: string) {
   try {
     const response = await instance.delete(`${ACCOUNTAPI_BASE}/clients`, {
       params: { userID: userID },

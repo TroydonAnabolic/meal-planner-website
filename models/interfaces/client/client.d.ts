@@ -10,6 +10,7 @@ export interface IClientInterface {
   isStripeBasicActive: boolean;
   FirstName: string;
   LastName: string;
+  ProfilePicUrl?: string;
   Age?: number;
   BodyWeight?: number;
   Height?: number;
