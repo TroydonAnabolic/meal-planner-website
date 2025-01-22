@@ -1,19 +1,12 @@
 // lib/meal.ts
 
-import { FormResult } from "@/types/form";
-import { ROUTES } from "@/constants/routes";
-import { isRedirectError } from "next/dist/client/components/redirect";
 import {
   APIM_HEADERS,
   BACKEND_URL_LIVE,
   DIETAPI_BASE,
 } from "@/constants/constants-urls";
 import axios from "@/axiosConfig";
-import {
-  getDayOfWeek,
-  getLocalTimeFromUtc,
-  getUtcTimeFromLocal,
-} from "@/util/date-util";
+import { getLocalTimeFromUtc, getUtcTimeFromLocal } from "@/util/date-util";
 import { IMealInterface } from "@/models/interfaces/meal/Meal";
 
 function dateTransformer(data: any, headers?: any): any {
@@ -133,14 +126,12 @@ export async function addMeal(
 ): Promise<IMealInterface | undefined> {
   try {
     if (meal.timeScheduled) {
-      const timeScheduledUtcTime = await getUtcTimeFromLocal(
-        meal.timeScheduled
-      ); // Await if async
+      const timeScheduledUtcTime = getUtcTimeFromLocal(meal.timeScheduled); // Await if async
       meal.timeScheduled = new Date(timeScheduledUtcTime!);
     }
 
     if (meal.timeConsumed) {
-      const timeConsumedUtcTime = await getUtcTimeFromLocal(meal.timeConsumed); // Await if async
+      const timeConsumedUtcTime = getUtcTimeFromLocal(meal.timeConsumed); // Await if async
       meal.timeConsumed = new Date(timeConsumedUtcTime!);
     }
 
@@ -164,13 +155,11 @@ export async function addMealPlanMeals(
 ): Promise<IMealInterface | undefined> {
   for (const meal of meals) {
     if (meal.timeScheduled) {
-      const timeScheduledUtcTime = await getUtcTimeFromLocal(
-        meal.timeScheduled
-      ); // Await if async
+      const timeScheduledUtcTime = getUtcTimeFromLocal(meal.timeScheduled); // Await if async
       meal.timeScheduled = new Date(timeScheduledUtcTime!);
     }
     if (meal.timeConsumed) {
-      const timeConsumedUtcTime = await getUtcTimeFromLocal(meal.timeConsumed); // Await if async
+      const timeConsumedUtcTime = getUtcTimeFromLocal(meal.timeConsumed); // Await if async
       meal.timeConsumed = new Date(timeConsumedUtcTime!);
     }
   }
@@ -189,11 +178,11 @@ export async function updateMealPlanMeals(
 ): Promise<IMealInterface | undefined> {
   for (const meal of meals) {
     if (meal.timeScheduled) {
-      const utcTime = await getUtcTimeFromLocal(meal.timeScheduled); // Await if async
+      const utcTime = getUtcTimeFromLocal(meal.timeScheduled); // Await if async
       meal.timeScheduled = new Date(utcTime!);
     }
     if (meal.timeConsumed) {
-      const timeConsumedUtcTime = await getUtcTimeFromLocal(meal.timeConsumed); // Await if async
+      const timeConsumedUtcTime = getUtcTimeFromLocal(meal.timeConsumed); // Await if async
       meal.timeConsumed = new Date(timeConsumedUtcTime!);
     }
   }

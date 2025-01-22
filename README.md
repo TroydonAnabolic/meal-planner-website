@@ -19,6 +19,8 @@ bun dev
 - Currently the meal plans can only use one meal plan active
 - Creating a new meal plan must be done through the meal plan generator,
   a new meal plan through manual creation is not tested.
+- Working with pagination where the week spans more than 1, the meals are
+  incorrectly alloted to a cell. Workaround is to span 1 week at a time.
 
 ## Feature Guide
 

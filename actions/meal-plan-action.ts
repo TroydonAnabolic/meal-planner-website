@@ -29,7 +29,6 @@ import { isRedirectError } from "next/dist/client/components/redirect";
  * Note: In Next.js 13, server actions should be defined in a separate file or within a `use server` function.
  */
 export const submitMealPlan = async (
-  initialMealPlan: IMealPlan,
   mealPlan: IMealPlan
 ): Promise<FormResult> => {
   const errors: { [key: string]: string } = {};
@@ -55,24 +54,6 @@ export const submitMealPlan = async (
           errors: { general: "Failed to update meal plan" },
         };
       }
-    }
-
-    // add/update recipes and meals if new mealplan, or the start or end dates changed
-    // TODO: might make start and end dates unchangeable so they need to generate new meal plans
-    if (
-      mealPlan.id === 0 ||
-      initialMealPlan.startDate != mealPlan.startDate ||
-      initialMealPlan.endDate != mealPlan.endDate
-    ) {
-      const recipes = await generateRecipesForMealPlan(addedMealPlan);
-      const meals = generateMealsForPlan(mealPlan, recipes);
-
-      await fillMealPlanRecipesAndMeals(
-        addedMealPlan,
-        recipes,
-        mealPlan,
-        meals
-      );
     }
 
     revalidatePath(ROUTES.MEAL_PLANNER.MEAL_PLAN);

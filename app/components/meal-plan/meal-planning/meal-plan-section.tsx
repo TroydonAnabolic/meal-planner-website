@@ -21,9 +21,6 @@ import {
   computeNutritionalSummary,
   getDefaultMealPlan,
 } from "@/util/meal-plan-utils";
-import GlowyBanner from "../../ui/banner/banner-with-glow";
-import { revalidatePath } from "next/cache";
-import { ROUTES } from "@/constants/routes";
 import NutritionSummary from "./nutritional-summary";
 import HorizontalScrollContainer from "../../ui/scrolls/horizontal-scroll-container/horizontal-scroll-container";
 import { reCreateMealsForMealPlan } from "@/lib/client-side/meal-plan";
@@ -71,7 +68,6 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
   ) => {
     const [formResult, setFormResult] = useState<FormResult | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
-    const [isBannedOpen, setIsBannedOpen] = useState<boolean>(true);
     const defaultMealPlan: IMealPlan = getDefaultMealPlan(clientId);
     const [nutritionSummary, setNutritionSummary] = useState<
       Record<string, { total: number; consumed: number; remaining: number }>
@@ -81,9 +77,12 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
       selectedMealPlan.autoLogMeals
     );
 
-    const toggleAutoLogMeals = () => {
-      setAutoLogMeals(!autoLogMeals);
-      setSelectedMealPlan({ ...selectedMealPlan, autoLogMeals: autoLogMeals });
+    const toggleAutoLogMeals = (shouldAutoLogMeals: boolean) => {
+      setAutoLogMeals(!shouldAutoLogMeals);
+      setSelectedMealPlan({
+        ...selectedMealPlan,
+        autoLogMeals: shouldAutoLogMeals,
+      });
     };
 
     useEffect(() => {
@@ -95,7 +94,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
         );
         setNutritionSummary(summary);
       }
-    }, [selectedMealPlan, recipes]);
+    }, [selectedMealPlan]);
 
     const closeConfirmModal = useCallback(() => {
       setConfirmModalProps({
@@ -141,9 +140,40 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
         selectedMealPlan.id > 0 ? selectedMealPlan.id : mealPlanId;
 
       setLoading(true);
-      const result = await submitMealPlan(initialMealPlan, selectedMealPlan);
+      const result = await submitMealPlan(selectedMealPlan);
       setFormResult(result);
       setLoading(false);
+      if (result.success) {
+        setConfirmModalProps((prev) => ({
+          ...prev,
+          open: true,
+          title: "Meal Plan Saved Successfully",
+          message: "Meal Plan has been saved successfully",
+          confirmText: "OK",
+          onConfirm: () => {
+            console.log("confirmModalProps", confirmModalProps);
+            closeConfirmModal();
+          },
+          cancelText: "",
+          onClose: () => {},
+          colorScheme: "bg-green-600 hover:bg-green-500",
+        }));
+      } else if (result.errors) {
+        setConfirmModalProps((prev) => ({
+          ...prev,
+          open: true,
+          title: "Fail to Save",
+          message: "Meal Plan has failed to save",
+          confirmText: "OK",
+          onConfirm: () => {
+            console.log("confirmModalProps", confirmModalProps);
+            closeConfirmModal();
+          },
+          cancelText: "",
+          onClose: () => {},
+          colorScheme: "bg-red-600 hover:bg-red-500",
+        }));
+      }
     }
 
     const handleRecreateMeals = async () => {
@@ -166,18 +196,6 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
           </div>
         )}
         <div>
-          {/* {isBannedOpen && (
-            <div className="mb-2">
-              <GlowyBanner
-                title={"Warning"}
-                subtitle={
-                  "Existing bug - Meal Planner must generate new meal plans. - Avoid manual creation"
-                }
-                onDismiss={() => setIsBannedOpen(false)}
-              />
-            </div>
-          )} */}
-
           {/* Meal Plan Selector */}
           <div className="mb-6 w-1/3 max-w-xs ">
             <LabelDropdown
@@ -213,7 +231,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
                       <DatePicker
                         format="DD/MM/YYYY"
                         label="Start Date"
-                        className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-md"
+                        className="px-4 py-2 mr-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-md"
                         value={dayjs(selectedMealPlan.startDate)}
                         disabled
                         // onChange={handleStartDateChange}
@@ -221,7 +239,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
                       <DatePicker
                         format="DD/MM/YYYY"
                         label="End Date"
-                        className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-md"
+                        className="px-4 py-2 ml-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-md"
                         value={dayjs(selectedMealPlan.endDate)}
                         // onChange={handleEndDateChange}
                         disabled

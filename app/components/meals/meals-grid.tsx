@@ -524,7 +524,8 @@ const MealsGrid: React.FC<MealsGridProps> = ({ mealsData, client }) => {
       {/* Meals Grid */}
       <WeeklyMealsGrid
         sections={client?.ClientSettingsDto?.mealPlanPreferences?.plan.sections}
-        startDate={startDate as Date}
+        // TODO: Fix bug when spanning more than 2 weeks - check if UTC issue
+        startDate={currentWeekMeals[0]?.timeScheduled || startDate}
         weekMeals={currentWeekMeals || []}
         handleViewDetails={handleViewDetails}
         handleImageError={handleImageError}

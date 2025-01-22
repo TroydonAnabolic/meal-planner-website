@@ -88,7 +88,6 @@ const MealPlan: React.FC<MealPlanProps> = ({
             recipe.timeScheduled = localTimeScheduled;
           }
         }
-
         setRecipes(fetchedRecipes);
       } catch (error) {
         console.error(error);
@@ -118,13 +117,6 @@ const MealPlan: React.FC<MealPlanProps> = ({
               initialMealPlan.endDate
             ).format("DD/MM/YYYY")}`
       );
-
-      // // Fetch recipes for the selected meal plan
-      // const fetchRecipes = async () => {
-      //   await fetchAndSetRecipes(initialMealPlan);
-      // };
-
-      // fetchRecipes(); // Call async function explicitlyselected meal plan.
     }
   }, [mealPlanData, mealPlans]);
 

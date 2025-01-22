@@ -31,8 +31,16 @@ export const groupMealsByWeek = (
   let currentStart = startOfWeek(startDate, { weekStartsOn: 0 }); // Sunday
   let currentEnd = endOfWeek(currentStart, { weekStartsOn: 0 }); // Saturday
 
+  // Sort meals by timeScheduled
+  const sortedMeals = meals.sort((a, b) => {
+    if (!a.timeScheduled || !b.timeScheduled) return 0;
+    return (
+      new Date(a.timeScheduled).getTime() - new Date(b.timeScheduled).getTime()
+    );
+  });
+
   while (currentStart <= endDate) {
-    const weekMeals = meals.filter((meal) => {
+    const weekMeals = sortedMeals.filter((meal) => {
       if (!meal.timeScheduled) return false;
       const mealDate = new Date(meal.timeScheduled);
       return mealDate >= currentStart && mealDate <= currentEnd;

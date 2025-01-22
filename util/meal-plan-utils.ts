@@ -82,6 +82,7 @@ export function getDefaultMealPlan(clientId: number): IMealPlan {
       dayjs().startOf("week"),
       dayjs().endOf("week")
     ),
+    autoLogMeals: true,
   };
 }
 
