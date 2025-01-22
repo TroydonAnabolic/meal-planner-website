@@ -13,7 +13,7 @@ import {
 import dayjs from "dayjs";
 import { ConfirmActionModalProps } from "../../ui/modals/confirm-action-modal";
 import ReactDOMServer from "react-dom/server";
-import { getUtcTimeFromLocal } from "@/util/date-util";
+import { getLocalTimeFromUtc, getUtcTimeFromLocal } from "@/util/date-util";
 
 interface MealPlanProps {
   mealPlanData: IMealPlan[] | undefined;
@@ -66,7 +66,9 @@ const MealPlan: React.FC<MealPlanProps> = ({
   );
 
   // Memoized fetch function
-  const fetchAndSetRecipes = 
+  // TODO: Test if it needs to convert to local time inside this function
+  // if it does not work, then first try creating new recipe obj in sider and loop recipes.data and then return it, otherwise convert it inside this callback
+  const fetchAndSetRecipes = useCallback(
     async (mealPlan: IMealPlan) => {
       if (mealPlan.id === 0) {
         setRecipes([]);
@@ -78,12 +80,14 @@ const MealPlan: React.FC<MealPlanProps> = ({
         if (!response.ok) throw new Error("Failed to fetch recipes.");
         const fetchedRecipes: IRecipeInterface[] = await response.json();
 
-        // for (const recipe of fetchedRecipes) {
-        //   if (recipe.timeScheduled) {
-        //     const utcTime = await getUtcTimeFromLocal(recipe.timeScheduled); // Await if async
-        //     recipe.timeScheduled = new Date(utcTime!);
-        //   }
-        // }
+        for (const recipe of fetchedRecipes) {
+          if (recipe.timeScheduled) {
+            const localTimeScheduled = getLocalTimeFromUtc(
+              recipe.timeScheduled
+            );
+            recipe.timeScheduled = localTimeScheduled;
+          }
+        }
 
         setRecipes(fetchedRecipes);
       } catch (error) {
@@ -93,7 +97,7 @@ const MealPlan: React.FC<MealPlanProps> = ({
         setRecipesLoading(false);
       }
     },
-    [selectedMealPlan, recipesData] // Dependencies are empty since it doesn't rely on anything outside its scope
+    [] // Dependencies are empty since it doesn't rely on anything outside its scope
   );
 
   // sets selected meal plan
@@ -115,9 +119,14 @@ const MealPlan: React.FC<MealPlanProps> = ({
             ).format("DD/MM/YYYY")}`
       );
 
-      fetchAndSetRecipes(initialMealPlan); // Fetch recipes for the selected meal plan.
+      // // Fetch recipes for the selected meal plan
+      // const fetchRecipes = async () => {
+      //   await fetchAndSetRecipes(initialMealPlan);
+      // };
+
+      // fetchRecipes(); // Call async function explicitlyselected meal plan.
     }
-  };//, [mealPlanData, mealPlans]);
+  }, [mealPlanData, mealPlans]);
 
   const handleAfterPrint = React.useCallback(() => {
     console.log("`onAfterPrint` called");

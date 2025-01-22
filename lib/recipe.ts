@@ -90,10 +90,11 @@ export async function getRecipesByMealPlanId(
       params: { mealPlanId: mealPlanId },
     });
     // Assuming your API response matches the Recipe interface
-    const recipes: IRecipeInterface[] = response.data;
+    const recipes: IRecipeInterface[] = [];
+
     // assign recipe.totalNutrients, recipe.totalDaily, to recipe.baseTotalNutrients, recipe.baseTotalDaily
-    if (recipes) {
-      for (const recipe of recipes) {
+    if (response.data) {
+      for (const recipe of response.data as IRecipeInterface[]) {
         recipe.baseTotalNutrients = recipe.totalNutrients;
         recipe.baseTotalDaily = recipe.totalDaily;
         recipe.baseTotalWeight = recipe.totalWeight;
@@ -101,6 +102,8 @@ export async function getRecipesByMealPlanId(
           const localTimeScheduled = getLocalTimeFromUtc(recipe.timeScheduled);
           recipe.timeScheduled = localTimeScheduled;
         }
+
+        recipes.push(recipe);
       }
     }
 
