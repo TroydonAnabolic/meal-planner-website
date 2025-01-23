@@ -165,7 +165,7 @@ const ProfileInformation: React.FC<ProfileInformationProps> = ({
             </p>
           </div>
           <div className="md:col-span-2">
-            <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div className="grid grid-cols-6 gap-x-6 gap-y-8 sm:grid-cols-6">
               <BasicProfile client={client} setClient={setClient} />
             </div>
           </div>
@@ -180,7 +180,7 @@ const ProfileInformation: React.FC<ProfileInformationProps> = ({
             </p>
           </div>
           <div className="md:col-span-2">
-            <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div className="grid grid-cols-6 gap-x-6 gap-y-8 sm:grid-cols-6">
               {/* Email Address */}
               <ContactInfo
                 client={client}

@@ -30,45 +30,49 @@ export const saveImageToS3 = async (
   ); // e.g., "image/jpeg"
 
   // Request pre-signed URL
-  const presignedURLResponse = await fetch(
-    `/api/s3/presigned?fileName=${encodeURIComponent(
-      fileName
-    )}&contentType=${encodeURIComponent(contentType)}&suffix=${suffix || ""}`,
-    {
-      method: "GET",
+  try {
+    const presignedURLResponse = await fetch(
+      `/api/s3/presigned?fileName=${encodeURIComponent(
+        fileName
+      )}&contentType=${encodeURIComponent(contentType)}&suffix=${suffix || ""}`,
+      {
+        method: "GET",
+      }
+    );
+
+    if (!presignedURLResponse.ok) {
+      throw new Error("Failed to get pre-signed URL");
     }
-  );
 
-  if (!presignedURLResponse.ok) {
-    throw new Error("Failed to get pre-signed URL");
+    const { signedUrl, objectUrl } = await presignedURLResponse.json();
+
+    // Convert data:image to Blob
+    const imageBlob = dataURLtoBlob(imageData);
+
+    if (!imageBlob) {
+      throw new Error("Failed to convert image to Blob");
+    }
+
+    // Upload the binary data to S3 using the pre-signed URL
+    const uploadResponse = await fetch(signedUrl, {
+      method: "PUT",
+      headers: {
+        // "Content-Type": contentType,
+        // "x-amz-acl": "public-read",
+        // "x-amz-server-side-encryption": "AES256",
+      },
+      body: imageBlob,
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error("Failed to upload file to S3");
+    }
+
+    console.log("File uploaded successfully:", objectUrl);
+    return objectUrl;
+  } catch (error) {
+    console.log("Error uploading file:", error);
   }
-
-  const { signedUrl, objectUrl } = await presignedURLResponse.json();
-
-  // Convert data:image to Blob
-  const imageBlob = dataURLtoBlob(imageData);
-
-  if (!imageBlob) {
-    throw new Error("Failed to convert image to Blob");
-  }
-
-  // Upload the binary data to S3 using the pre-signed URL
-  const uploadResponse = await fetch(signedUrl, {
-    method: "PUT",
-    headers: {
-      // "Content-Type": contentType,
-      // "x-amz-acl": "public-read",
-      // "x-amz-server-side-encryption": "AES256",
-    },
-    body: imageBlob,
-  });
-
-  if (!uploadResponse.ok) {
-    throw new Error("Failed to upload file to S3");
-  }
-
-  console.log("File uploaded successfully:", objectUrl);
-  return objectUrl;
 };
 
 export const uploadImageToS3FromBuffer = async (

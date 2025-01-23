@@ -11,7 +11,11 @@ const RecipesPage = async () => {
 
   return (
     <>
-      <RecipesGrid recipesData={recipeData} clientId={clientId} />
+      <RecipesGrid
+        recipesData={recipeData}
+        clientId={clientId}
+        userId={session?.user.userId!}
+      />
     </>
   );
 };

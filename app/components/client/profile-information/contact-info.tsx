@@ -40,25 +40,27 @@ const ContactInfo: React.FC<ContactInfoProps> = ({
   return (
     <>
       {/* Email */}
-      <div className="sm:col-span-4">
+      <div className="sm:col-span-6">
         <EmailInput
           name="Email"
           value={client.Email || ""}
           onChange={handleEmailChange}
           required={true}
         />
-        {!emailVerified && (
-          <button
-            type="button"
-            onClick={handleEmailVerification}
-            className="mt-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500"
-          >
-            Verify Email
-          </button>
-        )}
       </div>
+      {!emailVerified && (
+        <button
+          type="button"
+          onClick={handleEmailVerification}
+          className={
+            "mt-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500"
+          }
+        >
+          Verify Email
+        </button>
+      )}
       {/* Phone Number */}
-      <div className="sm:col-span-4">
+      <div className="col-span-6 sm:col-span-6">
         <label
           htmlFor="PhoneNumber"
           className="block text-sm font-medium text-gray-800"

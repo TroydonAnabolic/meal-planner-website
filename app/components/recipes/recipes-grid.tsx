@@ -37,10 +37,15 @@ import GlowyBanner from "../ui/banner/banner-with-glow";
 type RecipesGridProps = {
   recipesData: IRecipeInterface[] | undefined; // Recipes data fetched from API
   clientId: number; // Client ID for associating recipes
+  userId: string;
 };
 
 // TODO: show only one recipe per meal plan for meal plan recipes
-const RecipesGrid: React.FC<RecipesGridProps> = ({ recipesData, clientId }) => {
+const RecipesGrid: React.FC<RecipesGridProps> = ({
+  recipesData,
+  clientId,
+  userId,
+}) => {
   const pathname = usePathname();
 
   // State to control the visibility of the Add Recipe Drawer
@@ -207,7 +212,7 @@ const RecipesGrid: React.FC<RecipesGridProps> = ({ recipesData, clientId }) => {
 
         if (recipe.image && recipe.image.startsWith("data:image")) {
           objectUrl =
-            (await saveImageToS3(recipe.image, "recipes/")) ||
+            (await saveImageToS3(recipe.image, `client/${userId}/recipes/`)) ||
             "/aiimages/food/default-food.svg";
           if (!objectUrl) {
             throw new Error("Failed to upload the image to S3");

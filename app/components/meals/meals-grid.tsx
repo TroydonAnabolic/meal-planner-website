@@ -274,7 +274,11 @@ const MealsGrid: React.FC<MealsGridProps> = ({ mealsData, client }) => {
           meal.image.startsWith("data:image") &&
           !meal.image.includes("edamam")
         ) {
-          objectUrl = (await saveImageToS3(meal.image, "meals/")) || meal.image;
+          objectUrl =
+            (await saveImageToS3(
+              meal.image,
+              `client/${client.UserID}/meals/`
+            )) || meal.image;
           if (!objectUrl) {
             throw new Error("Failed to upload the image to S3");
           }

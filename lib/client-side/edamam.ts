@@ -129,15 +129,15 @@ export async function fetchFood(query: string): Promise<IFoodParser> {
     throw new Error("Failed to get food");
   }
 
-  const response: IFoodParserResponse = await foodResponse.json();
+  const response: IFoodParser = await foodResponse.json();
 
   if (!response) {
     throw new Error("Failed to get food");
-  } else if (!response.data) {
+  } else if (!response) {
     throw new Error("Failed to get food");
   }
 
-  return response.data;
+  return response;
 }
 
 /**

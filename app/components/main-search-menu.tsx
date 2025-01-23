@@ -10,7 +10,6 @@ import Link from "next/link";
 import LogoutButton from "./auth/logout-button";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { deleteImageFromS3, saveImageToS3 } from "@/lib/s3-client";
 
 const userNavigation = [
   { name: "Your Profile", href: "#" },
@@ -25,70 +24,8 @@ type MainSearchMenuProps = {
 
 const MainSearchMenu: React.FC<MainSearchMenuProps> = ({ setSidebarOpen }) => {
   const { data } = useSession();
-  const [profilePic, setProfilePic] = useState<string>(
-    "/avatar/default-profile-pic.svg"
-  );
+  const [profilePic, setProfilePic] = useState<string>("");
   const [loading, setLoading] = useState(false);
-
-  // Handles image upload
-  const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        setLoading(true);
-        const base64Image = reader.result as string;
-        const uploadedUrl = await saveImageToS3(
-          base64Image,
-          "clients/profile-pic"
-        );
-        if (uploadedUrl) {
-          await saveProfilePicToDatabase(uploadedUrl);
-          setProfilePic(uploadedUrl);
-        }
-      } catch (error) {
-        console.error("Error uploading profile picture:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
-  // Saves the new profile picture URL to the database
-  const saveProfilePicToDatabase = async (url: string) => {
-    try {
-      const response = await fetch("/api/client/save-client", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profilePic: url }),
-      });
-      if (!response.ok)
-        throw new Error("Failed to save profile picture to database.");
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  // Handles image deletion
-  const handleDeleteImage = async () => {
-    try {
-      setLoading(true);
-      const success = await deleteImageFromS3(profilePic);
-      if (success) {
-        await saveProfilePicToDatabase(""); // Save default state
-        setProfilePic("/avatar/default-profile-pic.svg");
-      }
-    } catch (error) {
-      console.error("Error deleting profile picture:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="lg:pl-72">
@@ -140,7 +77,10 @@ const MainSearchMenu: React.FC<MainSearchMenuProps> = ({ setSidebarOpen }) => {
                   alt="profile-pic"
                   width={30}
                   height={30}
-                  src={profilePic}
+                  src={
+                    data?.user.profilePicUrl ||
+                    "/avatar/default-profile-pic.svg"
+                  }
                   className="h-8 w-8 bg-gray-50"
                   style={{ borderRadius: "50%" }}
                 />
@@ -158,45 +98,18 @@ const MainSearchMenu: React.FC<MainSearchMenuProps> = ({ setSidebarOpen }) => {
                 </span>
               </MenuButton>
               <MenuItems className="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5">
-                <MenuItem>
-                  {({ active }) => (
-                    <label
-                      htmlFor="upload-profile-pic"
-                      className={`block px-3 py-1 text-sm leading-6 cursor-pointer ${
-                        active ? "bg-gray-50" : ""
-                      } text-gray-900`}
-                    >
-                      Upload Photo
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        id="upload-profile-pic"
-                      />
-                    </label>
-                  )}
-                </MenuItem>
-                <MenuItem>
-                  {({ active }) => (
-                    <button
-                      onClick={handleDeleteImage}
-                      className={`block w-full text-left px-3 py-1 text-sm leading-6 ${
-                        active ? "bg-gray-50" : ""
-                      } text-red-600`}
-                    >
-                      Delete Photo
-                    </button>
-                  )}
-                </MenuItem>
                 {userNavigation.map((item) => (
                   <MenuItem key={item.name}>
-                    <Link
-                      href={item.href}
-                      className="block px-3 py-1 text-sm leading-6 text-gray-900"
-                    >
-                      {item.name}
-                    </Link>
+                    {item.name === "Sign Out" ? (
+                      <LogoutButton item={item} />
+                    ) : (
+                      <Link
+                        href={item.href}
+                        className="block px-3 py-1 text-sm leading-6 text-gray-900 data-[focus]:bg-gray-50"
+                      >
+                        {item.name}
+                      </Link>
+                    )}
                   </MenuItem>
                 ))}
               </MenuItems>

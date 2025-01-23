@@ -8,6 +8,7 @@ import { GenderType, ActivityLevel } from "@/constants/constants-enums";
 import { deleteImageFromS3, saveImageToS3 } from "@/lib/s3-client";
 import { saveClient } from "@/lib/client-side/client";
 import Image from "next/image";
+import ImageUploadLabel from "../../ui/inputs/image-upload";
 
 interface BasicProfileProps {
   client: IClientInterface;
@@ -20,9 +21,12 @@ const BasicProfile: React.FC<BasicProfileProps> = ({ client, setClient }) => {
   );
   const [selectedActivityLevel, setSelectedActivityLevel] =
     useState<ActivityLevel>(client.Activity || ActivityLevel.Sedentary);
-  const [profilePic, setProfilePic] = useState(client.ProfilePicUrl || "");
-
   const defaultAvatar = "/avatar/default-profile-pic.svg";
+
+  const [profilePic, setProfilePic] = useState(
+    client.ProfilePicUrl || defaultAvatar
+  );
+
   useEffect(() => {
     setClient((prevClient) => ({
       ...prevClient,
@@ -42,30 +46,25 @@ const BasicProfile: React.FC<BasicProfileProps> = ({ client, setClient }) => {
     setClient({ ...client, [name]: value });
   };
 
-  const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    if (!event.target.files || event.target.files.length === 0) return;
-    const file = event.target.files[0];
-    const reader = new FileReader();
+  const handleImageUpload = async (imageSrc: string | undefined) => {
+    if (!imageSrc) return;
 
-    reader.onload = async () => {
-      try {
-        const base64Image = reader.result as string;
-        const uploadedUrl = await saveImageToS3(
-          base64Image,
-          `client/profile-pic/${client.UserID}`
-        );
-        if (uploadedUrl) {
-          await saveProfilePicToDatabase(uploadedUrl);
-          setProfilePic(uploadedUrl);
-        }
-      } catch (error) {
-        console.error("Error uploading image:", error);
+    try {
+      const uploadedUrl = await saveImageToS3(
+        imageSrc,
+        `client/${client.UserID}/profile-pic/`
+      );
+      if (uploadedUrl) {
+        //await saveProfilePicToDatabase(uploadedUrl);
+        setClient((prevClient) => ({
+          ...prevClient,
+          ProfilePicUrl: uploadedUrl,
+        }));
+        setProfilePic(uploadedUrl);
       }
-    };
-
-    reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
   };
 
   const handleDeleteImage = async () => {
@@ -73,7 +72,11 @@ const BasicProfile: React.FC<BasicProfileProps> = ({ client, setClient }) => {
       if (profilePic) {
         const success = await deleteImageFromS3(profilePic);
         if (success) {
-          await saveProfilePicToDatabase(defaultAvatar);
+          //  await saveProfilePicToDatabase(defaultAvatar);
+          setClient((prevClient) => ({
+            ...prevClient,
+            ProfilePicUrl: defaultAvatar,
+          }));
           setProfilePic(defaultAvatar);
         }
       }
@@ -82,85 +85,88 @@ const BasicProfile: React.FC<BasicProfileProps> = ({ client, setClient }) => {
     }
   };
 
-  const saveProfilePicToDatabase = async (url: string) => {
-    try {
-      const clientSaved = await saveClient({ ...client, ProfilePicUrl: url });
-
-      setClient((prevClient) => ({ ...prevClient, ProfilePicUrl: url }));
-    } catch (error) {
-      console.error("Error saving profile picture:", error);
-    }
-  };
-
   return (
-    <div>
-      <div className="profile-picture-container">
-        <Image
-          src={profilePic || defaultAvatar}
-          alt="Profile Picture"
-          width={150}
-          height={150}
-          className="rounded-full"
+    <>
+      <div className="col-span-6 items-center space-y-4">
+        {/* Profile Picture */}
+        <ImageUploadLabel
+          handleImageUpload={handleImageUpload}
+          placeholder={
+            <Image
+              src={profilePic || defaultAvatar}
+              alt="Profile Picture"
+              width={150}
+              height={150}
+              objectFit="contain"
+              className=" h-auto rounded-md border border-gray-300 shadow-sm max-w-40 max-h-40"
+            />
+          }
         />
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
-          className="mt-2"
-        />
-        {profilePic && (
-          <button onClick={handleDeleteImage} className="text-red-500 mt-2">
+
+        {/* Delete Button */}
+        {profilePic !== defaultAvatar && (
+          <button
+            onClick={handleDeleteImage}
+            className="text-sm font-medium text-red-600 hover:underline"
+          >
             Delete Profile Picture
           </button>
         )}
       </div>
+      <div className="col-span-3">
+        {/* First Name */}
+        <TextInput
+          label="First Name"
+          type="text"
+          name="FirstName"
+          id="FirstName"
+          value={client.FirstName || ""}
+          onChange={handleInputChange}
+        />
 
-      {/* First Name */}
-      <TextInput
-        label="First Name"
-        type="text"
-        name="FirstName"
-        id="FirstName"
-        value={client.FirstName || ""}
-        onChange={handleInputChange}
-      />
-      {/* Last Name */}
-      <TextInput
-        label="Last Name"
-        type="text"
-        name="LastName"
-        id="LastName"
-        value={client.LastName || ""}
-        onChange={handleInputChange}
-      />
-      {/* Birthday */}
-      <DateInput
-        label="Birthday"
-        type="date"
-        name="Birthday"
-        id="Birthday"
-        value={client.Birthday || new Date()}
-        onChange={handleInputChange}
-      />
-      {/* Gender */}
-      <SelectDropdown
-        label="Gender"
-        options={Object.values(GenderType)}
-        selected={selectedGender}
-        onChange={setSelectedGender}
-        name="gender"
-        placeholder="Select your gender"
-      />
+        {/* Last Name */}
+        <TextInput
+          label="Last Name"
+          type="text"
+          name="LastName"
+          id="LastName"
+          value={client.LastName || ""}
+          onChange={handleInputChange}
+        />
+      </div>
+
+      <div className="col-span-3">
+        {/* Birthday */}
+        <DateInput
+          label="Birthday"
+          type="date"
+          name="Birthday"
+          id="Birthday"
+          value={client.Birthday || new Date()}
+          onChange={handleInputChange}
+        />
+
+        {/* Gender */}
+        <SelectDropdown
+          label="Gender"
+          options={Object.values(GenderType)}
+          selected={selectedGender}
+          onChange={setSelectedGender}
+          name="gender"
+          placeholder="Select your gender"
+        />
+      </div>
+
       {/* Activity Level */}
-      <SelectDropdown
+      {/* <SelectDropdown
         label="Activity Level"
         options={Object.values(ActivityLevel)}
         selected={selectedActivityLevel}
         onChange={setSelectedActivityLevel}
         name="activityLevel"
         placeholder="Select your activity level"
-      />
-    </div>
+      /> */}
+    </>
   );
 };
 

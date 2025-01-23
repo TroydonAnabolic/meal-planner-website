@@ -26,6 +26,7 @@ export function constructClientObjectFromResponse(
     UserID: response.data.userID,
     stripeCustomerId: response.data.stripeCustomerId,
     isStripeBasicActive: response.data.isStripeBasicActive,
+    ProfilePicUrl: response.data.profilePicUrl,
     ClientSettingsDto: response.data.clientSettingsDto
       ? {
           id: response.data.clientSettingsDto.id,
