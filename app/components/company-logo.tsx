@@ -5,7 +5,7 @@ const CompanyLogo = () => (
   <Link href="#" className="-m-1.5 p-1.5">
     <span className="sr-only">AI Trainer</span>
     <Image
-      src="/aiimages/artificial-intelligence.jpg"
+      src="/meal-planner-logo.png"
       alt="AI Trainer"
       width={80}
       height={60}
