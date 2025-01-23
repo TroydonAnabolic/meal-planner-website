@@ -3,6 +3,7 @@ export type Tier = {
   id: string;
   href: string;
   price: string;
+  promoPrice?: string; // Optional promotional price
   description: string;
   features: string[];
   featured: boolean;

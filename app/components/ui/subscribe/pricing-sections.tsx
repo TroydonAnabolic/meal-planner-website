@@ -1,25 +1,33 @@
 "use client"; // Needed for client-side hooks like useRouter
 import React from "react";
-import { useRouter } from "next/navigation"; // Updated import for App Router
 import { Tier } from "@/types/subscribe";
 import { CheckIcon } from "@heroicons/react/24/outline";
 
 type PricingGridProps = {
   tiers: Tier[];
   classNames: (...classes: (string | false)[]) => string;
-  //buttonDisabled: boolean;
   onSelectTier: (tier: Tier) => void; // Callback for tier selection
   selectedTier: Tier | null; // Add this prop
   buttonText?: string;
   isLoading?: boolean;
 };
 
+const PricingPromo: React.FC<{ originalPrice: string; promoPrice: string }> = ({
+  originalPrice,
+  promoPrice,
+}) => (
+  <div className="mt-2">
+    <p className="text-sm text-gray-500 line-through">{originalPrice}</p>
+    <p className="text-2xl font-bold text-red-500">{promoPrice}</p>
+    <p className="text-xs text-red-400">Price slashed!</p>
+  </div>
+);
+
 const PricingGrid: React.FC<PricingGridProps> = ({
   tiers,
   classNames,
-  //buttonDisabled = false,
   onSelectTier,
-  selectedTier, // Add this prop
+  selectedTier,
   buttonText = "Select Plan",
   isLoading = false,
 }) => {
@@ -38,7 +46,16 @@ const PricingGrid: React.FC<PricingGridProps> = ({
           )}
         >
           <h3 className="text-lg font-semibold">{tier.name}</h3>
-          <p className="mt-2 text-2xl font-bold">{tier.price}</p>
+
+          {tier.promoPrice ? (
+            <PricingPromo
+              originalPrice={tier.price}
+              promoPrice={tier.promoPrice}
+            />
+          ) : (
+            <p className="mt-2 text-2xl font-bold">{tier.price}</p>
+          )}
+
           <p className="mt-1 text-sm">{tier.description}</p>
           <ul className="mt-4 space-y-2">
             {tier.features.map((feature) => (
@@ -54,8 +71,6 @@ const PricingGrid: React.FC<PricingGridProps> = ({
           <button
             type="button"
             onClick={() => onSelectTier(tier)} // Trigger navigation on button click
-            //      disabled={isLoading || !tier.active}
-            // disabled={!tier.active} //! TODO: !tier.active -> removed this check if ok in registraiton and from authenticated
             className={classNames(
               tier.available
                 ? "mt-6 block w-full px-4 py-2 text-sm font-semibold rounded-md bg-white text-indigo-600 hover:bg-indigo-100"
