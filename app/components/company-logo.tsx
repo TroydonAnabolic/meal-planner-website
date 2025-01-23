@@ -7,9 +7,9 @@ const CompanyLogo = () => (
     <Image
       src="/meal-planner-logo.png"
       alt="AI Trainer"
-      width={80}
-      height={60}
-      className="h-8 w-auto"
+      width={100}
+      height={100}
+      className=""
       priority
     />
   </Link>

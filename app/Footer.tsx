@@ -57,11 +57,11 @@ const Footer: React.FC = () => {
       <div className="mx-auto max-w-7xl px-6 py-16 sm:py-24 lg:px-8 lg:py-32">
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           <Image
-            src="/aiimages/artificial-intelligence.jpg"
+            src="/meal-planner-logo.png"
             alt="AI Trainer"
-            width={80}
-            height={60}
-            className="h-7"
+            width={100}
+            height={100}
+            className=""
           />
           <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
             <div className="md:grid md:grid-cols-2 md:gap-8">

@@ -94,11 +94,11 @@ const Header = () => {
             <a href="#" className="-m-1.5 p-1.5">
               <span className="sr-only">Your Company</span>
               <Image
-                src="/aiimages/artificial-intelligence.jpg"
+                src="/meal-planner-logo.png"
                 alt="AI Trainer"
-                width={80}
-                height={60}
-                className="h-8 w-auto"
+                width={100}
+                height={100}
+                className=""
               />
             </a>
             <button
