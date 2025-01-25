@@ -16,10 +16,15 @@ import { getMealsByClientId } from "@/lib/meal";
 import { Nutrients } from "@/constants/constants-enums";
 import Link from "next/link";
 import dayjs from "dayjs";
+import CenteredPageNumbers from "@/app/components/ui/pagination/centered-page-numbers";
+import { ROUTES } from "@/constants/routes";
 
-type Props = {};
+type DashboardProps = {
+  searchParams: { [key: string]: string | string[] | undefined }; // Parse query params from the URL
+};
+const ITEMS_PER_PAGE = 5;
 
-const Dashboard = async (props: Props) => {
+const DashboardPage: React.FC<DashboardProps> = async ({ searchParams }) => {
   const session = (await auth()) as Session;
   const clientId = session.user.clientId;
 
@@ -61,12 +66,12 @@ const Dashboard = async (props: Props) => {
   }, 0);
 
   // Filter meals for today with timeConsumed defined
-  const mealsTodayWithConsumption = meals.filter((meal) => {
+  const mealsTodayWithConsumption = mealsToday.filter((meal) => {
     const mealDate = dayjs(meal.timeScheduled);
     return (
       mealDate.isAfter(startOfToday) &&
       mealDate.isBefore(endOfToday) &&
-      meal.timeConsumed !== undefined
+      meal.timeConsumed !== null
     );
   });
 
@@ -90,6 +95,19 @@ const Dashboard = async (props: Props) => {
       amount: sortedMealsToday.length - mealsTodayWithConsumption.length,
     },
   ];
+
+  const { page } = await searchParams;
+  const currentPage = await parseInt((page as string) || "1", 10);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(mealsThisWeek.length / ITEMS_PER_PAGE);
+
+  // Get meals for the current page
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const mealsToDisplay = mealsThisWeek.slice(startIndex, endIndex);
+  const getPageLink = (page: number) =>
+    `${ROUTES.MEAL_PLANNER.DASHBOARD}?page=${page}`;
 
   return (
     <main className="flex-1 pb-8">
@@ -250,7 +268,7 @@ const Dashboard = async (props: Props) => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 bg-white">
-                    {mealsThisWeek.map((meal) => (
+                    {mealsToDisplay.map((meal) => (
                       <tr key={meal.id} className="bg-white">
                         <td className="w-full max-w-0 whitespace-nowrap px-6 py-4 text-sm text-gray-900">
                           <div className="flex">
@@ -258,7 +276,7 @@ const Dashboard = async (props: Props) => {
                               href={meal.foodSourceUrl || ""}
                               className="group inline-flex space-x-2 truncate text-sm"
                             >
-                              {meal ?? (
+                              {meal && (
                                 <ClipboardIcon
                                   aria-hidden="true"
                                   className="h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
@@ -297,32 +315,12 @@ const Dashboard = async (props: Props) => {
                     ))}
                   </tbody>
                 </table>
-                <nav
-                  aria-label="Pagination"
-                  className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6"
-                >
-                  <div className="hidden sm:block">
-                    <p className="text-sm text-gray-700">
-                      Showing <span className="font-medium">1</span> to{" "}
-                      <span className="font-medium">10</span> of{" "}
-                      <span className="font-medium">20</span> results
-                    </p>
-                  </div>
-                  <div className="flex flex-1 justify-between gap-x-3 sm:justify-end">
-                    <Link
-                      href="#"
-                      className="relative inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:ring-gray-400"
-                    >
-                      Previous
-                    </Link>
-                    <Link
-                      href="#"
-                      className="relative inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:ring-gray-400"
-                    >
-                      Next
-                    </Link>
-                  </div>
-                </nav>
+                {/* Pagination */}
+                <CenteredPageNumbers
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={getPageLink}
+                />
               </div>
             </div>
           </div>
@@ -332,7 +330,7 @@ const Dashboard = async (props: Props) => {
   );
 };
 
-export default Dashboard;
+export default DashboardPage;
 export const metadata: Metadata = {
   title: "Meal Planner - Dashboard",
   description: "Generate personalized meal plans easily.",

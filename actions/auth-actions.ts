@@ -152,7 +152,7 @@ export async function login(
       return { errors, emailInput: email! };
     }
 
-    await redirect(ROUTES.MEAL_PLANNER.DASHBOARD);
+    await redirect(ROUTES.MEAL_PLANNER.DASHBOARD + "?page=1");
     await revalidatePath("/", "layout");
   } catch (error: any) {
     //  console.error("Login error:", error);

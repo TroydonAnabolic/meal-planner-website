@@ -16,11 +16,16 @@ import {
   MicrowaveOutlined,
 } from "@mui/icons-material";
 
-import React from "react";
+import React, { useCallback } from "react";
 import CompanyLogo from "./company-logo";
 import { ROUTES } from "@/constants/routes";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import {
+  ReadonlyURLSearchParams,
+  usePathname,
+  useSearchParams,
+} from "next/navigation";
+import { makeQueryString } from "@/util/http-util";
 
 // Existing sidebar implementation...
 const teams = [
@@ -40,6 +45,14 @@ type SideBarProps = {
 
 const SideBar: React.FC<SideBarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      return makeQueryString(name, value, searchParams);
+    },
+    [searchParams]
+  );
 
   const navigation = [
     {
@@ -47,6 +60,8 @@ const SideBar: React.FC<SideBarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       href: ROUTES.MEAL_PLANNER.DASHBOARD,
       icon: HomeOutlined,
       current: pathname === ROUTES.MEAL_PLANNER.DASHBOARD,
+      searchParamsName: "page",
+      searchParamsValue: "1",
     },
     {
       name: "Meal Plan Generator",
@@ -131,7 +146,14 @@ const SideBar: React.FC<SideBarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                       {navigation.map((item) => (
                         <li key={item.name}>
                           <Link
-                            href={item.href}
+                            href={
+                              item.searchParamsName
+                                ? `${item.href}?${createQueryString(
+                                    item.searchParamsName,
+                                    item.searchParamsValue
+                                  )}`
+                                : item.href
+                            }
                             className={classNames(
                               item.current
                                 ? "bg-gray-50 text-indigo-600"
