@@ -23,9 +23,7 @@ type MainSearchMenuProps = {
 };
 
 const MainSearchMenu: React.FC<MainSearchMenuProps> = ({ setSidebarOpen }) => {
-  const { data } = useSession();
-  const [profilePic, setProfilePic] = useState<string>("");
-  const [loading, setLoading] = useState(false);
+  const { data: session } = useSession();
 
   return (
     <div className="lg:pl-72">
@@ -78,10 +76,10 @@ const MainSearchMenu: React.FC<MainSearchMenuProps> = ({ setSidebarOpen }) => {
                   width={30}
                   height={30}
                   src={
-                    data?.user.profilePicUrl ||
+                    session?.user.profilePicUrl ||
                     "/avatar/default-profile-pic.svg"
                   }
-                  className="h-8 w-8 bg-gray-50"
+                  className="h-10 w-10"
                   style={{ borderRadius: "50%" }}
                 />
                 <span className="hidden lg:flex lg:items-center">
@@ -89,7 +87,7 @@ const MainSearchMenu: React.FC<MainSearchMenuProps> = ({ setSidebarOpen }) => {
                     aria-hidden="true"
                     className="ml-4 text-sm font-semibold leading-6 text-gray-900"
                   >
-                    <p>{data?.user?.givenName}</p>
+                    <p>{session?.user?.givenName}</p>
                   </span>
                   <ChevronDownIcon
                     aria-hidden="true"

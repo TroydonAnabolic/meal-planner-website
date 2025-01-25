@@ -469,6 +469,7 @@ export async function updateSession(
     email: updatedClient.Email || "",
     userId: session?.user?.userId || "",
     phoneNumber: updatedClient.PhoneNumber || "",
+    profilePicUrl: updatedClient.ProfilePicUrl as string,
   };
   if (session && session.user) {
     session.user = updatedUser;

@@ -9,55 +9,37 @@ import {
   FireIcon,
 } from "@heroicons/react/20/solid";
 import { Metadata } from "next";
+import { auth } from "@/auth";
+import { Session } from "next-auth";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
+import { getMealsByClientId } from "@/lib/meal";
+import { Nutrients } from "@/constants/constants-enums";
+import Link from "next/link";
 
 const cards = [
   { name: "Total Meals Planned", href: "#", icon: ClipboardIcon, amount: "25" },
   { name: "Calories Today", href: "#", icon: FireIcon, amount: "1800 kcal" },
   { name: "Remaining Meals", href: "#", icon: CalendarIcon, amount: "2" },
 ];
-type MealStatus = keyof typeof statusStyles;
-
-const meals: {
-  id: number;
-  name: string;
-  href: string;
-  calories: string;
-  status: MealStatus;
-  date: string;
-  datetime: string;
-}[] = [
-  {
-    id: 1,
-    name: "Breakfast - Oatmeal with Fruits",
-    href: "#",
-    calories: "300 kcal",
-    status: "completed",
-    date: "October 2, 2024",
-    datetime: "2024-10-02",
-  },
-  {
-    id: 2,
-    name: "Lunch - Grilled Chicken Salad",
-    href: "#",
-    calories: "500 kcal",
-    status: "upcoming",
-    date: "October 2, 2024",
-    datetime: "2024-10-02",
-  },
-];
-const statusStyles = {
-  completed: "bg-green-100 text-green-800",
-  upcoming: "bg-yellow-100 text-yellow-800",
-  missed: "bg-red-100 text-red-800",
-};
-
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
-}
 
 type Props = {};
 
-const Dashboard = (props: Props) => {
+const Dashboard = async (props: Props) => {
+  const session = (await auth()) as Session;
+  const clientId = session.user.clientId;
+  const mealsFromDb: IMealInterface[] = (await getMealsByClientId(
+    Number(clientId)
+  )) as IMealInterface[];
+
+  // Sort meals by `timeScheduled` in ascending order
+  const sortedMeals = mealsFromDb.sort(
+    (a, b) =>
+      new Date(a.timeScheduled).getTime() - new Date(b.timeScheduled).getTime()
+  );
+
+  // Get the last 10 meals
+  const meals = sortedMeals.slice(-10);
+
   return (
     <main className="flex-1 pb-8">
       {/* Page header */}
@@ -149,8 +131,8 @@ const Dashboard = (props: Props) => {
           >
             {meals.map((meal) => (
               <li key={meal.id}>
-                <a
-                  href={meal.href}
+                <Link
+                  href={meal.foodSourceUrl || ""}
                   className="block bg-white px-4 py-4 hover:bg-gray-50"
                 >
                   <span className="flex items-center space-x-4">
@@ -163,10 +145,12 @@ const Dashboard = (props: Props) => {
                         <span className="truncate">{meal.name}</span>
                         <span>
                           <span className="font-medium text-gray-900">
-                            {meal.calories}
+                            {meal.nutrients![Nutrients.ENERC_KCAL].quantity}
                           </span>
                         </span>
-                        <time dateTime={meal.datetime}>{meal.date}</time>
+                        <time dateTime={`meal.timeScheduled`}>
+                          {meal.timeScheduled.toISOString()}`
+                        </time>
                       </span>
                     </span>
                     <ChevronRightIcon
@@ -174,7 +158,7 @@ const Dashboard = (props: Props) => {
                       className="h-5 w-5 flex-shrink-0 text-gray-400"
                     />
                   </span>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -200,12 +184,12 @@ const Dashboard = (props: Props) => {
                       >
                         Calories
                       </th>
-                      <th
+                      {/* <th
                         scope="col"
                         className="hidden bg-gray-50 px-6 py-3 text-left text-sm font-semibold text-gray-900 md:block"
                       >
                         Status
-                      </th>
+                      </th> */}
                       <th
                         scope="col"
                         className="bg-gray-50 px-6 py-3 text-right text-sm font-semibold text-gray-900"
@@ -219,8 +203,8 @@ const Dashboard = (props: Props) => {
                       <tr key={meal.id} className="bg-white">
                         <td className="w-full max-w-0 whitespace-nowrap px-6 py-4 text-sm text-gray-900">
                           <div className="flex">
-                            <a
-                              href={meal.href}
+                            <Link
+                              href={meal.foodSourceUrl || ""}
                               className="group inline-flex space-x-2 truncate text-sm"
                             >
                               <ClipboardIcon
@@ -230,15 +214,17 @@ const Dashboard = (props: Props) => {
                               <p className="truncate text-gray-500 group-hover:text-gray-900">
                                 {meal.name}
                               </p>
-                            </a>
+                            </Link>
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-500">
                           <span className="font-medium text-gray-900">
-                            {meal.calories}
+                            {meal.nutrients![
+                              Nutrients.ENERC_KCAL
+                            ].quantity.toFixed(1)}
                           </span>
                         </td>
-                        <td className="hidden whitespace-nowrap px-6 py-4 text-sm text-gray-500 md:block">
+                        {/* <td className="hidden whitespace-nowrap px-6 py-4 text-sm text-gray-500 md:block">
                           <span
                             className={classNames(
                               statusStyles[meal.status],
@@ -247,15 +233,16 @@ const Dashboard = (props: Props) => {
                           >
                             {meal.status}
                           </span>
-                        </td>
+                        </td> */}
                         <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-500">
-                          <time dateTime={meal.datetime}>{meal.date}</time>
+                          <time dateTime={meal.timeScheduled.toDateString()}>
+                            {meal.timeScheduled.toDateString()}
+                          </time>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                {/* Pagination */}
                 <nav
                   aria-label="Pagination"
                   className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6"

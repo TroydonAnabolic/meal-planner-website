@@ -16,7 +16,7 @@ import {
   MicrowaveOutlined,
 } from "@mui/icons-material";
 
-import React, { useCallback } from "react";
+import React from "react";
 import CompanyLogo from "./company-logo";
 import { ROUTES } from "@/constants/routes";
 import Link from "next/link";

@@ -18,6 +18,8 @@ import CountdownTimer from "../../countdown-timer";
 import BasicProfile from "./basic-profile";
 import ContactInfo from "./contact-info";
 import { updateSession } from "@/actions/auth-actions";
+import { revalidatePath } from "next/cache";
+import { ROUTES } from "@/constants/routes";
 
 type ProfileInformationProps = {
   session: Session | undefined;
@@ -84,6 +86,7 @@ const ProfileInformation: React.FC<ProfileInformationProps> = ({
 
     // Update the session user object
     await updateSession(session!, updatedClient);
+    // await sessionUpdate({ profilePicUrl: updatedClient.ProfilePicUrl });
 
     // update client in cognito
     const result = await updateCognitoUser(session, updatedClient);
@@ -248,7 +251,9 @@ const ProfileInformation: React.FC<ProfileInformationProps> = ({
                 setModalError(null); // Clear any previous modal errors
                 setInitialSeconds(60); // Reset the timer
                 setIsTimerActive(true);
-                sessionUpdate({ email: client.Email });
+                sessionUpdate({
+                  email: client.Email,
+                });
               }
             }}
           />

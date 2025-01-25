@@ -83,6 +83,7 @@ const providers: Provider[] = [
         userInfo.clientId = clientId;
         userInfo.isStripeBasicActive = client.isStripeBasicActive;
         userInfo.stripeCustomerId = client.stripeCustomerId;
+        userInfo.profilePicUrl = client.ProfilePicUrl as string;
 
         if (
           !client.stripeCustomerId ||
