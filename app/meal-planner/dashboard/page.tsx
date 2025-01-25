@@ -15,30 +15,81 @@ import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import { getMealsByClientId } from "@/lib/meal";
 import { Nutrients } from "@/constants/constants-enums";
 import Link from "next/link";
-
-const cards = [
-  { name: "Total Meals Planned", href: "#", icon: ClipboardIcon, amount: "25" },
-  { name: "Calories Today", href: "#", icon: FireIcon, amount: "1800 kcal" },
-  { name: "Remaining Meals", href: "#", icon: CalendarIcon, amount: "2" },
-];
+import dayjs from "dayjs";
 
 type Props = {};
 
 const Dashboard = async (props: Props) => {
   const session = (await auth()) as Session;
   const clientId = session.user.clientId;
-  const mealsFromDb: IMealInterface[] = (await getMealsByClientId(
+
+  const meals: IMealInterface[] = (await getMealsByClientId(
     Number(clientId)
   )) as IMealInterface[];
 
-  // Sort meals by `timeScheduled` in ascending order
-  const sortedMeals = mealsFromDb.sort(
+  // Get the start and end of the current week (Sunday as the first day)
+  const startOfWeek = dayjs().startOf("week");
+  const endOfWeek = dayjs().endOf("week");
+
+  // Filter meals for the current week
+  const mealsThisWeek = meals.filter((meal) => {
+    const mealDate = dayjs(meal.timeScheduled);
+    return mealDate.isAfter(startOfWeek) && mealDate.isBefore(endOfWeek);
+  });
+
+  // Filter meals for the current week
+  // Get the start and end of today
+  const startOfToday = dayjs().startOf("day");
+  const endOfToday = dayjs().endOf("day");
+
+  // Filter meals for today
+  const mealsToday = meals.filter((meal) => {
+    const mealDate = dayjs(meal.timeScheduled);
+    return mealDate.isAfter(startOfToday) && mealDate.isBefore(endOfToday);
+  });
+
+  // Optionally, sort the meals by timeScheduled in ascending order
+  const sortedMealsToday = mealsToday.sort(
     (a, b) =>
-      new Date(a.timeScheduled).getTime() - new Date(b.timeScheduled).getTime()
+      dayjs(a.timeScheduled).valueOf() - dayjs(b.timeScheduled).valueOf()
   );
 
-  // Get the last 10 meals
-  const meals = sortedMeals.slice(-10);
+  // Calculate total "Energy" nutrient for today's meals
+  const totalEnergy = mealsToday.reduce((total, meal) => {
+    const mealEnergy = meal.nutrients?.[Nutrients.ENERC_KCAL]?.quantity || 0; // Safely access the "Energy" nutrient
+    return total + mealEnergy;
+  }, 0);
+
+  // Filter meals for today with timeConsumed defined
+  const mealsTodayWithConsumption = meals.filter((meal) => {
+    const mealDate = dayjs(meal.timeScheduled);
+    return (
+      mealDate.isAfter(startOfToday) &&
+      mealDate.isBefore(endOfToday) &&
+      meal.timeConsumed !== undefined
+    );
+  });
+
+  const cards = [
+    {
+      name: "Total Meals Planned Today",
+      href: "#",
+      icon: ClipboardIcon,
+      amount: sortedMealsToday.length,
+    },
+    {
+      name: "Calories Today",
+      href: "#",
+      icon: FireIcon,
+      amount: totalEnergy.toFixed(1),
+    },
+    {
+      name: "Remaining Meals",
+      href: "#",
+      icon: CalendarIcon,
+      amount: sortedMealsToday.length - mealsTodayWithConsumption.length,
+    },
+  ];
 
   return (
     <main className="flex-1 pb-8">
@@ -129,7 +180,7 @@ const Dashboard = async (props: Props) => {
             role="list"
             className="mt-2 divide-y divide-gray-200 overflow-hidden shadow sm:hidden"
           >
-            {meals.map((meal) => (
+            {mealsThisWeek.map((meal) => (
               <li key={meal.id}>
                 <Link
                   href={meal.foodSourceUrl || ""}
@@ -199,7 +250,7 @@ const Dashboard = async (props: Props) => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 bg-white">
-                    {meals.map((meal) => (
+                    {mealsThisWeek.map((meal) => (
                       <tr key={meal.id} className="bg-white">
                         <td className="w-full max-w-0 whitespace-nowrap px-6 py-4 text-sm text-gray-900">
                           <div className="flex">
@@ -207,10 +258,13 @@ const Dashboard = async (props: Props) => {
                               href={meal.foodSourceUrl || ""}
                               className="group inline-flex space-x-2 truncate text-sm"
                             >
-                              <ClipboardIcon
-                                aria-hidden="true"
-                                className="h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
-                              />
+                              {meal ?? (
+                                <ClipboardIcon
+                                  aria-hidden="true"
+                                  className="h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
+                                />
+                              )}
+
                               <p className="truncate text-gray-500 group-hover:text-gray-900">
                                 {meal.name}
                               </p>
@@ -255,18 +309,18 @@ const Dashboard = async (props: Props) => {
                     </p>
                   </div>
                   <div className="flex flex-1 justify-between gap-x-3 sm:justify-end">
-                    <a
+                    <Link
                       href="#"
                       className="relative inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:ring-gray-400"
                     >
                       Previous
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                       href="#"
                       className="relative inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:ring-gray-400"
                     >
                       Next
-                    </a>
+                    </Link>
                   </div>
                 </nav>
               </div>
