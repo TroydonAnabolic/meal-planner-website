@@ -21,6 +21,7 @@ bun dev
   a new meal plan through manual creation is not tested.
 - Working with pagination where the week spans more than 1, the meals are
   incorrectly alloted to a cell. Workaround is to span 1 week at a time.
+- Reload page after uploading picture to see on top of dashboard.
 
 ## Feature Guide
 
