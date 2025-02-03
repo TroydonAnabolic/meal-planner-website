@@ -9,7 +9,11 @@ import { constructClientObjectFromResponse } from "@/util/client-util";
 
 const instance = axios.create({
   baseURL: BACKEND_URL_LIVE,
-  headers: APIM_HEADERS,
+  headers: {
+    ...APIM_HEADERS,
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
 });
 
 export async function getClient(userID: string) {
