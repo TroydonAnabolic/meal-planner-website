@@ -1,8 +1,13 @@
 import Stripe from "stripe";
 import { NextRequest, NextResponse } from "next/server";
-import { getClient, updateClient } from "@/lib/server-side/client";
+import {
+  deleteClient,
+  getClient,
+  updateClient,
+} from "@/lib/server-side/client";
 import { ROUTES } from "@/constants/routes";
 import { auth, unstable_update } from "@/auth";
+import { adminDeleteUser } from "@/actions/cognito-actions";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
@@ -11,7 +16,8 @@ export async function POST(request: NextRequest) {
     priceId,
     userID,
     isNewUser,
-  }: { priceId: string; userID: string; isNewUser: boolean } =
+    email,
+  }: { priceId: string; userID: string; isNewUser: boolean; email: string } =
     await request.json();
 
   console.log("api price id used: " + priceId);
@@ -137,8 +143,16 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error("Could not create checkout session", error);
+    // remove clients if creation fails
+    try {
+      await adminDeleteUser(email);
+      await deleteClient(userID);
+    } catch (error) {
+      console.log(error);
+    }
+
     return NextResponse.json(
-      { message: "Could not create checkout session" },
+      { message: "Could not create checkout session" + error },
       { status: 500 }
     );
   }

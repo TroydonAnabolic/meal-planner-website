@@ -26,6 +26,7 @@ export async function stripeCheckout(
         priceId: priceId,
         userID: client.UserID,
         isNewUser: isNewUser,
+        email: client.Email,
       });
 
       console.log("Attempting to re-direct to checkout");
