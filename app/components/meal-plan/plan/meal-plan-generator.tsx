@@ -412,23 +412,26 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
                 onClick={handleGenerateMealPlan}
                 icon={<PrecisionManufacturingIcon />}
               />
+
               <div className="flex justify-around mt-4 space-x-4">
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    format="DD/MM/YYYY"
-                    label="Start Date"
-                    value={startDate}
-                    onChange={handleStartDateChange}
-                  />
-                  <DatePicker
-                    format="DD/MM/YYYY"
-                    label="End Date"
-                    value={endDate}
-                    onChange={handleEndDateChange}
-                    disabled={startDate === null}
-                    minDate={startDate!}
-                  />
-                </LocalizationProvider>
+                {clientData.Id > 0 && clientData.isStripeBasicActive && (
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      format="DD/MM/YYYY"
+                      label="Start Date"
+                      value={startDate}
+                      onChange={handleStartDateChange}
+                    />
+                    <DatePicker
+                      format="DD/MM/YYYY"
+                      label="End Date"
+                      value={endDate}
+                      onChange={handleEndDateChange}
+                      disabled={startDate === null}
+                      minDate={startDate!}
+                    />
+                  </LocalizationProvider>
+                )}
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
                     <label className="text-sm font-medium text-gray-700">
@@ -453,14 +456,16 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
                     />
                   </div>
                 </div>
-                <div className="my-4">
-                  <ToggleInput
-                    label="Favourites"
-                    subLabel=""
-                    enabled={useFavouriteRecipes}
-                    onChange={handleToggleFavourite}
-                  />
-                </div>
+                {clientData.Id > 0 && clientData.isStripeBasicActive && (
+                  <div className="my-4">
+                    <ToggleInput
+                      label="Favourites"
+                      subLabel=""
+                      enabled={useFavouriteRecipes}
+                      onChange={handleToggleFavourite}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

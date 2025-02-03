@@ -31,7 +31,7 @@ const PlanMealDemo: React.FC<PlanMealDemoProps> = () => {
   clientData.ClientSettingsDto!.mealPlanPreferences = defaultMealPlanPreference;
 
   return (
-    <main className=" py-16 px-4 sm:px-6 lg:px-8 ">
+    <main className="mx-auto py-16 px-4 sm:px-6 lg:px-8 ">
       {/* Pricing section */}
       <div className="relative isolate text-center bg-white px-6 lg:px-8">
         <div
@@ -55,7 +55,7 @@ const PlanMealDemo: React.FC<PlanMealDemoProps> = () => {
             onDismiss={() => setIsBannedOpen(false)}
           />
         </div>
-        <div className="flex flex-grow justify-center items-center">
+        <div className="flex flex-col flex-grow justify-center items-center">
           <MealPlanGenerator clientData={clientData} />
         </div>
       </div>
