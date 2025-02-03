@@ -19,6 +19,7 @@ const certificateClient = new CertificateClient(keyVaultUrl, credential, {
 // Function to fetch certificate from Azure Key Vault
 async function getCertificate() {
   const certificateName = process.env.AZURE_APIM_CERTIFICATE_NAME;
+  console.log("Cert name: " + certificateName);
   if (!certificateName) {
     throw new Error("AZURE_APIM_CERTIFICATE_NAME is not defined");
   }
