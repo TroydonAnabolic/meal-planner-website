@@ -19,7 +19,6 @@
     },
     {
       "name": "Next.js: debug full stack",
-
       "type": "node-terminal",
       "request": "launch",
       "command": "npm run dev",

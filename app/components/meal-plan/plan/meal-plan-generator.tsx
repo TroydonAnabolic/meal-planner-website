@@ -67,9 +67,9 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
   const [endDate, setEndDate] = useState<Dayjs | null>(dayjs().endOf("week"));
 
   const [timeToCook, setTimeToCook] = useState<dayjs.Dayjs | null>(null);
-  const [shoppingList, setShoppingList] = useState<IShoppingListResult | null>(
-    null
-  );
+  const [shoppingList, setShoppingList] = useState<IShoppingListResult | null>({
+    entries: [],
+  });
   const [minEnergy, setMinEnergy] = useState<number | undefined>(
     clientData.ClientSettingsDto?.mealPlanPreferences?.plan.fit
       ? clientData.ClientSettingsDto?.mealPlanPreferences?.plan.fit[
@@ -307,6 +307,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
     if (!mealPlan?.selection) return;
 
     // create meal plan, shopping list and recipes
+    // TODO: fix to use api route due to 1 mb limit to only 1-2 weeks
     const result = await createMealPlan(recipes, mealPlan);
 
     if (result.success) {
@@ -492,7 +493,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
 
           <div className="mt-6 flex space-x-4">
             {/* Recipes Grid or Empty State */}
-            <div className="w-3/4 ">
+            <div className={shoppingList ? "w-3/4" : ""}>
               {!isLoading && recipes.length > 0 && (
                 <RecipeList
                   mealPlan={mealPlan!}

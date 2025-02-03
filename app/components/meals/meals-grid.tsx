@@ -26,6 +26,7 @@ import { startOfWeek, endOfWeek } from "date-fns";
 import { groupMealsByWeek } from "@/util/meal-utils";
 import { IClientInterface } from "@/models/interfaces/client/client";
 import { hostname } from "@/constants/constant-strings";
+import { ROUTES } from "@/constants/routes";
 
 type MealsGridProps = {
   mealsData: IMealInterface[] | undefined; // Meals data fetched from API
@@ -325,6 +326,9 @@ const MealsGrid: React.FC<MealsGridProps> = ({ mealsData, client }) => {
     [pathname, currentPage]
   );
 
+  const getPageLink = (page: number) =>
+    `${ROUTES.MEAL_PLANNER.MEALS}?page=${page}`;
+
   /**
    * Handler for updating a meal.
    * Updates the meal in the backend and notifies the parent component.
@@ -541,7 +545,7 @@ const MealsGrid: React.FC<MealsGridProps> = ({ mealsData, client }) => {
         <CenteredPageNumbers
           currentPage={currentPage}
           totalPages={totalPages}
-          onPageChange={changePage}
+          onPageChange={getPageLink}
         />
       </div>
 

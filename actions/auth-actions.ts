@@ -87,6 +87,7 @@ export async function register(
             } else {
               throw new Error("Client not stored");
             }
+            // TODO: Find out why create client is failing again
           } catch (error: any) {
             console.log(
               "Error storing client:",

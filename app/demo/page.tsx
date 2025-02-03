@@ -31,7 +31,7 @@ const PlanMealDemo: React.FC<PlanMealDemoProps> = () => {
   clientData.ClientSettingsDto!.mealPlanPreferences = defaultMealPlanPreference;
 
   return (
-    <main className="mx-auto py-16 px-4 sm:px-6 lg:px-8 ">
+    <main className=" py-16 px-4 sm:px-6 lg:px-8 ">
       {/* Pricing section */}
       <div className="relative isolate text-center bg-white px-6 lg:px-8">
         <div
@@ -46,7 +46,7 @@ const PlanMealDemo: React.FC<PlanMealDemoProps> = () => {
             className="mx-auto aspect-[1155/678] w-[72.1875rem] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30"
           />
         </div>
-        <div className="p-4">
+        <div className="mt-10 p-4">
           <GlowyBannerWithLink
             title={"Subscribe to unlock all features"}
             subtitle="With a subscription you can add finegrain preferences to get more accurate meal plan results, such as adding additional meal types, customizing each meal type, and more... "
@@ -54,9 +54,8 @@ const PlanMealDemo: React.FC<PlanMealDemoProps> = () => {
             linkText="Subscribe now"
             onDismiss={() => setIsBannedOpen(false)}
           />
-          <h1 className="text-2xl font-bold p-4 text-gray-800">
-            Plan Your Meals
-          </h1>
+        </div>
+        <div className="flex flex-grow justify-center items-center">
           <MealPlanGenerator clientData={clientData} />
         </div>
       </div>

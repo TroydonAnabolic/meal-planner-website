@@ -2,17 +2,18 @@ import {
   ArrowLongLeftIcon,
   ArrowLongRightIcon,
 } from "@heroicons/react/20/solid";
+import Link from "next/link";
 
-interface PaginationProps {
+interface PaginationPropsLink {
   currentPage: number;
   totalPages: number;
-  onPageChange: (page: number) => void; // Change here to match your logic
+  getPageLink: (page: number) => string; // Change here to match your logic
 }
 
-const CenteredPageNumbers: React.FC<PaginationProps> = ({
+const CenteredPageNumbersLink: React.FC<PaginationPropsLink> = ({
   currentPage,
   totalPages,
-  onPageChange,
+  getPageLink,
 }) => {
   const generatePageNumbers = () => {
     const pages = [];
@@ -23,9 +24,9 @@ const CenteredPageNumbers: React.FC<PaginationProps> = ({
 
     for (let i = startPage; i <= endPage; i++) {
       pages.push(
-        <button
+        <Link
           key={i}
-          onClick={() => onPageChange(i)} // Use the passed getPageLink function
+          href={getPageLink(i)} // Use the passed getPageLink function
           aria-current={i === currentPage ? "page" : undefined}
           className={`inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium ${
             i === currentPage
@@ -34,7 +35,7 @@ const CenteredPageNumbers: React.FC<PaginationProps> = ({
           }`}
         >
           {i}
-        </button>
+        </Link>
       );
     }
     return pages;
@@ -46,28 +47,26 @@ const CenteredPageNumbers: React.FC<PaginationProps> = ({
       aria-label="Pagination"
     >
       <div className="-mt-px flex w-0 flex-1">
-        <button
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
+        <Link
+          href={getPageLink(currentPage - 1)} // Previous button link
+          aria-disabled={currentPage === 1}
           className={`inline-flex items-center border-t-2 border-transparent px-1 pt-4 text-sm font-medium ${
             currentPage === 1
               ? "text-gray-300 cursor-not-allowed"
               : "text-gray-500 hover:border-gray-300 hover:text-gray-700"
           }`}
-          aria-disabled={currentPage === 1}
         >
           <ArrowLongLeftIcon
             aria-hidden="true"
             className="mr-3 h-5 text-gray-400"
           />
           Previous
-        </button>
+        </Link>
       </div>
       <div className="hidden md:-mt-px md:flex">{generatePageNumbers()}</div>
       <div className="-mt-px flex w-0 flex-1 justify-end">
-        <button
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
+        <Link
+          href={getPageLink(currentPage + 1)} // Next button link
           aria-disabled={currentPage === totalPages}
           className={`inline-flex items-center border-t-2 border-transparent px-2 pt-4 text-sm font-medium ${
             currentPage === totalPages
@@ -80,10 +79,10 @@ const CenteredPageNumbers: React.FC<PaginationProps> = ({
             aria-hidden="true"
             className="ml-3 h-5 text-gray-400"
           />
-        </button>
+        </Link>
       </div>
     </nav>
   );
 };
 
-export default CenteredPageNumbers;
+export default CenteredPageNumbersLink;

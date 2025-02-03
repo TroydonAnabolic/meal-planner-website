@@ -18,6 +18,7 @@ import Link from "next/link";
 import dayjs from "dayjs";
 import CenteredPageNumbers from "@/app/components/ui/pagination/centered-page-numbers";
 import { ROUTES } from "@/constants/routes";
+import CenteredPageNumbersLink from "@/app/components/ui/pagination/centred-page-numbers-link";
 
 type DashboardProps = {
   searchParams: { [key: string]: string | string[] | undefined }; // Parse query params from the URL
@@ -316,10 +317,10 @@ const DashboardPage: React.FC<DashboardProps> = async ({ searchParams }) => {
                   </tbody>
                 </table>
                 {/* Pagination */}
-                <CenteredPageNumbers
+                <CenteredPageNumbersLink
                   currentPage={currentPage}
                   totalPages={totalPages}
-                  onPageChange={getPageLink}
+                  getPageLink={getPageLink}
                 />
               </div>
             </div>
