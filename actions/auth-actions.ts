@@ -39,7 +39,7 @@ export async function register(
   });
 
   if (!result.success) {
-    throw new Error("Validation failed: Invalid input data.");
+    throw new Error("Validation failed: Invalid credentials.");
   }
 
   try {

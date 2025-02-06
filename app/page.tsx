@@ -43,8 +43,8 @@ export default function Home() {
                 we&apos;ve got you covered.
               </p>
               <div className="mt-10 flex items-center justify-center gap-x-6">
-                <BackgroundButton text="Get started" />
-                <ButtonWithoutBackground text="Learn more" />
+                <BackgroundButton text="Get started" href="/register" />
+                <ButtonWithoutBackground text="Learn more" href="#" />
               </div>
             </div>
           </div>

@@ -93,6 +93,8 @@ export async function POST(request: NextRequest) {
     });
 
     if (updatedClient) {
+      console.log("Creating checkout session: ");
+
       const checkoutSession = await stripe.checkout.sessions.create({
         mode: "subscription",
         customer: client.stripeCustomerId,
@@ -131,6 +133,8 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
+      console.log("Checkout session url" + checkoutSession.url);
+
       return NextResponse.json({ result: checkoutSession, ok: true });
     } else {
       return NextResponse.json(

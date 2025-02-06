@@ -55,16 +55,17 @@ export async function registerAction(
 
     if (client) {
       const result = await stripeCheckout(client, priceId, true);
+      console.log("Completed api route result: " + result);
       if (result.success) {
         redirect(ROUTES.AUTH.REGISTRATION_CONFIRMATION);
       }
     }
 
-    return { errors: { email } };
+    return { errors: { form: `An error occurred signing up ${email}` } };
   } catch (error: any) {
     console.error("Error during registration:", error);
     return {
-      errors: { form: error.message || "An unexpected error occurred." },
+      errors: { form: `An unexpected error occurred - ${error.message}` },
       email,
     };
   }
