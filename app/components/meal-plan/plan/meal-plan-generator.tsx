@@ -60,6 +60,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
   const [useFavouriteRecipes, setUseFavouriteRecipes] =
     useState<boolean>(false);
   const [isBannedOpen, setIsBannedOpen] = useState<boolean>(true);
+  const [isBugBannerOpen, setIsBugBannerOpen] = useState<boolean>(true);
 
   const [startDate, setStartDate] = useState<Dayjs | null>(
     dayjs().startOf("week")
@@ -371,7 +372,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
       {isBannedOpen && (
         <div className="mb-2">
           <GlowyBanner
-            title={"Warning"}
+            title={"Note"}
             subtitle={
               "You have not set any specific preferences for your meals"
             }
@@ -381,6 +382,20 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
           />
         </div>
       )}
+      {isBugBannerOpen && (
+        <div className="mb-2">
+          <GlowyBanner
+            title={"WARNING"}
+            subtitle={
+              "Existing bug, only one of health labels, diet labels, cautions, or cuisine can be set"
+            }
+            link={ROUTES.MEAL_PLANNER.MEAL_PREFERENCES}
+            linkText="Click here to fix meal preferences"
+            onDismiss={() => setIsBugBannerOpen(false)}
+          />
+        </div>
+      )}
+
       <div className="p-4 flex flex-col items-center justify-center  min-h-screen">
         <h1 className="text-2xl font-bold p-4 text-gray-800">
           Plan Your Meals
