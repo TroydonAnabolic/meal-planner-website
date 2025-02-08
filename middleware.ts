@@ -99,7 +99,7 @@ function extractApiNameFromPath(path: string): string | null {
   )
     return "recipe";
   if (path.includes("/edamam/food")) return "food";
-  if (path.includes("/edamam/nutrition")) return "nutrition";
+  if (path.includes("/edamam/nutrients")) return "nutrients";
   return null;
 }
 

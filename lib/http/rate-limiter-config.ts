@@ -18,7 +18,7 @@ export const rateLimitConfigs: { [key: string]: RateLimitConfig } = {
     requestsPerMinute: 50,
     requestsPerMonth: 100000,
   },
-  nutrition: {
+  nutrients: {
     requestsPerMinute: 50,
     requestsPerMonth: 100000,
   },
