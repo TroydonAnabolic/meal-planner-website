@@ -40,6 +40,7 @@ Meal Planner:
 - To generate a new meal plan that falls in the same date range, user must
   first delete meal plan, then create one. Otherwise create in a time range
   that does not fall inside any given meal plan for that user.
+  - Inconsistently says fail to save eventhough it still saves
 
 Meal Plan
 
@@ -48,3 +49,7 @@ Meal Plan
   scheduled or meal type. Once created, go back to the meal plan page and click
   on recreate meals. This will replace all meals that match that recipe.
 -
+
+Meal Preferences
+
+- Inconsistently says fail to save eventhough it still saves

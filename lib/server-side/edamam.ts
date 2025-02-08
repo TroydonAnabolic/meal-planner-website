@@ -20,7 +20,7 @@ import Bottleneck from "bottleneck";
 // Initialize Bottleneck limiter
 const limiter = new Bottleneck({
   maxConcurrent: 1, // Maximum number of concurrent API calls
-  minTime: 200, // Minimum time between requests in ms
+  minTime: 600, // Minimum time between requests in ms
 });
 
 /**
@@ -116,27 +116,30 @@ export async function getRecipesFromUris(
 ): Promise<IRecipeInterface[]> {
   console.log(`Initial amount of recipe URIs: ${recipeUris.length}`);
 
-  const results = await Promise.all(
-    recipeUris.map(async (uri) => {
-      try {
-        const recipeResponse: IRecipeHit | undefined = await limiter.schedule(
-          () => getRecipeFromURI(uri)
-        );
-        return { success: true, recipe: recipeResponse?.recipe };
-      } catch (error) {
-        console.error(`Failed to fetch recipe from URI: ${uri}`, error);
-        return { success: false, recipe: null };
-      }
-    })
-  );
+  const results: IRecipeInterface[] = [];
+  let successCount = 0;
+  let failureCount = 0;
 
-  const successCount = results.filter((r) => r.success).length;
-  const failureCount = results.length - successCount;
+  for (const uri of recipeUris) {
+    try {
+      const recipeResponse: IRecipeHit | undefined = await limiter.schedule(
+        () => getRecipeFromURI(uri)
+      );
+      if (recipeResponse?.recipe) {
+        results.push(recipeResponse.recipe);
+        successCount++;
+      } else {
+        failureCount++;
+        console.error(`No recipe found for URI: ${uri}`);
+      }
+    } catch (error) {
+      failureCount++;
+      console.error(`Failed to fetch recipe from URI: ${uri}`, error);
+    }
+  }
 
   console.log(`Successful calls: ${successCount}`);
   console.log(`Unsuccessful calls: ${failureCount}`);
 
-  return results
-    .filter((r): r is { success: true; recipe: IRecipeInterface } => r.success)
-    .map((r) => r.recipe);
+  return results;
 }
