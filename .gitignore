@@ -42,3 +42,4 @@ next-env.d.ts
 
 *.gz
 .next/server/vendor-chunks/@headlessui.js
+meal-planner-mobile-app-bd877d5940a1.json
