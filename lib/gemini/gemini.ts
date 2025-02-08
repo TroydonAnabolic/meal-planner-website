@@ -10,6 +10,8 @@ import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import { getClient } from "../server-side/client";
 import { IClientInterface } from "@/models/interfaces/client/client";
+import { generateMealPlansAndRecipes } from "../server-side/meal-plan-generator";
+import { defaultMealPlanPreference } from "@/constants/constants-objects";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({
@@ -80,26 +82,25 @@ export const handleUserPrompt = async (userPrompt: string) => {
     switch (matchResult.trim()) {
       case "Total Calories":
         const { totalCalories } = await queryDatabaseForCalorieDetails();
-        response = await generateContent(
-          `You have ${totalCalories} total calories to consume today.`
-        );
+        response = `You have ${totalCalories} total calories to consume today.`;
         break;
       case "Remaining Calories":
         const { remainingCalories } = await queryDatabaseForCalorieDetails();
-        response = await generateContent(
-          `You have ${remainingCalories} calories remaining for today.`
-        );
+        response = `You have ${remainingCalories} calories remaining for today.`;
         break;
       case "Consumed Calories":
         const { consumedCalories } = await queryDatabaseForCalorieDetails();
-        response = await generateContent(
-          `You have consumed ${consumedCalories} calories today.`
-        );
+        response = `You have consumed ${consumedCalories} calories today.`;
         break;
       case "Generate Meal Plan":
-        ({ generatedMealPlan, fetchedRecipes } =
-          await generateMealPlanAndRecipes(initialMealPlan, session));
-        response = "Here is your generated meal plan.";
+        try {
+          ({ generatedMealPlan, fetchedRecipes } =
+            await generateMealPlanAndRecipes(initialMealPlan, session));
+          response = "Here is your generated meal plan.";
+        } catch (mealPlanError) {
+          console.error("Error generating meal plan:", mealPlanError);
+          response = "Sorry, I couldn't generate the meal plan.";
+        }
         break;
       default:
         response = "I'm sorry, I couldn't understand your request.";
@@ -119,30 +120,35 @@ const generateMealPlanAndRecipes = async (
 ) => {
   const client: IClientInterface = await getClient(session.user.userId);
 
-  const payload = {
-    ...initialMealPlan,
-    mealPlanPreferences: client.ClientSettingsDto?.mealPlanPreferences,
-    excluded: [],
-    useFavouriteRecipes: true,
-  };
-
-  const response = await fetch(`/api/meal-planner/generate-meal-plan`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to generate meal plan: ${response.statusText}`);
-  }
-
   const {
-    generatedMealPlan,
+    generatedMealPlan: generatorResponse,
     fetchedRecipes,
   }: {
-    generatedMealPlan: IMealPlan;
+    generatedMealPlan: GeneratorResponse;
     fetchedRecipes: IRecipeInterface[];
-  } = await response.json();
+  } = await generateMealPlansAndRecipes(
+    initialMealPlan.endDate,
+    initialMealPlan.startDate,
+    client.ClientSettingsDto?.mealPlanPreferences || defaultMealPlanPreference,
+    [],
+    true,
+    client.Id
+  );
+
+  if (!generatorResponse || !fetchedRecipes) {
+    throw new Error("Meal plan generation failed");
+  }
+
+  // Map the properties from `GeneratorResponse` to `IMealPlan`
+  const generatedMealPlan: IMealPlan = {
+    id: initialMealPlan.id || 0,
+    clientId: client.Id,
+    startDate: initialMealPlan.startDate,
+    endDate: initialMealPlan.endDate,
+    autoLogMeals: true,
+    meals: [],
+    selection: [],
+  };
 
   return { generatedMealPlan, fetchedRecipes };
 };

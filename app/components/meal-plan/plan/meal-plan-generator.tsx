@@ -25,7 +25,7 @@ import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
 import { Nutrients } from "@/constants/constants-enums";
 import GlowyBanner from "../../ui/banner/banner-with-glow";
 import { ROUTES } from "@/constants/routes";
-import { generateMealPlanAndRecipes } from "@/lib/meal-plan-generator";
+import { startGenerateMealPlanAndRecipes } from "@/lib/client-side/meal-plan-generator";
 import ToggleInput from "../../ui/inputs/toggle-input";
 
 type MealPlanGeneratorProps = {
@@ -248,7 +248,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
     // fetch meal plan, this will have recipes attached to it
     try {
       const { generatedMealPlan, favouriteRecipes, fetchedRecipes } =
-        await generateMealPlanAndRecipes(
+        await startGenerateMealPlanAndRecipes(
           endDate,
           startDate,
           mealPlanPreferences,

@@ -4,8 +4,7 @@ import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import dayjs from "dayjs";
 
-// TODO: Move all of this to a server action to allow use of
-export const generateMealPlanAndRecipes = async (
+export const startGenerateMealPlanAndRecipes = async (
   endDate: dayjs.Dayjs,
   startDate: dayjs.Dayjs,
   mealPlanPreferences: IMealPlanPreferences,
