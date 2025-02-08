@@ -207,7 +207,7 @@ export async function generateMealPlansAndRecipes(
   return { generatedMealPlan, favouriteRecipes, fetchedRecipes };
 }
 
-function getMatchingRecipe(
+export function getMatchingRecipe(
   favouriteRecipes: IRecipeInterface[] | undefined,
   fetchedRecipe: IRecipeInterface
 ) {

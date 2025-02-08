@@ -2,7 +2,10 @@ import { IMealPlanPreferences } from "@/models/interfaces/client/meal-planner-pr
 import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import { NextResponse } from "next/server";
-import { generateMealPlansAndRecipes } from "@/lib/server-side/meal-plan-generator";
+import {
+  generateMealPlansAndRecipes,
+  getMatchingRecipe,
+} from "@/lib/server-side/meal-plan-generator";
 import { MealType } from "@/constants/constants-enums";
 import { getRecipesByClientId } from "@/lib/recipe";
 import {
