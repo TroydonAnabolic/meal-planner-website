@@ -27,6 +27,7 @@ import GlowyBanner from "../../ui/banner/banner-with-glow";
 import { ROUTES } from "@/constants/routes";
 import { startGenerateMealPlanAndRecipes } from "@/lib/client-side/meal-plan-generator";
 import ToggleInput from "../../ui/inputs/toggle-input";
+import { defaultMealPlanPreference } from "@/constants/constants-objects";
 
 type MealPlanGeneratorProps = {
   clientData: IClientInterface;
@@ -54,7 +55,8 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
   const [mealPlan, setMealPlan] = useState<IMealPlan | null>();
   const [mealPlanPreferences, setMealPlanPreferences] =
     useState<IMealPlanPreferences | null>(
-      clientData.ClientSettingsDto?.mealPlanPreferences!
+      clientData.ClientSettingsDto?.mealPlanPreferences ||
+        defaultMealPlanPreference
     );
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [useFavouriteRecipes, setUseFavouriteRecipes] =
@@ -369,7 +371,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
 
   return (
     <>
-      {isBannedOpen && (
+      {isBannedOpen && clientData.Id > 0 && (
         <div className="mb-2">
           <GlowyBanner
             title={"Note"}
@@ -382,7 +384,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
           />
         </div>
       )}
-      {isBugBannerOpen && (
+      {isBugBannerOpen && clientData.Id > 0 && (
         <div className="mb-2">
           <GlowyBanner
             title={"WARNING"}
