@@ -16,6 +16,7 @@
     "@azure/keyvault-certificates": "^4.9.0",
     "@emotion/react": "^11.13.5",
     "@emotion/styled": "^11.13.5",
+    "@google-cloud/text-to-speech": "^5.8.0",
     "@google/generative-ai": "^0.21.0",
     "@headlessui/react": "^2.1.2",
     "@heroicons/react": "^2.1.5",

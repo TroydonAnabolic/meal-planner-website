@@ -1,15 +1,15 @@
 import { IMealInterface } from "@/models/interfaces/meal/Meal";
-import {
-  Content,
-  GenerateContentRequest,
-  GenerativeModel,
-  GoogleGenerativeAI,
-} from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import dayjs from "dayjs";
 import { getMealsByClientId } from "../meal";
 import { auth } from "@/auth";
 import { Session } from "next-auth";
-import { Nutrients } from "@/constants/constants-enums";
+import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
+import { getDefaultMealPlan } from "@/util/meal-plan-utils";
+import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
+import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
+import { getClient } from "../server-side/client";
+import { IClientInterface } from "@/models/interfaces/client/client";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({
@@ -21,10 +21,29 @@ interface ApiCall {
   query: string;
 }
 
+// TODO: Fill up api calls for all differrent api calls required e.g. whats on the menu must give
+// all  ingredients for todays, mealtypes meal
 const apiCalls: ApiCall[] = [
+  {
+    key: "Total Calories",
+    query: "How many calories do U have to consume today",
+  },
+  {
+    key: "Consumed Calories",
+    query: "How many calories have I consume today",
+  },
   {
     key: "Remaining Calories",
     query: "How many calories is remaining for me to consume today",
+  },
+  {
+    key: "What is on the menu",
+    query:
+      "Check all ingredients for the current meal type for the current day, for example lunch today if it is during lunch hours.",
+  },
+  {
+    key: "Generate Meal Plan",
+    query: "Generate a meal plan for 7 days for me.",
   },
 ];
 
@@ -40,85 +59,93 @@ async function generateContent(prompt: string): Promise<string> {
 }
 
 // Handles the Gemini semantic matching and query execution
-export async function handleUserPrompt(userPrompt: string) {
+// Handles the Gemini semantic matching and query execution
+export const handleUserPrompt = async (userPrompt: string) => {
   try {
     const promptForMatching = `Given the following user input: "${userPrompt}", match it to one of these queries: ${apiCalls
       .map((call) => `"${call.key}"`)
       .join(", ")} or return "No match found."`;
 
     const matchResult = await generateContent(promptForMatching);
-    let response: string;
+
+    const session = (await auth()) as Session;
+    const clientId = session.user.clientId;
+    const initialMealPlan: IMealPlan = getDefaultMealPlan(Number(clientId));
+
+    let response = "";
+    let generatedMealPlan: IMealPlan | null = null;
+    let fetchedRecipes: IRecipeInterface[] = [];
 
     // Handle API query based on the match
     switch (matchResult.trim()) {
-      case "Remaining Calories":
-        // Call database or external API for the actual query
-        const { remainingCalories } = await queryDatabaseForCalorieDetails(); // Mock this function
+      case "Total Calories":
+        const { totalCalories } = await queryDatabaseForCalorieDetails();
         response = await generateContent(
-          `The user has ${remainingCalories} calories remaining for today. Respond in a friendly tone.`
+          `You have ${totalCalories} total calories to consume today.`
         );
         break;
-
+      case "Remaining Calories":
+        const { remainingCalories } = await queryDatabaseForCalorieDetails();
+        response = await generateContent(
+          `You have ${remainingCalories} calories remaining for today.`
+        );
+        break;
+      case "Consumed Calories":
+        const { consumedCalories } = await queryDatabaseForCalorieDetails();
+        response = await generateContent(
+          `You have consumed ${consumedCalories} calories today.`
+        );
+        break;
+      case "Generate Meal Plan":
+        ({ generatedMealPlan, fetchedRecipes } =
+          await generateMealPlanAndRecipes(initialMealPlan, session));
+        response = "Here is your generated meal plan.";
+        break;
       default:
         response = "I'm sorry, I couldn't understand your request.";
         break;
     }
 
-    return response;
+    return { response, generatedMealPlan, fetchedRecipes };
   } catch (error) {
     console.error("Error handling user prompt:", error);
-    return "Sorry, there was an error processing your request.";
+    return { response: "Sorry, there was an error processing your request." };
   }
-}
+};
 
-// Usage example
-// const prompt = "Explain how AI works";
-// generateContent(prompt)
-//   .then((response) => console.log(response))
-//   .catch((error) => console.error(error));
+const generateMealPlanAndRecipes = async (
+  initialMealPlan: IMealPlan,
+  session: Session
+) => {
+  const client: IClientInterface = await getClient(session.user.userId);
 
-// export class ChatService {
-//   private genAI: GoogleGenerativeAI;
-//   private model: GenerativeModel;
-//   private conversationHistory: Content[] = [];
+  const payload = {
+    ...initialMealPlan,
+    mealPlanPreferences: client.ClientSettingsDto?.mealPlanPreferences,
+    excluded: [],
+    useFavouriteRecipes: true,
+  };
 
-//   constructor(apiKey: string) {
-//     this.genAI = new GoogleGenerativeAI(apiKey);
-//     this.model = this.genAI.getGenerativeModel({
-//       model: "gemini-2.0-flash-001",
-//     });
-//   }
+  const response = await fetch(`/api/meal-planner/generate-meal-plan`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 
-//   async chatWithGemini(content: string): Promise<string | undefined> {
-//     // Prepare user content as required by the Content structure
-//     this.conversationHistory.push({
-//       role: "user",
-//       parts: [{ text: content }],
-//     });
+  if (!response.ok) {
+    throw new Error(`Failed to generate meal plan: ${response.statusText}`);
+  }
 
-//     const request: GenerateContentRequest = {
-//       contents: this.conversationHistory,
-//     };
+  const {
+    generatedMealPlan,
+    fetchedRecipes,
+  }: {
+    generatedMealPlan: IMealPlan;
+    fetchedRecipes: IRecipeInterface[];
+  } = await response.json();
 
-//     try {
-//       const result = await this.model.generateContent(request);
-//       const replyPart = result?.response?.text();
-
-//       if (replyPart) {
-//         // Store assistant reply in conversation history
-//         this.conversationHistory.push({
-//           role: "assistant",
-//           parts: [{ text: replyPart }],
-//         });
-//       }
-
-//       return replyPart;
-//     } catch (error) {
-//       console.error("Error during chat with Gemini:", error);
-//       return undefined;
-//     }
-//   }
-// }
+  return { generatedMealPlan, fetchedRecipes };
+};
 
 async function queryDatabaseForCalorieDetails(): Promise<{
   totalCalories: number;
