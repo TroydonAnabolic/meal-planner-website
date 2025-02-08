@@ -389,7 +389,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
           <GlowyBanner
             title={"WARNING"}
             subtitle={
-              "Existing bug, only one of health labels, diet labels, cautions, or cuisine can be set"
+              "Existing bug, only one of health labels, diet labels, cautions, or cuisine can be set. E.g. if a health label is set, then you cannot set any diet labels, caution labels, or cuisine labels, or vice versa if you set a diet label, you cannot set a health label etc."
             }
             link={ROUTES.MEAL_PLANNER.MEAL_PREFERENCES}
             linkText="Click here to fix meal preferences"
@@ -398,7 +398,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
         </div>
       )}
 
-      <div className="p-4 flex flex-col items-center justify-center  min-h-screen">
+      <div className="p-4 flex flex-col items-center justify-center max-w-7xl min-h-screen">
         <h1 className="text-2xl font-bold p-4 text-gray-800">
           Plan Your Meals
         </h1>
