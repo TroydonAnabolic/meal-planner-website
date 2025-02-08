@@ -4,7 +4,6 @@ import { IMealPlanPreferences } from "@/models/interfaces/client/meal-planner-pr
 import React, { useCallback, useEffect, useState } from "react";
 import ActionPanelButton from "../../action-panel/action-panel-button";
 import Image from "next/image";
-import { createMealPlan } from "@/actions/meal-planner";
 import ConfirmActionModal, {
   ConfirmActionModalProps,
 } from "../../ui/modals/confirm-action-modal";
@@ -28,6 +27,7 @@ import { ROUTES } from "@/constants/routes";
 import { startGenerateMealPlanAndRecipes } from "@/lib/client-side/meal-plan-generator";
 import ToggleInput from "../../ui/inputs/toggle-input";
 import { defaultMealPlanPreference } from "@/constants/constants-objects";
+import { createMealPlan } from "@/lib/client-side/meal-plan";
 
 type MealPlanGeneratorProps = {
   clientData: IClientInterface;
@@ -372,7 +372,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
   return (
     <>
       {isBannedOpen && clientData.Id > 0 && (
-        <div className="mb-2">
+        <div className="mx-auto mb-2">
           <GlowyBanner
             title={"Note"}
             subtitle={
@@ -385,7 +385,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
         </div>
       )}
       {isBugBannerOpen && clientData.Id > 0 && (
-        <div className="mb-2">
+        <div className="mx-auto mb-2">
           <GlowyBanner
             title={"WARNING"}
             subtitle={
@@ -398,7 +398,7 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
         </div>
       )}
 
-      <div className="p-4 flex flex-col items-center justify-center max-w-7xl min-h-screen">
+      <div className="mx-auto p-4 flex flex-col items-center justify-center max-w-7xl min-h-screen">
         <h1 className="text-2xl font-bold p-4 text-gray-800">
           Plan Your Meals
         </h1>
@@ -430,26 +430,31 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
                 icon={<PrecisionManufacturingIcon />}
               />
 
-              <div className="flex justify-around mt-4 space-x-4">
+              <div className="flex flex-col mt-4 space-y-4">
+                {/* Date Pickers */}
                 {clientData.Id > 0 && clientData.isStripeBasicActive && (
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      format="DD/MM/YYYY"
-                      label="Start Date"
-                      value={startDate}
-                      onChange={handleStartDateChange}
-                    />
-                    <DatePicker
-                      format="DD/MM/YYYY"
-                      label="End Date"
-                      value={endDate}
-                      onChange={handleEndDateChange}
-                      disabled={startDate === null}
-                      minDate={startDate!}
-                    />
+                    <div className="flex justify-around space-x-4">
+                      <DatePicker
+                        format="DD/MM/YYYY"
+                        label="Start Date"
+                        value={startDate}
+                        onChange={handleStartDateChange}
+                      />
+                      <DatePicker
+                        format="DD/MM/YYYY"
+                        label="End Date"
+                        value={endDate}
+                        onChange={handleEndDateChange}
+                        disabled={startDate === null}
+                        minDate={startDate!}
+                      />
+                    </div>
                   </LocalizationProvider>
                 )}
-                <div className="flex items-center space-x-4">
+
+                {/* Energy and Toggle Inputs */}
+                <div className="flex justify-around items-center space-x-4">
                   <div className="flex items-center space-x-2">
                     <label className="text-sm font-medium text-gray-700">
                       Min Energy
@@ -472,17 +477,18 @@ const MealPlanGenerator: React.FC<MealPlanGeneratorProps> = ({
                       className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
                     />
                   </div>
+
+                  {clientData.Id > 0 && clientData.isStripeBasicActive && (
+                    <div className="ml-4">
+                      <ToggleInput
+                        label="Favourites"
+                        subLabel=""
+                        enabled={useFavouriteRecipes}
+                        onChange={handleToggleFavourite}
+                      />
+                    </div>
+                  )}
                 </div>
-                {clientData.Id > 0 && clientData.isStripeBasicActive && (
-                  <div className="my-4">
-                    <ToggleInput
-                      label="Favourites"
-                      subLabel=""
-                      enabled={useFavouriteRecipes}
-                      onChange={handleToggleFavourite}
-                    />
-                  </div>
-                )}
               </div>
             </div>
 

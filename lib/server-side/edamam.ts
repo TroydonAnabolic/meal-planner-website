@@ -20,7 +20,7 @@ import Bottleneck from "bottleneck";
 // Initialize Bottleneck limiter
 const limiter = new Bottleneck({
   maxConcurrent: 1, // Maximum number of concurrent API calls
-  minTime: 200, // Minimum time between requests in ms
+  minTime: 600, // Minimum time between requests in ms
 });
 
 /**

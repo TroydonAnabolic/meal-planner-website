@@ -18,7 +18,7 @@ const GlowyBanner: React.FC<GlowyBannerProps> = ({
   onDismiss,
 }) => {
   return (
-    <div className="relative isolate flex items-center gap-x-6 overflow-hidden bg-gray-50 px-6 py-2.5 max-w-7xl sm:px-3.5 sm:before:flex-1">
+    <div className="mx-auto relative isolate flex items-center gap-x-6 overflow-hidden bg-gray-50 px-6 py-2.5 max-w-7xl sm:px-3.5 sm:before:flex-1">
       {/* Decorative Background 1 */}
       <div
         aria-hidden="true"
