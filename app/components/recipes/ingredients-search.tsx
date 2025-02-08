@@ -297,8 +297,18 @@ const IngredientSearch: React.FC<IngredientSearchProps> = ({
                     title="Quantity"
                     type="number"
                     min="1"
+                    step={0.01}
                     value={quantity.toFixed(1)}
-                    onChange={(e) => setQuantity(Number(e.target.value))}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      console.log(
+                        "Input Quantity:",
+                        e.target.value,
+                        "Parsed:",
+                        value
+                      );
+                      setQuantity(!isNaN(value) ? value : 0);
+                    }}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
                   />
                 </div>

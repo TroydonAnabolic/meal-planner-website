@@ -149,29 +149,30 @@ export async function fetchFood(query: string): Promise<IFoodParser> {
 export async function fetchNutrients(
   request: IFoodNutrientsRequest
 ): Promise<IFoodNutrients> {
-  const nutritionResponse = await exponentialBackoffFetch(() =>
-    fetch("/api/edamam/nutrition/fetch-nutrients", {
+  const nutritionResponse = await fetch(
+    "/api/edamam/nutrients/fetch-nutrients",
+    {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(request),
-    })
+    }
   );
 
   if (!nutritionResponse.ok) {
     throw new Error("Failed to get nutrition data");
   }
 
-  const response: IFoodNutrientsResponse = await nutritionResponse.json();
+  const response: IFoodNutrients = await nutritionResponse.json();
 
   if (!response) {
     throw new Error("Failed to get meal plan");
-  } else if (!response.data) {
+  } else if (!response) {
     throw new Error("No meal plan could be generated");
   }
 
-  return response.data;
+  return response;
 }
 
 export async function fetchEdamamMealPlan(
