@@ -16,6 +16,16 @@ const instance = axios.create({
   withCredentials: true,
 });
 
+export async function getClientById(clientId: number) {
+  const response = await instance.get(`${ACCOUNTAPI_BASE}/clients`, {
+    params: { id: clientId },
+  });
+
+  const clientObj: IClientInterface =
+    constructClientObjectFromResponse(response);
+  return clientObj;
+}
+
 export async function getClient(userID: string) {
   const response = await instance.get(`${ACCOUNTAPI_BASE}/clients/v2`, {
     params: { userID: userID },

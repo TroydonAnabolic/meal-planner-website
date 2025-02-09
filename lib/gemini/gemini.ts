@@ -8,7 +8,7 @@ import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
 import { getDefaultMealPlan } from "@/util/meal-plan-utils";
 import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
-import { getClient } from "../server-side/client";
+import { getClient, getClientById } from "../server-side/client";
 import { IClientInterface } from "@/models/interfaces/client/client";
 import { generateMealPlansAndRecipes } from "../server-side/meal-plan-generator";
 import { defaultMealPlanPreference } from "@/constants/constants-objects";
@@ -62,16 +62,16 @@ async function generateContent(prompt: string): Promise<string> {
 
 // Handles the Gemini semantic matching and query execution
 // Handles the Gemini semantic matching and query execution
-export const handleUserPrompt = async (userPrompt: string) => {
+export const handleUserPrompt = async (
+  userPrompt: string,
+  clientId: number
+) => {
   try {
     const promptForMatching = `Given the following user input: "${userPrompt}", match it to one of these queries: ${apiCalls
       .map((call) => `"${call.key}"`)
       .join(", ")} or return "No match found."`;
 
     const matchResult = await generateContent(promptForMatching);
-
-    const session = (await auth()) as Session;
-    const clientId = session.user.clientId;
     const initialMealPlan: IMealPlan = getDefaultMealPlan(Number(clientId));
 
     let response = "";
@@ -79,32 +79,35 @@ export const handleUserPrompt = async (userPrompt: string) => {
     let fetchedRecipes: IRecipeInterface[] = [];
 
     // Handle API query based on the match
-    switch (matchResult.trim()) {
-      case "Total Calories":
-        const { totalCalories } = await queryDatabaseForCalorieDetails();
-        response = `You have ${totalCalories} total calories to consume today.`;
-        break;
-      case "Remaining Calories":
-        const { remainingCalories } = await queryDatabaseForCalorieDetails();
-        response = `You have ${remainingCalories} calories remaining for today.`;
-        break;
-      case "Consumed Calories":
-        const { consumedCalories } = await queryDatabaseForCalorieDetails();
-        response = `You have consumed ${consumedCalories} calories today.`;
-        break;
-      case "Generate Meal Plan":
-        try {
-          ({ generatedMealPlan, fetchedRecipes } =
-            await generateMealPlanAndRecipes(initialMealPlan, session));
-          response = "Here is your generated meal plan.";
-        } catch (mealPlanError) {
-          console.error("Error generating meal plan:", mealPlanError);
-          response = "Sorry, I couldn't generate the meal plan.";
-        }
-        break;
-      default:
-        response = "I'm sorry, I couldn't understand your request.";
-        break;
+    const cleanedMatchResult = matchResult
+      .replace(/^'+|'+$/g, "")
+      .replace(/"/g, "")
+      .trim();
+
+    if (cleanedMatchResult.includes("Total Calories")) {
+      const { totalCalories } = await queryDatabaseForCalorieDetails(clientId);
+      response = `You have ${totalCalories} total calories to consume today.`;
+    } else if (cleanedMatchResult.includes("Remaining Calories")) {
+      const { remainingCalories } = await queryDatabaseForCalorieDetails(
+        clientId
+      );
+      response = `You have ${remainingCalories} calories remaining for today.`;
+    } else if (cleanedMatchResult.includes("Consumed Calories")) {
+      const { consumedCalories } = await queryDatabaseForCalorieDetails(
+        clientId
+      );
+      response = `You have consumed ${consumedCalories} calories today.`;
+    } else if (cleanedMatchResult.includes("Generate Meal Plan")) {
+      try {
+        ({ generatedMealPlan, fetchedRecipes } =
+          await generateMealPlanAndRecipes(initialMealPlan, clientId));
+        response = "Here is your generated meal plan.";
+      } catch (mealPlanError) {
+        console.error("Error generating meal plan:", mealPlanError);
+        response = "Sorry, I couldn't generate the meal plan.";
+      }
+    } else {
+      response = "I'm sorry, I couldn't understand your request.";
     }
 
     return { response, generatedMealPlan, fetchedRecipes };
@@ -116,9 +119,9 @@ export const handleUserPrompt = async (userPrompt: string) => {
 
 const generateMealPlanAndRecipes = async (
   initialMealPlan: IMealPlan,
-  session: Session
+  clientId: number
 ) => {
-  const client: IClientInterface = await getClient(session.user.userId);
+  const client: IClientInterface = await getClientById(clientId);
 
   const {
     generatedMealPlan: generatorResponse,
@@ -153,14 +156,11 @@ const generateMealPlanAndRecipes = async (
   return { generatedMealPlan, fetchedRecipes };
 };
 
-async function queryDatabaseForCalorieDetails(): Promise<{
+async function queryDatabaseForCalorieDetails(clientId: number): Promise<{
   totalCalories: number;
   remainingCalories: number;
   consumedCalories: number;
 }> {
-  const session = (await auth()) as Session;
-  const clientId = session.user.clientId;
-
   const meals: IMealInterface[] = (await getMealsByClientId(
     Number(clientId)
   )) as IMealInterface[];

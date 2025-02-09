@@ -4,11 +4,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { userPrompt }: { userPrompt: string } = await request.json();
+    const { userPrompt, clientId }: { userPrompt: string; clientId: number } =
+      await request.json();
 
     // get user prompt api response
     const { response, generatedMealPlan, fetchedRecipes } =
-      await handleUserPrompt(userPrompt);
+      await handleUserPrompt(userPrompt, clientId);
     // convert the api response to speech and return it along with the text answer
     const speech = await convertTextToSpeech(response);
 
