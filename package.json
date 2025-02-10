@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.682.0",
+    "@aws-sdk/client-polly": "^3.744.0",
     "@aws-sdk/client-s3": "^3.689.0",
     "@aws-sdk/s3-request-presigner": "^3.689.0",
     "@azure/identity": "^4.5.0",
