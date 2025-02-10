@@ -1,29 +1,30 @@
 import {
-  Engine,
-  LanguageCode,
-  OutputFormat,
   PollyClient,
   SynthesizeSpeechCommand,
   SynthesizeSpeechInput,
-  TextType,
+  Engine,
+  LanguageCode,
+  OutputFormat,
   VoiceId,
+  TextType,
 } from "@aws-sdk/client-polly";
-import { writeFile } from "node:fs";
-import { pipeline } from "stream";
-import { promisify } from "util";
 import { Readable } from "stream";
 
-// Initialize Polly client
 const pollyClient = new PollyClient({ region: "us-east-1" });
 
-export const convertTextToSpeech = async (text: string) => {
+export const convertTextToSpeech: (
+  text: string
+) => Promise<Uint8Array | null> = async (
+  text: string
+): Promise<Uint8Array | null> => {
   try {
     const input: SynthesizeSpeechInput = {
-      Engine: Engine.STANDARD, // Use "neural" for higher quality
+      Engine: Engine.STANDARD, // "NEURAL" for higher quality if needed
       LanguageCode: LanguageCode.en_US,
       OutputFormat: OutputFormat.MP3,
-      Text: TextType.TEXT,
-      VoiceId: VoiceId.Joanna, // Change this based on your desired voice
+      Text: text,
+      TextType: TextType.TEXT,
+      VoiceId: VoiceId.Joanna, // Change based on your desired voice
     };
 
     const command = new SynthesizeSpeechCommand(input);

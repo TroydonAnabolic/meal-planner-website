@@ -62,44 +62,51 @@ async function generateContent(prompt: string): Promise<string> {
 
 // Handles the Gemini semantic matching and query execution
 // Handles the Gemini semantic matching and query execution
-export const handleUserPrompt = async (
+interface IHandleUserPromptResult {
+  response: string;
+  generatedMealPlan: IMealPlan | null;
+  fetchedRecipes: IRecipeInterface[];
+}
+
+export const handleUserPrompt: (
   userPrompt: string,
   clientId: number
-) => {
+) => Promise<IHandleUserPromptResult> = async (
+  userPrompt: string,
+  clientId: number
+): Promise<IHandleUserPromptResult> => {
   try {
-    const promptForMatching = `Given the following user input: "${userPrompt}", match it to one of these queries: ${apiCalls
+    const promptForMatching: string = `Given the following user input: "${userPrompt}", match it to one of these queries: ${apiCalls
       .map((call) => `"${call.key}"`)
       .join(", ")} or return "No match found."`;
 
-    const matchResult = await generateContent(promptForMatching);
-    const initialMealPlan: IMealPlan = getDefaultMealPlan(Number(clientId));
+    const matchResult: string = await generateContent(promptForMatching);
+    const initialMealPlan: IMealPlan = getDefaultMealPlan(clientId);
 
-    let response = "";
+    let response: string = "";
     let generatedMealPlan: IMealPlan | null = null;
     let fetchedRecipes: IRecipeInterface[] = [];
 
-    // Handle API query based on the match
-    const cleanedMatchResult = matchResult
+    const cleanedMatchResult: string = matchResult
       .replace(/^'+|'+$/g, "")
       .replace(/"/g, "")
       .trim();
 
     if (cleanedMatchResult.includes("Total Calories")) {
-      const { totalCalories } = await queryDatabaseForCalorieDetails(clientId);
+      const { totalCalories }: { totalCalories: number } =
+        await queryDatabaseForCalorieDetails(clientId);
       response = `You have ${totalCalories.toFixed(
         2
       )} total calories to consume today.`;
     } else if (cleanedMatchResult.includes("Remaining Calories")) {
-      const { remainingCalories } = await queryDatabaseForCalorieDetails(
-        clientId
-      );
+      const { remainingCalories }: { remainingCalories: number } =
+        await queryDatabaseForCalorieDetails(clientId);
       response = `You have ${remainingCalories.toFixed(
         2
       )} calories remaining for today.`;
     } else if (cleanedMatchResult.includes("Consumed Calories")) {
-      const { consumedCalories } = await queryDatabaseForCalorieDetails(
-        clientId
-      );
+      const { consumedCalories }: { consumedCalories: number } =
+        await queryDatabaseForCalorieDetails(clientId);
       response = `You have consumed ${consumedCalories.toFixed(
         2
       )} calories today.`;
@@ -119,7 +126,11 @@ export const handleUserPrompt = async (
     return { response, generatedMealPlan, fetchedRecipes };
   } catch (error) {
     console.error("Error handling user prompt:", error);
-    return { response: "Sorry, there was an error processing your request." };
+    return {
+      response: "Sorry, there was an error processing your request.",
+      generatedMealPlan: null,
+      fetchedRecipes: [],
+    };
   }
 };
 
