@@ -86,17 +86,23 @@ export const handleUserPrompt = async (
 
     if (cleanedMatchResult.includes("Total Calories")) {
       const { totalCalories } = await queryDatabaseForCalorieDetails(clientId);
-      response = `You have ${totalCalories} total calories to consume today.`;
+      response = `You have ${totalCalories.toFixed(
+        2
+      )} total calories to consume today.`;
     } else if (cleanedMatchResult.includes("Remaining Calories")) {
       const { remainingCalories } = await queryDatabaseForCalorieDetails(
         clientId
       );
-      response = `You have ${remainingCalories} calories remaining for today.`;
+      response = `You have ${remainingCalories.toFixed(
+        2
+      )} calories remaining for today.`;
     } else if (cleanedMatchResult.includes("Consumed Calories")) {
       const { consumedCalories } = await queryDatabaseForCalorieDetails(
         clientId
       );
-      response = `You have consumed ${consumedCalories} calories today.`;
+      response = `You have consumed ${consumedCalories.toFixed(
+        2
+      )} calories today.`;
     } else if (cleanedMatchResult.includes("Generate Meal Plan")) {
       try {
         ({ generatedMealPlan, fetchedRecipes } =

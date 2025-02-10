@@ -18,9 +18,14 @@ export async function POST(request: NextRequest) {
       generatedMealPlan.id > 0 &&
       fetchedRecipes?.length
     ) {
-      return NextResponse.json({ speech, generatedMealPlan, fetchedRecipes });
+      return NextResponse.json({
+        speech,
+        response,
+        generatedMealPlan,
+        fetchedRecipes,
+      });
     } else {
-      return NextResponse.json({ speech });
+      return NextResponse.json({ speech, response });
     }
   } catch (error: any) {
     console.error("Error getting api speech:", error);
