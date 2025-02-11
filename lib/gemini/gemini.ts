@@ -186,7 +186,7 @@ async function queryDatabaseForCalorieDetails(clientId: number): Promise<{
   const endOfToday = dayjs().endOf("day");
 
   // Filter meals for today
-  const mealsToday = meals.filter((meal) => {
+  const mealsToday = meals?.filter((meal) => {
     const mealDate = dayjs(meal.timeScheduled);
     return mealDate.isAfter(startOfToday) && mealDate.isBefore(endOfToday);
   });

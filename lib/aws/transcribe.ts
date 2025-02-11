@@ -35,7 +35,7 @@ export const transcribeAudio = async (
         MediaFileUri: audioFileUrl,
       },
       OutputBucketName: s3Bucket!,
-      OutputKey: `${prefix}/output`,
+      OutputKey: `${prefix}/output/`,
     };
 
     await transcribeService.startTranscriptionJob(transcribeParams).promise();
@@ -76,6 +76,7 @@ export const transcribeAudio = async (
     const transcriptUrl =
       transcriptionJob?.TranscriptionJob?.Transcript?.TranscriptFileUri;
     if (transcriptUrl) {
+      //TODO: Fetch failed
       const transcriptData = await fetch(transcriptUrl).then((res) =>
         res.json()
       );

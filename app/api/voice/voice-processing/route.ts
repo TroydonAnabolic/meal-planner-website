@@ -1,39 +1,54 @@
 import { handleUserPrompt } from "@/lib/gemini/gemini";
 import { convertTextToSpeech } from "@/lib/aws/polly";
-import { transcribeAudio } from "@/lib/aws/transcribe"; // Import the new transcribe function
+import { transcribeAudio } from "@/lib/aws/transcribe";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
-import { NextRequest, NextResponse } from "next/server";
-import { IncomingForm } from "formidable"; // To handle file uploads
+import { NextResponse } from "next/server";
+import { Buffer } from "buffer";
+import { promises as fs } from "fs";
+import path from "path";
+import os from "os";
 
-export const config = {
-  api: {
-    bodyParser: false, // Disable default body parsing to handle multipart form data
-  },
-};
-
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    // Handle file upload (audio) using formidable
-    const form = new IncomingForm();
-    const formData = await new Promise<any>((resolve, reject) => {
-      form.parse(request as any, async (err, fields, files) => {
-        if (err) {
-          reject(err);
-        }
-        resolve({ fields, files });
-      });
-    });
+    const formData = await request.formData();
 
-    // Get the audio file from the form data
-    const audioFile = formData.files.audio[0];
+    // Get audio file and clientId from the form data
+    const audioFile = formData.get("audio") as File | null;
+    const clientId = formData.get("clientId") as string;
+
+    if (!audioFile || !clientId) {
+      return NextResponse.json(
+        { message: "Missing audio file or clientId" },
+        { status: 400 }
+      );
+    }
+
+    // Save the audio file locally if needed
+    const audioBuffer = await audioFile.arrayBuffer();
+
+    console.log("Temporary directory path creating:");
+
+    // Get the system's default temporary directory
+    const tmpDirectory = path.join(os.tmpdir(), "meal-planner"); // You can create a subdirectory if needed
+    console.log("Temporary directory path:", tmpDirectory);
+
+    // Ensure that the tmp directory exists
+    await fs.mkdir(tmpDirectory, { recursive: true });
+    console.log("Temporary directory created:", tmpDirectory);
+
+    const audioPath = path.join(tmpDirectory, "audio.mp3");
+    console.log("Temporary directory joined:", audioPath);
+
+    // Write the audio file to the temporary directory
+    await fs.writeFile(audioPath, Buffer.from(audioBuffer));
+    console.log("writing file");
 
     // Step 1: Transcribe the audio
-    const transcribedText = await transcribeAudio(audioFile.path); // The path to the audio file
+    const transcribedText = await transcribeAudio(audioPath);
 
     if (transcribedText) {
-      // Step 2: Handle the transcribed text as a user prompt
-      const { clientId } = formData.fields; // Get clientId from the fields
+      // Step 2: Process the text with clientId
       const {
         response,
         generatedMealPlan,
@@ -42,17 +57,16 @@ export async function POST(request: NextRequest) {
         response: string;
         generatedMealPlan: IMealPlan | null;
         fetchedRecipes: IRecipeInterface[];
-      } = await handleUserPrompt(transcribedText, clientId);
+      } = await handleUserPrompt(transcribedText, Number(clientId));
 
       // Step 3: Convert the response to speech
       const speech: Uint8Array | null = await convertTextToSpeech(response);
 
-      // Step 4: Encode the speech data as Base64 for transmission
+      // Step 4: Encode the speech data as Base64
       const audioBase64 = speech
         ? Buffer.from(speech).toString("base64")
         : null;
 
-      // Step 5: Return the data
       return NextResponse.json({
         responseText: response,
         audio: audioBase64,
@@ -60,11 +74,8 @@ export async function POST(request: NextRequest) {
         fetchedRecipes,
       });
     } else {
-      console.error("Error transcribing audio");
       return NextResponse.json(
-        {
-          message: "Could not transcribing processed speech response",
-        },
+        { message: "Failed to transcribe audio" },
         { status: 500 }
       );
     }
