@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       );
     } else if (!audioFile) {
       return NextResponse.json(
-        { message: "Missing clientId" },
+        { message: "Missing audio file" },
         { status: 400 }
       );
     }
