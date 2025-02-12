@@ -17,9 +17,14 @@ export async function POST(request: Request) {
     const audioFile = formData.get("audio") as File | null;
     const clientId = formData.get("clientId") as string;
 
-    if (!audioFile || !clientId) {
+    if (!clientId) {
       return NextResponse.json(
-        { message: "Missing audio file or clientId" },
+        { message: "Missing clientId" },
+        { status: 400 }
+      );
+    } else if (!audioFile) {
+      return NextResponse.json(
+        { message: "Missing clientId" },
         { status: 400 }
       );
     }
