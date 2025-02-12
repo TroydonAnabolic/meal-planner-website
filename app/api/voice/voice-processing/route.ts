@@ -9,6 +9,8 @@ import { promises as fs } from "fs";
 import path from "path";
 import os from "os";
 
+export const maxDuration = 120; // This function can run for a maximum of 2 minutes
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
