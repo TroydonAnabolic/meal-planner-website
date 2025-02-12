@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 
     // Step 1: Transcribe the audio
     const transcribedText = await transcribeAudio(audioPath);
-
+    let resText: string = "";
     if (transcribedText) {
       // Step 2: Process the text with clientId
       const {
@@ -67,9 +67,23 @@ export async function POST(request: Request) {
         generatedMealPlan: IMealPlan | null;
         fetchedRecipes: IRecipeInterface[];
       } = await handleUserPrompt(transcribedText, Number(clientId));
+      resText = response;
+
+      if (!transcribedText) {
+        return NextResponse.json(
+          { message: `Failed to transcribe audio for text - ${resText}` },
+          { status: 500 }
+        );
+      }
 
       // Step 3: Convert the response to speech
       const speech: Uint8Array | null = await convertTextToSpeech(response);
+      if (!speech) {
+        return NextResponse.json(
+          { message: `Failed to transcription to speech - ${resText}` },
+          { status: 500 }
+        );
+      }
 
       // Step 4: Encode the speech data as Base64
       const audioBase64 = speech
@@ -84,7 +98,7 @@ export async function POST(request: Request) {
       });
     } else {
       return NextResponse.json(
-        { message: "Failed to transcribe audio" },
+        { message: `Failed to convert audio to base 64 - ${resText}` },
         { status: 500 }
       );
     }
