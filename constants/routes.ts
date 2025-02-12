@@ -18,6 +18,7 @@ export const ROUTES = {
     DASHBOARD: "/meal-planner/dashboard",
     SETTINGS: {
       PROFILE: "/meal-planner/settings/profile",
+      GENERAL: "/meal-planner/settings/general",
       PHYSICAL_ATTRIBUTES: "/meal-planner/settings/physical-attributes",
       SUBSCRIPTIONS: "/meal-planner/settings/subscriptions",
       // Add more settings-related routes here

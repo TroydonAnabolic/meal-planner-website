@@ -83,6 +83,7 @@ const providers: Provider[] = [
         userInfo.clientId = clientId;
         userInfo.isStripeBasicActive = client.isStripeBasicActive;
         userInfo.stripeCustomerId = client.stripeCustomerId;
+        userInfo.timeZoneId = client.ClientSettingsDto?.timezoneId;
         userInfo.profilePicUrl = client.ProfilePicUrl as string;
 
         if (
@@ -199,6 +200,7 @@ export const config: NextAuthConfig = {
           profilePicUrl: token.profilePicUrl as string,
           stripeCustomerId: token.stripeCustomerId as string,
           isStripeBasicActive: token.isStripeBasicActive as boolean,
+          timeZoneId: token.timeZoneId as string,
           idToken: token.idToken as string,
           accessToken: token.accessToken as string,
           refreshToken: token.refreshToken as string,

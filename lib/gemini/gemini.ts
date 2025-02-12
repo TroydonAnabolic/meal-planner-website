@@ -12,6 +12,10 @@ import { getClient, getClientById } from "../server-side/client";
 import { IClientInterface } from "@/models/interfaces/client/client";
 import { generateMealPlansAndRecipes } from "../server-side/meal-plan-generator";
 import { defaultMealPlanPreference } from "@/constants/constants-objects";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({
@@ -178,16 +182,20 @@ async function queryDatabaseForCalorieDetails(clientId: number): Promise<{
   remainingCalories: number;
   consumedCalories: number;
 }> {
+  const client: IClientInterface = await getClientById(clientId);
   const meals: IMealInterface[] = (await getMealsByClientId(
     Number(clientId)
   )) as IMealInterface[];
 
-  const startOfToday = dayjs().startOf("day");
-  const endOfToday = dayjs().endOf("day");
+  const localTz = client.ClientSettingsDto?.timezoneId || "UTC"; // Default to UTC if not set
 
-  // Filter meals for today
+  // Get local start and end of today
+  const startOfToday = dayjs().tz(localTz).startOf("day");
+  const endOfToday = dayjs().tz(localTz).endOf("day");
+
+  // Filter meals for today (convert times from UTC to localTz)
   const mealsToday = meals?.filter((meal) => {
-    const mealDate = dayjs(meal.timeScheduled);
+    const mealDate = dayjs.utc(meal.timeScheduled).tz(localTz);
     return mealDate.isAfter(startOfToday) && mealDate.isBefore(endOfToday);
   });
 
@@ -197,11 +205,17 @@ async function queryDatabaseForCalorieDetails(clientId: number): Promise<{
     return total + mealEnergy;
   }, 0);
 
-  // Consumed Calories (sum of only consumed meals)
+  // Consumed Calories (sum of only consumed meals, converted to local time)
   const consumedCalories = mealsToday.reduce((total, meal) => {
     if (meal.timeConsumed) {
-      const mealEnergy = meal.nutrients?.["ENERC_KCAL"]?.quantity || 0;
-      return total + mealEnergy;
+      const mealConsumedDate = dayjs.utc(meal.timeConsumed).tz(localTz);
+      if (
+        mealConsumedDate.isAfter(startOfToday) &&
+        mealConsumedDate.isBefore(endOfToday)
+      ) {
+        const mealEnergy = meal.nutrients?.["ENERC_KCAL"]?.quantity || 0;
+        return total + mealEnergy;
+      }
     }
     return total;
   }, 0);

@@ -17,6 +17,7 @@ declare module "next-auth" {
     profilePicUrl: string;
     stripeCustomerId: string;
     isStripeBasicActive: boolean;
+    timeZoneId?: string;
     idToken?: string;
     accessToken?: string;
     refreshToken?: string;

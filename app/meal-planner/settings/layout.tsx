@@ -14,6 +14,11 @@ const secondaryNavigation = [
     current: false,
   },
   {
+    name: "General",
+    href: ROUTES.MEAL_PLANNER.SETTINGS.GENERAL,
+    current: false,
+  },
+  {
     name: "Physical Attributes",
     href: ROUTES.MEAL_PLANNER.SETTINGS.PHYSICAL_ATTRIBUTES,
     current: false,
