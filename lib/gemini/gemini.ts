@@ -49,7 +49,7 @@ const apiCalls: ApiCall[] = [
   },
   {
     key: "Generate Meal Plan",
-    query: "Generate a meal plan for 7 days for me.",
+    query: "Make a meal plan for me.",
   },
 ];
 
@@ -85,7 +85,6 @@ export const handleUserPrompt: (
       .join(", ")} or return "No match found."`;
 
     const matchResult: string = await generateContent(promptForMatching);
-    const initialMealPlan: IMealPlan = getDefaultMealPlan(clientId);
 
     let response: string = "";
     let generatedMealPlan: IMealPlan | null = null;
@@ -117,7 +116,7 @@ export const handleUserPrompt: (
     } else if (cleanedMatchResult.includes("Generate Meal Plan")) {
       try {
         ({ generatedMealPlan, fetchedRecipes } =
-          await generateMealPlanAndRecipes(initialMealPlan, clientId));
+          await generateMealPlanAndRecipes(clientId));
         response = "Here is your generated meal plan.";
       } catch (mealPlanError) {
         console.error("Error generating meal plan:", mealPlanError);
@@ -138,11 +137,13 @@ export const handleUserPrompt: (
   }
 };
 
-const generateMealPlanAndRecipes = async (
-  initialMealPlan: IMealPlan,
-  clientId: number
-) => {
+const generateMealPlanAndRecipes = async (clientId: number) => {
   const client: IClientInterface = await getClientById(clientId);
+  const localTz = client.ClientSettingsDto?.timezoneId || "UTC"; // Default to UTC if not set
+
+  // Get local start and end of today
+  const startOfWeek = dayjs().tz(localTz).startOf("week").toISOString();
+  const endOfWeek = dayjs().tz(localTz).endOf("week").toISOString();
 
   const {
     generatedMealPlan: generatorResponse,
@@ -151,12 +152,13 @@ const generateMealPlanAndRecipes = async (
     generatedMealPlan: GeneratorResponse;
     fetchedRecipes: IRecipeInterface[];
   } = await generateMealPlansAndRecipes(
-    initialMealPlan.endDate,
-    initialMealPlan.startDate,
+    endOfWeek,
+    startOfWeek,
     client.ClientSettingsDto?.mealPlanPreferences || defaultMealPlanPreference,
     [],
     true,
-    client.Id
+    client.Id,
+    client.ClientSettingsDto?.timezoneId || "UTC"
   );
 
   if (!generatorResponse || !fetchedRecipes) {
@@ -165,13 +167,13 @@ const generateMealPlanAndRecipes = async (
 
   // Map the properties from `GeneratorResponse` to `IMealPlan`
   const generatedMealPlan: IMealPlan = {
-    id: initialMealPlan.id || 0,
-    clientId: client.Id,
-    startDate: initialMealPlan.startDate,
-    endDate: initialMealPlan.endDate,
+    ...generatorResponse,
+    id: 0,
+    clientId: clientId,
+    startDate: startOfWeek,
+    endDate: endOfWeek,
     autoLogMeals: true,
     meals: [],
-    selection: [],
   };
 
   return { generatedMealPlan, fetchedRecipes };

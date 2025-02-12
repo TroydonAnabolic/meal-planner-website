@@ -25,6 +25,12 @@ export function getLocalTimeFromUtc(utcDate: string | Date): Date {
   const userTimezone = dayjs.tz.guess(); // Detect user's timezone
   return dayjs.utc(utcDate).tz(userTimezone).toDate();
 }
+export function getLocalTimeFromUtcFromTZ(
+  utcDate: string | Date,
+  timeZone: string
+): Date {
+  return dayjs.utc(utcDate).tz(timeZone).toDate();
+}
 
 // Convert a local date to UTC for backend processing
 export function getUtcTimeFromLocal(

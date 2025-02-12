@@ -7,7 +7,10 @@ import { IMealPlanPreferences } from "@/models/interfaces/client/meal-planner-pr
 import { IMealPlannerRequest } from "@/models/interfaces/edamam/meal-planner/meal-planner-request";
 import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-planner-response";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
-import { getLocalTimeFromUtc } from "@/util/date-util";
+import {
+  getLocalTimeFromUtc,
+  getLocalTimeFromUtcFromTZ,
+} from "@/util/date-util";
 import { reUseRecipes, formatUri } from "@/util/meal-generator-util";
 import { getMealTypeAndTime } from "@/util/meal-utils";
 import { getRecipesByClientId } from "../recipe";
@@ -24,7 +27,8 @@ export async function generateMealPlansAndRecipes(
   mealPlanPreferences: IMealPlanPreferences,
   excluded: string[],
   useFavouriteRecipes: boolean,
-  clientId: number
+  clientId: number,
+  timeZoneId: string
 ) {
   const size = dayjs(endDate).diff(dayjs(startDate), "day") + 1;
 
@@ -102,7 +106,10 @@ export async function generateMealPlansAndRecipes(
       );
 
     // Convert the scheduled time to the user's local timezone
-    const localScheduledDate = getLocalTimeFromUtc(updatedDate);
+    const localScheduledDate = getLocalTimeFromUtcFromTZ(
+      updatedDate,
+      timeZoneId
+    );
 
     // Convert to local time
     generatedForLunch = hasGeneratedForDinner;
