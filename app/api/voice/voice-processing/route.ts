@@ -55,53 +55,48 @@ export async function POST(request: Request) {
 
     // Step 1: Transcribe the audio
     const transcribedText = await transcribeAudio(audioPath);
-    let resText: string = "";
-    if (transcribedText) {
-      // Step 2: Process the text with clientId
-      const {
-        response,
-        generatedMealPlan,
-        fetchedRecipes,
-      }: {
-        response: string;
-        generatedMealPlan: IMealPlan | null;
-        fetchedRecipes: IRecipeInterface[];
-      } = await handleUserPrompt(transcribedText, Number(clientId));
-      resText = response;
-
-      if (!transcribedText) {
-        return NextResponse.json(
-          { message: `Failed to transcribe audio for text - ${resText}` },
-          { status: 500 }
-        );
-      }
-
-      // Step 3: Convert the response to speech
-      const speech: Uint8Array | null = await convertTextToSpeech(response);
-      if (!speech) {
-        return NextResponse.json(
-          { message: `Failed to transcription to speech - ${resText}` },
-          { status: 500 }
-        );
-      }
-
-      // Step 4: Encode the speech data as Base64
-      const audioBase64 = speech
-        ? Buffer.from(speech).toString("base64")
-        : null;
-
-      return NextResponse.json({
-        responseText: response,
-        audio: audioBase64,
-        generatedMealPlan,
-        fetchedRecipes,
-      });
-    } else {
+    if (!transcribedText) {
       return NextResponse.json(
-        { message: `Failed to convert audio to base 64 - ${resText}` },
+        { message: `Failed to transcribe audio for audioPath - ${audioPath}` },
         { status: 500 }
       );
     }
+
+    // Step 2: Process the text with clientId
+    const {
+      response,
+      generatedMealPlan,
+      fetchedRecipes,
+    }: {
+      response: string;
+      generatedMealPlan: IMealPlan | null;
+      fetchedRecipes: IRecipeInterface[];
+    } = await handleUserPrompt(transcribedText, Number(clientId));
+    if (!response) {
+      return NextResponse.json(
+        { message: `Failed to transcription to speech - ${response}` },
+        { status: 500 }
+      );
+    }
+
+    // Step 3: Convert the response to speech
+    const speech: Uint8Array | null = await convertTextToSpeech(response);
+    if (!speech) {
+      return NextResponse.json(
+        { message: `Failed to transcription to speech - ${response}` },
+        { status: 500 }
+      );
+    }
+
+    // Step 4: Encode the speech data as Base64
+    const audioBase64 = speech ? Buffer.from(speech).toString("base64") : null;
+
+    return NextResponse.json({
+      responseText: response,
+      audio: audioBase64,
+      generatedMealPlan,
+      fetchedRecipes,
+    });
   } catch (error: any) {
     console.error("Error processing audio:", error);
     return NextResponse.json(
