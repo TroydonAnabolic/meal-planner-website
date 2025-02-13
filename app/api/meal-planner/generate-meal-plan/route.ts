@@ -25,6 +25,8 @@ dayjs.extend(utc); // Extend dayjs with UTC plugin
 // Extend dayjs with the customParseFormat plugin
 dayjs.extend(customParseFormat);
 
+export const maxDuration = 60; // This function can run for a maximum of 2 minutes
+
 export async function POST(req: Request) {
   try {
     // Parse the request body
