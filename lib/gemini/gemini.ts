@@ -27,7 +27,7 @@ interface ApiCall {
   query: string;
 }
 
-// TODO: Fill up api calls for all differrent api calls required e.g. whats on the menu must give
+// TODO: add wats on the menu, whats for lunch, whats for dinner, whats for breakfast
 // all  ingredients for todays, mealtypes meal
 const apiCalls: ApiCall[] = [
   {
