@@ -14,6 +14,7 @@ import { generateMealPlansAndRecipes } from "../server-side/meal-plan-generator"
 import { defaultMealPlanPreference } from "@/constants/constants-objects";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import { getMealTypeForTimeRange } from "@/util/meal-utils";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -70,6 +71,7 @@ interface IHandleUserPromptResult {
   response: string;
   generatedMealPlan: IMealPlan | null;
   fetchedRecipes: IRecipeInterface[];
+  meal: IMealInterface | null;
 }
 
 export const handleUserPrompt: (
@@ -80,6 +82,9 @@ export const handleUserPrompt: (
   clientId: number
 ): Promise<IHandleUserPromptResult> => {
   try {
+    const client: IClientInterface = await getClientById(clientId);
+    const localTz = client.ClientSettingsDto?.timezoneId || "UTC"; // Default to UTC if not set
+
     const promptForMatching: string = `Given the following user input: "${userPrompt}", match it to one of these queries: ${apiCalls
       .map((call) => `"${call.key}"`)
       .join(", ")} or return "No match found."`;
@@ -89,6 +94,7 @@ export const handleUserPrompt: (
     let response: string = "";
     let generatedMealPlan: IMealPlan | null = null;
     let fetchedRecipes: IRecipeInterface[] = [];
+    let meal: IMealInterface | null = null;
 
     const cleanedMatchResult: string = matchResult
       .replace(/^'+|'+$/g, "")
@@ -97,26 +103,34 @@ export const handleUserPrompt: (
 
     if (cleanedMatchResult.includes("Total Calories")) {
       const { totalCalories }: { totalCalories: number } =
-        await queryDatabaseForCalorieDetails(clientId);
+        await queryDatabaseForCalorieDetails(client);
       response = `You have ${totalCalories.toFixed(
         2
       )} total calories to consume today.`;
     } else if (cleanedMatchResult.includes("Remaining Calories")) {
       const { remainingCalories }: { remainingCalories: number } =
-        await queryDatabaseForCalorieDetails(clientId);
+        await queryDatabaseForCalorieDetails(client);
       response = `You have ${remainingCalories.toFixed(
         2
       )} calories remaining for today.`;
     } else if (cleanedMatchResult.includes("Consumed Calories")) {
       const { consumedCalories }: { consumedCalories: number } =
-        await queryDatabaseForCalorieDetails(clientId);
+        await queryDatabaseForCalorieDetails(client);
       response = `You have consumed ${consumedCalories.toFixed(
         2
       )} calories today.`;
+    } else if (cleanedMatchResult.includes("What is on the menu")) {
+      meal = await queryDatabaseForCurrentMeal(client, localTz);
+      response = meal
+        ? `Here is your ${meal.mealTypeKey[0]} scheduled for ${dayjs
+            .utc(meal.timeScheduled) // Convert from UTC
+            .tz(localTz) // Convert to local timezone
+            .format("hh:mm A")}.`
+        : "No meal found.";
     } else if (cleanedMatchResult.includes("Generate Meal Plan")) {
       try {
         ({ generatedMealPlan, fetchedRecipes } =
-          await generateMealPlanAndRecipes(clientId));
+          await generateMealPlanAndRecipes(client));
         response = "Here is your generated meal plan.";
       } catch (mealPlanError) {
         console.error("Error generating meal plan:", mealPlanError);
@@ -126,19 +140,19 @@ export const handleUserPrompt: (
       response = "I'm sorry, I couldn't understand your request.";
     }
 
-    return { response, generatedMealPlan, fetchedRecipes };
+    return { response, generatedMealPlan, fetchedRecipes, meal };
   } catch (error) {
     console.error("Error handling user prompt:", error);
     return {
       response: "Sorry, there was an error processing your request.",
       generatedMealPlan: null,
       fetchedRecipes: [],
+      meal: null,
     };
   }
 };
 
-const generateMealPlanAndRecipes = async (clientId: number) => {
-  const client: IClientInterface = await getClientById(clientId);
+const generateMealPlanAndRecipes = async (client: IClientInterface) => {
   const localTz = client.ClientSettingsDto?.timezoneId || "UTC"; // Default to UTC if not set
 
   // Get local start and end of today
@@ -169,7 +183,7 @@ const generateMealPlanAndRecipes = async (clientId: number) => {
   const generatedMealPlan: IMealPlan = {
     ...generatorResponse,
     id: 0,
-    clientId: clientId,
+    clientId: client.Id,
     startDate: startOfWeek,
     endDate: endOfWeek,
     autoLogMeals: true,
@@ -179,14 +193,15 @@ const generateMealPlanAndRecipes = async (clientId: number) => {
   return { generatedMealPlan, fetchedRecipes };
 };
 
-async function queryDatabaseForCalorieDetails(clientId: number): Promise<{
+async function queryDatabaseForCalorieDetails(
+  client: IClientInterface
+): Promise<{
   totalCalories: number;
   remainingCalories: number;
   consumedCalories: number;
 }> {
-  const client: IClientInterface = await getClientById(clientId);
   const meals: IMealInterface[] = (await getMealsByClientId(
-    Number(clientId)
+    Number(client.Id)
   )) as IMealInterface[];
 
   const localTz = client.ClientSettingsDto?.timezoneId || "UTC"; // Default to UTC if not set
@@ -230,4 +245,83 @@ async function queryDatabaseForCalorieDetails(clientId: number): Promise<{
     remainingCalories,
     consumedCalories,
   };
+}
+
+async function queryDatabaseForCurrentMeal(
+  client: IClientInterface,
+  localTz: string
+): Promise<IMealInterface | null> {
+  const meals: IMealInterface[] = (await getMealsByClientId(
+    Number(client.Id)
+  )) as IMealInterface[];
+
+  // Get local start and end of today
+  const startOfToday = dayjs().tz(localTz).startOf("day");
+  const endOfToday = dayjs().tz(localTz).endOf("day");
+
+  //  get current meal type based on the current time
+  const currentTime = dayjs().tz(localTz);
+
+  const mealType = getMealTypeForTimeRange(
+    currentTime.toDate()
+  )?.toLowerCase() as string;
+
+  // Filter meals for today (convert times from UTC to localTz)
+  const currentMeal = meals?.find((meal) => {
+    const mealDate = dayjs.utc(meal.timeScheduled).tz(localTz);
+    return (
+      mealDate.isAfter(startOfToday) &&
+      mealDate.isBefore(endOfToday) &&
+      meal.mealTypeKey.includes(mealType)
+    );
+  });
+
+  // try to filter meals separately failing here,
+  porblem is if there is no brunch in clients meal type', we have to get the  next meal types meal
+
+  if (currentMeal) {
+    return currentMeal;
+  }
+  return null;
+}
+
+// gets a meal for a given meal type, defaults to todays if not specified
+async function queryDatabaseForGivenMealType(
+  client: IClientInterface,
+  localTz: string
+): Promise<IMealInterface | null> {
+  const meals: IMealInterface[] = (await getMealsByClientId(
+    Number(client.Id)
+  )) as IMealInterface[];
+
+  // Get local start and end of today
+  const startOfToday = dayjs().tz(localTz).startOf("day");
+  const endOfToday = dayjs().tz(localTz).endOf("day");
+
+  //  get current meal type based on the current time
+  const currentTime = dayjs().tz(localTz);
+
+  const mealType = getMealTypeForTimeRange(
+    currentTime.toDate()
+  )?.toLowerCase() as string;
+
+  // get meal type from prompt, if we find a meal type from prompt use that
+  // otherwise
+
+  // get date time from prompt
+
+  // Filter meals for today (convert times from UTC to localTz)
+  const currentMeal = meals?.find((meal) => {
+    const mealDate = dayjs.utc(meal.timeScheduled).tz(localTz);
+    return (
+      mealDate.isAfter(startOfToday) &&
+      mealDate.isBefore(endOfToday) &&
+      meal.mealTypeKey.includes(mealType)
+    );
+  });
+
+  if (currentMeal) {
+    return currentMeal;
+  }
+  return null;
 }

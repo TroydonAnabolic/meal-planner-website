@@ -289,3 +289,28 @@ export const isTimeInRange = (
 
   return isInRange;
 };
+
+export const getMealTypeForTimeRange = (
+  timeScheduled: Date
+): MealNumber | null => {
+  if (!timeScheduled) return null;
+
+  // Convert timeScheduled to "HH:mm" format (24-hour format)
+  const formattedTime = dayjs(timeScheduled).format("HH:mm");
+
+  if (formattedTime >= "07:00" && formattedTime < "09:00") {
+    return MealNumber.Meal1; // Breakfast
+  } else if (formattedTime >= "09:00" && formattedTime < "12:00") {
+    return MealNumber.Meal2; // Brunch
+  } else if (formattedTime >= "12:00" && formattedTime < "15:00") {
+    return MealNumber.Meal3; // Lunch
+  } else if (formattedTime >= "15:00" && formattedTime < "17:00") {
+    return MealNumber.Meal4; // Snack
+  } else if (formattedTime >= "17:00" && formattedTime < "21:00") {
+    return MealNumber.Meal5; // Teatime
+  } else if (formattedTime >= "21:00" && formattedTime < "23:00") {
+    return MealNumber.Meal6; // Dinner
+  }
+
+  return null;
+};

@@ -101,10 +101,10 @@ export enum MealNumber {
 
 export const MealTimeRanges: Record<MealNumber, string> = {
   [MealNumber.Meal1]: "7:00 AM - 9:00 AM",
-  [MealNumber.Meal2]: "10:00 AM - 11:00 AM",
-  [MealNumber.Meal3]: "12:00 PM - 2:00 PM",
-  [MealNumber.Meal4]: "3:00 PM - 4:00 PM",
-  [MealNumber.Meal5]: "6:00 PM - 8:00 PM",
+  [MealNumber.Meal2]: "9:00 AM - 12:00 PM",
+  [MealNumber.Meal3]: "12:00 PM - 3:00 PM",
+  [MealNumber.Meal4]: "3:00 PM - 5:00 PM",
+  [MealNumber.Meal5]: "5:00 PM - 9:00 PM",
   [MealNumber.Meal6]: "9:00 PM - 11:00 PM",
 };
 
