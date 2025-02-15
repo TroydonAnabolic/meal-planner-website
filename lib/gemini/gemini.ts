@@ -47,7 +47,12 @@ const apiCalls: ApiCall[] = [
   {
     key: "What is on the menu",
     query:
-      "Check all ingredients for the current meal type for the current day, for example lunch today if it is during lunch hours.",
+      "Check meal and its ingredients for the current meal type for the current day, for example lunch today if it is during lunch hours.",
+  },
+  {
+    key: "Find a given meal",
+    query:
+      "Check meal, and its ingredients for any given meal type e.g. breakfast or lunch, for any given day by the user, for example lunch on 13th January 2025.",
   },
   {
     key: "Generate Meal Plan",
@@ -128,6 +133,18 @@ export const handleUserPrompt: (
             .tz(localTz) // Convert to local timezone
             .format("hh:mm A")}.`
         : "No meal found.";
+    } else if (cleanedMatchResult.includes("Find a given meal")) {
+      meal = await queryDatabaseForGivenMealTypeAtGivenDay(
+        client,
+        localTz,
+        userPrompt
+      );
+      response = meal
+        ? `Here is your ${meal.mealTypeKey[0]} scheduled for ${dayjs
+            .utc(meal.timeScheduled) // Convert from UTC
+            .tz(localTz) // Convert to local timezone
+            .format("hh:mm A")}.`
+        : "No meal found.";
     } else if (cleanedMatchResult.includes("Generate Meal Plan")) {
       try {
         ({ generatedMealPlan, fetchedRecipes } =
@@ -138,6 +155,18 @@ export const handleUserPrompt: (
         response = "Sorry, I couldn't generate the meal plan.";
       }
     } else {
+      // TODO: Test general fitness enquiry
+      const isFitnessPrompt = `Does the following sentence contain a dietary enquiry? Give me an answer either 'true' or 'false': ${userPrompt}`;
+      const isFitnessStr = (await generateContent(isFitnessPrompt))
+        .trim()
+        .toLowerCase();
+      const isFitness = isFitnessStr.includes("true");
+      if (isFitness) {
+        const fitnessPrompt = `Does the following sentence contain a dietary enquiry? If it does then
+        please give me a reply in a friendly way. Here is the prompt: ${userPrompt}`;
+
+        response = await generateContent(fitnessPrompt);
+      }
       response = "I'm sorry, I couldn't understand your request.";
     }
 
@@ -248,6 +277,7 @@ async function queryDatabaseForCalorieDetails(
   };
 }
 
+// TODO: Test current meal
 async function queryDatabaseForCurrentMeal(
   client: IClientInterface,
   localTz: string
@@ -295,43 +325,57 @@ async function queryDatabaseForCurrentMeal(
   return currentMeal || null;
 }
 
-// gets a meal for a given meal type, defaults to todays if not specified
-async function queryDatabaseForGivenMealType(
+// TODO: Test random meal
+async function queryDatabaseForGivenMealTypeAtGivenDay(
   client: IClientInterface,
-  localTz: string
+  localTz: string,
+  userPrompt: string
 ): Promise<IMealInterface | null> {
   const meals: IMealInterface[] = (await getMealsByClientId(
     Number(client.Id)
   )) as IMealInterface[];
 
-  // Get local start and end of today
-  const startOfToday = dayjs().tz(localTz).startOf("day");
-  const endOfToday = dayjs().tz(localTz).endOf("day");
+  const getMealTypePrompt = `From the user prompt given, tell me the exact meal type. Available values: "Breakfast", "Brunch", "Lunch", "Snack", "Teatime", "Dinner". Just return one of these words, nothing else. Here is the prompt: ${userPrompt}`;
+  let mealType = (await generateContent(getMealTypePrompt))
+    .trim()
+    .toLowerCase();
 
-  //  get current meal type based on the current time
-  const currentTime = dayjs().tz(localTz);
+  const getMealTimePrompt = `Extract the exact day and time from the user prompt. Return it in the format "YYYY-MM-DD HH:mm A" so that it can be parsed by dayjs. Do not add extra words. Prompt: ${userPrompt}`;
+  let dateForMeal = dayjs(
+    await generateContent(getMealTimePrompt),
+    "YYYY-MM-DD HH:mm A"
+  ).tz(localTz);
 
-  const mealType = getMealTypeForTimeRange(
-    currentTime.toDate()
-  )?.toLowerCase() as string;
-
-  // get meal type from prompt, if we find a meal type from prompt use that
-  // otherwise
-
-  // get date time from prompt
-
-  // Filter meals for today (convert times from UTC to localTz)
-  const currentMeal = meals?.find((meal) => {
-    const mealDate = dayjs.utc(meal.timeScheduled).tz(localTz);
-    return (
-      mealDate.isAfter(startOfToday) &&
-      mealDate.isBefore(endOfToday) &&
-      meal.mealTypeKey.includes(mealType)
-    );
+  let currentMeal = meals?.find((meal) => {
+    let isToday = dateForMeal.isSame(meal.timeScheduled, "day");
+    return isToday && meal.mealTypeKey.includes(mealType);
   });
 
-  if (currentMeal) {
-    return currentMeal;
+  // TODO: Test brunch times
+  if (!currentMeal) {
+    // If no match is found, iterate through the MealNumber enum to find the next available meal type
+    const mealTypes = Object.values(MealNumber).map((m) => m.toLowerCase());
+    let mealIndex = mealTypes.indexOf(mealType);
+
+    while (!currentMeal && mealIndex < mealTypes.length - 1) {
+      mealIndex++;
+      mealType = mealTypes[mealIndex];
+
+      currentMeal = meals?.find((meal) => {
+        let isToday = dateForMeal.isSame(meal.timeScheduled, "day");
+        return isToday && meal.mealTypeKey.includes(mealType);
+      });
+    }
+
+    if (!currentMeal) {
+      console.warn(
+        `No meal found for '${userPrompt}'. Defaulting to closest meal.`
+      );
+      currentMeal =
+        meals.find((meal) => dateForMeal.isSame(meal.timeScheduled, "day")) ||
+        undefined;
+    }
   }
-  return null;
+
+  return currentMeal || null;
 }
