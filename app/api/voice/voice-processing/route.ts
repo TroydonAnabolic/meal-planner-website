@@ -8,6 +8,7 @@ import { Buffer } from "buffer";
 import { promises as fs } from "fs";
 import path from "path";
 import os from "os";
+import { IMealInterface } from "@/models/interfaces/meal/Meal";
 
 export const maxDuration = 60; // This function can run for a maximum of 2 minutes
 
@@ -67,10 +68,12 @@ export async function POST(request: Request) {
       response,
       generatedMealPlan,
       fetchedRecipes,
+      meal,
     }: {
       response: string;
       generatedMealPlan: IMealPlan | null;
       fetchedRecipes: IRecipeInterface[];
+      meal: IMealInterface | null;
     } = await handleUserPrompt(transcribedText, Number(clientId));
     if (!response) {
       return NextResponse.json(
@@ -96,6 +99,7 @@ export async function POST(request: Request) {
       audio: audioBase64,
       generatedMealPlan,
       fetchedRecipes,
+      meal,
     });
   } catch (error: any) {
     console.error("Error processing audio:", error);

@@ -15,6 +15,7 @@ import { defaultMealPlanPreference } from "@/constants/constants-objects";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { getMealTypeForTimeRange } from "@/util/meal-utils";
+import { MealNumber } from "@/constants/constants-enums";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -255,34 +256,43 @@ async function queryDatabaseForCurrentMeal(
     Number(client.Id)
   )) as IMealInterface[];
 
-  // Get local start and end of today
+  const availableMealTypeKeys = meals.map((m) => m.mealTypeKey[0]);
+
   const startOfToday = dayjs().tz(localTz).startOf("day");
   const endOfToday = dayjs().tz(localTz).endOf("day");
 
-  //  get current meal type based on the current time
   const currentTime = dayjs().tz(localTz);
-
-  const mealType = getMealTypeForTimeRange(
+  let mealType = getMealTypeForTimeRange(
     currentTime.toDate()
   )?.toLowerCase() as string;
 
-  // Filter meals for today (convert times from UTC to localTz)
-  const currentMeal = meals?.find((meal) => {
+  let currentMeal = meals?.find((meal) => {
     const mealDate = dayjs.utc(meal.timeScheduled).tz(localTz);
-    return (
-      mealDate.isAfter(startOfToday) &&
-      mealDate.isBefore(endOfToday) &&
-      meal.mealTypeKey.includes(mealType)
-    );
+    let isToday =
+      mealDate.isAfter(startOfToday) && mealDate.isBefore(endOfToday);
+    return isToday && meal.mealTypeKey.includes(mealType);
   });
 
-  // try to filter meals separately failing here,
-  porblem is if there is no brunch in clients meal type', we have to get the  next meal types meal
+  // TODO: Test brunch times
+  if (!currentMeal) {
+    // If no match is found, iterate through the MealNumber enum to find the next available meal type
+    const mealTypes = Object.values(MealNumber).map((m) => m.toLowerCase());
+    let mealIndex = mealTypes.indexOf(mealType);
 
-  if (currentMeal) {
-    return currentMeal;
+    while (!currentMeal && mealIndex < mealTypes.length - 1) {
+      mealIndex++;
+      mealType = mealTypes[mealIndex];
+
+      currentMeal = meals.find((meal) => {
+        const mealDate = dayjs.utc(meal.timeScheduled).tz(localTz);
+        let isToday =
+          mealDate.isAfter(startOfToday) && mealDate.isBefore(endOfToday);
+        return isToday && meal.mealTypeKey.includes(mealType);
+      });
+    }
   }
-  return null;
+
+  return currentMeal || null;
 }
 
 // gets a meal for a given meal type, defaults to todays if not specified
