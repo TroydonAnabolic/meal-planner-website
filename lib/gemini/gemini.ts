@@ -163,11 +163,12 @@ export const handleUserPrompt: (
       const isFitness = isFitnessStr.includes("true");
       if (isFitness) {
         const fitnessPrompt = `Does the following sentence contain a dietary enquiry? If it does then
-        please give me a reply in a friendly way. Here is the prompt: ${userPrompt}`;
+        please give me a reply in a friendly way, and don't mention whether it contains a dietary enquiry, just give me an answer. Here is the prompt: ${userPrompt}`;
 
         response = await generateContent(fitnessPrompt);
+      } else {
+        response = "I'm sorry, I couldn't understand your request.";
       }
-      response = "I'm sorry, I couldn't understand your request.";
     }
 
     return { response, generatedMealPlan, fetchedRecipes, meal };
