@@ -14,12 +14,6 @@ export const maxDuration = 60; // This function can run for a maximum of 2 minut
 
 export async function POST(request: Request) {
   try {
-    // const formData = await request.formData();
-
-    // // Get audio file and clientId from the form data
-    // const audioFile = formData.get("audio") as File | null;
-    // const clientId = formData.get("clientId") as string;
-
     const { audio, clientId } = await request.json();
 
     if (!clientId) {

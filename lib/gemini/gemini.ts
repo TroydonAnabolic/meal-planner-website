@@ -52,7 +52,7 @@ const apiCalls: ApiCall[] = [
   {
     key: "Find a given meal",
     query:
-      "Check meal, and its ingredients for any given meal type e.g. breakfast or lunch, for any given day by the user, for example lunch on 13th January 2025.",
+      "Check meal, and its ingredients for any given meal type e.g. breakfast or lunch, for any specific date given by the user, for example lunch on 13th January 2025.",
   },
   {
     key: "Generate Meal Plan",
@@ -278,7 +278,6 @@ async function queryDatabaseForCalorieDetails(
   };
 }
 
-// TODO: Test current meal
 async function queryDatabaseForCurrentMeal(
   client: IClientInterface,
   localTz: string
