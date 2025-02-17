@@ -62,20 +62,28 @@ export async function getEdamamMealPlan(
   const token = Buffer.from(`${appId}:${appKey}`).toString("base64");
   const authHeader = `Basic ${token}`;
 
-  const axiosConfig: AxiosRequestConfig = {
-    url: `${EDAMAM_BASE}${EDAMAM_MEALPLANNER_API}/${appId}/select`,
-    method: "POST",
-    data: transformedMealPlan,
-    headers: {
-      Authorization: authHeader,
-      "Edamam-Account-User": edamamAccountUser,
-    },
-  };
+  const url = `${EDAMAM_BASE}${EDAMAM_MEALPLANNER_API}/${appId}/select`;
+
   try {
-    const response = await exponentialBackoffAxios<GeneratorResponse>(
-      axiosConfig
+    const response = await exponentialBackoffFetch(() =>
+      fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: authHeader,
+          "Edamam-Account-User": edamamAccountUser!,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(transformedMealPlan),
+      })
     );
-    return response.data;
+
+    const generatorResponse: GeneratorResponse = await response.json();
+
+    if (!generatorResponse) {
+      throw new Error("Failed to get meal plan");
+    }
+
+    return generatorResponse;
   } catch (error: any) {
     console.error(`Failed to get meal plan: ${error.message}`, error);
     throw new Error(`Failed to get meal plan: ${error.message}`);
