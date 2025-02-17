@@ -89,10 +89,13 @@ export async function getRecipeFromURI(
   const appKey = process.env.EDAMAM_RECIPE_APP_KEY;
 
   try {
-    const response = await exponentialBackoffFetch(() =>
-      fetch(`${recipeURI}?app_id=${appId}&app_key=${appKey}`, {
-        method: "GET",
-      })
+    const response = await exponentialBackoffFetch(
+      () =>
+        fetch(`${recipeURI}?app_id=${appId}&app_key=${appKey}`, {
+          method: "GET",
+        }),
+      10,
+      3500
     );
 
     if (!response.ok) {

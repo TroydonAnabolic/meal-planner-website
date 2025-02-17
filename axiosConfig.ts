@@ -10,9 +10,9 @@ const keyVaultUrl = `https://${keyVaultName}.vault.azure.net`;
 const credential = new DefaultAzureCredential();
 const certificateClient = new CertificateClient(keyVaultUrl, credential, {
   retryOptions: {
-    maxRetries: 5,
-    maxRetryDelayInMs: 16000,
-    retryDelayInMs: 2000,
+    maxRetries: 10,
+    maxRetryDelayInMs: 64000,
+    retryDelayInMs: 6000,
   },
 });
 
@@ -44,12 +44,12 @@ async function getCertificate() {
     const base64Cert = await getCertificate();
     const caCert = Buffer.from(base64Cert, "base64");
     const isProd = process.env.NODE_ENV === "production";
-    // !allowSelfSignedCerts Ensure certificate verification is enabled
+    // !TODO: use cert after properly applying all rate limit
     const httpsAgent = new https.Agent({
-      //  ca: isProd ? caCert : undefined, // Trust only the specified certificate
-      ca: undefined, // Trust only the specified certificate
-      // rejectUnauthorized: isProd ? true : false, //
-      rejectUnauthorized: false, //
+      ca: isProd ? caCert : undefined, // Trust only the specified certificate
+      // ca: undefined, // Trust only the specified certificate
+      rejectUnauthorized: isProd ? true : false, //
+      //rejectUnauthorized: false, //
     });
 
     // Set Axios global defaults
