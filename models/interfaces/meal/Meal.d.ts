@@ -34,7 +34,7 @@ export interface IMealIngredient {
   food: string;
   weight: number;
   foodCategory?: string;
-  foodId: string;
+  foodId: string; // foodId is null for custom ingredients
   image: string;
   totalNutrients?: IMealNutrients;
   totalDaily?: IMealNutrients;
