@@ -28,11 +28,11 @@ import {
 import { makeQueryString } from "@/util/http-util";
 
 // Existing sidebar implementation...
-const teams = [
-  { id: 1, name: "Vegetarian Plans", href: "#", initial: "V", current: false }, // Different dietary preference groups
-  { id: 2, name: "Keto Diet", href: "#", initial: "K", current: false },
-  { id: 3, name: "Weight Loss Group", href: "#", initial: "W", current: false },
-];
+// const teams = [
+//   { id: 1, name: "Vegetarian Plans", href: "#", initial: "V", current: false }, // Different dietary preference groups
+//   { id: 2, name: "Keto Diet", href: "#", initial: "K", current: false },
+//   { id: 3, name: "Weight Loss Group", href: "#", initial: "W", current: false },
+// ];
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -176,11 +176,11 @@ const SideBar: React.FC<SideBarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                       ))}
                     </ul>
                   </li>
-                  <li>
+                  {/* <li>
                     <div className="text-xs font-semibold leading-6 text-gray-400">
                       Your teams
                     </div>
-                    <ul role="list" className="-mx-2 mt-2 space-y-1">
+                     <ul role="list" className="-mx-2 mt-2 space-y-1">
                       {teams.map((team) => (
                         <li key={team.name}>
                           <a
@@ -206,8 +206,8 @@ const SideBar: React.FC<SideBarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                           </a>
                         </li>
                       ))}
-                    </ul>
-                  </li>
+                    </ul> 
+                  </li>*/}
                   <div
                     id="edamam-badge"
                     data-color="badge"
@@ -270,7 +270,7 @@ const SideBar: React.FC<SideBarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                   ))}
                 </ul>
               </li>
-              <li>
+              {/* <li>
                 <div className="text-xs font-semibold leading-6 text-gray-400">
                   Your teams
                 </div>
@@ -301,7 +301,7 @@ const SideBar: React.FC<SideBarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                     </li>
                   ))}
                 </ul>
-              </li>
+              </li> */}
               <div
                 id="edamam-badge"
                 data-color="badge"

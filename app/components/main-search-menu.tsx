@@ -10,11 +10,11 @@ import Link from "next/link";
 import LogoutButton from "./auth/logout-button";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { ROUTES } from "@/constants/routes";
 
 const userNavigation = [
-  { name: "Your Profile", href: "#" },
-  { name: "Meal History", href: "#" },
-  { name: "Diet Preferences", href: "#" },
+  { name: "Your Profile", href: ROUTES.MEAL_PLANNER.SETTINGS.PROFILE },
+  { name: "Settings", href: ROUTES.MEAL_PLANNER.SETTINGS.GENERAL },
   { name: "Sign Out", href: "#" },
 ];
 
