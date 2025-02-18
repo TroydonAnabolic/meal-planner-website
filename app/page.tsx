@@ -40,7 +40,7 @@ export default function Home() {
               <p className="mt-6 text-lg leading-8 text-gray-300">
                 Discover the perfect diet tailored to your needs. Whether you
                 want to lose weight, gain muscle, or just eat healthier,
-                we&apos;ve got you covered.
+                we&apos;ve got you covered, starting from $19/month.
               </p>
               <div className="mt-10 flex items-center justify-center gap-x-6">
                 <BackgroundButton text="Get started" href="/register" />
