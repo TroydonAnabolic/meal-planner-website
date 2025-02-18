@@ -9,6 +9,7 @@ import { auth } from "@/auth";
 import { Session } from "next-auth";
 import Script from "next/script";
 import Head from "next/head";
+import GoogleAnalytics from "./components/seo/google-analytics";
 
 export const metadata: Metadata = {
   title: "Meal Planner",
@@ -39,6 +40,7 @@ export default async function RootLayout({
       },
     },
   ];
+
   return (
     <html lang="en">
       <Head>
@@ -51,6 +53,7 @@ export default async function RootLayout({
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
           />
+          <GoogleAnalytics />
         </>
       </Head>
       <body className="flex flex-col min-h-screen">
