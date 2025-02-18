@@ -15,6 +15,7 @@ import { CognitoUserAttribute } from "amazon-cognito-identity-js";
 import { Session } from "next-auth";
 import { isRedirectError } from "next/dist/client/components/redirect";
 import { revalidatePath } from "next/cache";
+import { ROUTES } from "@/constants/routes";
 
 export async function fetchCognitoAttributes(
   session: Session | undefined,
@@ -121,7 +122,7 @@ export async function updateCognitoUser(
         }
       });
     });
-    revalidatePath("/", "layout");
+    revalidatePath(ROUTES.HOME, "layout");
     return { success: true };
   } catch (error: any) {
     console.error("updateUser error:", error);

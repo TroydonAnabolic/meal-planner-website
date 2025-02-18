@@ -3,6 +3,7 @@ import {
   EnvelopeIcon,
   PhoneIcon,
 } from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 export default function ContactUs() {
   return (
@@ -67,7 +68,7 @@ export default function ContactUs() {
                     />
                   </dt>
                   <dd>
-                    Mt Olympus Way
+                    Edwin Freeman Pl
                     <br />
                     Ranui, Auckland 0612
                   </dd>
@@ -81,12 +82,12 @@ export default function ContactUs() {
                     />
                   </dt>
                   <dd>
-                    <a
-                      href="tel:+1 (555) 234-5678"
+                    <Link
+                      href="tel:+64 (022) 431-9560"
                       className="hover:text-gray-900"
                     >
-                      +64 (022) 234-5678
-                    </a>
+                      +64 (022) 431-9560
+                    </Link>
                   </dd>
                 </div>
                 <div className="flex gap-x-4">
@@ -98,12 +99,12 @@ export default function ContactUs() {
                     />
                   </dt>
                   <dd>
-                    <a
+                    <Link
                       href="mailto:troydonfitness@smartaitrainer.com"
                       className="hover:text-gray-900"
                     >
                       troydonfitness@smartaitrainer.com
-                    </a>
+                    </Link>
                   </dd>
                 </div>
               </dl>

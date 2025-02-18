@@ -162,7 +162,7 @@ export const config: NextAuthConfig = {
         };
       } else if (session && trigger === "update") {
         // runs on update session
-        return { ...token, user: session };
+        return { ...token, ...session.user };
       }
 
       // Check if token is expired
