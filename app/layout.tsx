@@ -21,22 +21,24 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = (await auth()) as Session;
-  const jsonLd = {
-    "@context": "http://schema.org",
-    "@type": "Product",
-    name: "MEAL PLANNER",
-    description: "Personalized Diet Plans Just for You",
-    url: "https://mealplanner.smartaitrainer.com/",
-    brand: {
-      "@type": "Brand",
-      logo: "https://mealplanner.smartaitrainer.com/_next/image?url=%2Fmeal-planner-logo.png&w=256&q=75",
+  const jsonLd = [
+    {
+      "@context": "http://schema.org",
+      "@type": "Product",
+      name: "MEAL PLANNER",
+      description: "Personalized Diet Plans Just for You",
+      url: "https://mealplanner.smartaitrainer.com/",
+      brand: {
+        "@type": "Brand",
+        logo: "https://mealplanner.smartaitrainer.com/_next/image?url=%2Fmeal-planner-logo.png&w=256&q=75",
+      },
+      offers: {
+        "@type": "Offer",
+        price:
+          "Discover the perfect diet tailored to your needs. Whether you want to lose weight, gain muscle, or just eat healthier, we've got you covered, starting from $19/month.",
+      },
     },
-    offers: {
-      "@type": "Offer",
-      price:
-        "Discover the perfect diet tailored to your needs. Whether you want to lose weight, gain muscle, or just eat healthier, we've got you covered, starting from $19/month.",
-    },
-  };
+  ];
   return (
     <html lang="en">
       <Head>
