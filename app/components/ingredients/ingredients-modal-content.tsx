@@ -3,25 +3,17 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { IIngredient } from "@/models/interfaces/ingredient/ingredient";
 import TabsWithPills from "../ui/tabs-in-pills";
 import FormModal from "../ui/modals/form-modal";
-import { MealType, Nutrients, UrlAction } from "@/constants/constants-enums";
+import { UrlAction } from "@/constants/constants-enums";
 import { FormActionType } from "@/models/interfaces/types";
 import { usePathname, useSearchParams } from "next/navigation";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { parseDate } from "@/util/date-util";
-import {
-  getMealTypeFromTime,
-  getScheduledTimeFromMealTypeKey,
-} from "@/util/meal-utils";
-import { getEnumKeysByValues } from "@/util/enum-util";
 import { fetchFood } from "@/lib/client-side/edamam";
-import {
-  IFoodParser,
-  IHint,
-} from "@/models/interfaces/edamam/food/food-response";
+import { IFoodParser } from "@/models/interfaces/edamam/food/food-response";
 import { mapParsedFoodToIngredient } from "@/util/mappers";
 import IngredientInputFields from "./ingredient-input-fields";
-
+import IngredientSearchResultsGrid from "./ingredients-search-results-grid";
+import { Measure } from "@/models/interfaces/food/food";
 dayjs.extend(customParseFormat);
 
 type IngredientModalContentProps = {
@@ -56,6 +48,7 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
 
   // State to hold search results from Edamam API
   const [searchResults, setSearchResults] = useState<IIngredient[]>([]);
+  const [measure, setMeasure] = useState<Measure | null>(null);
 
   // Loading and error states for search functionality
   const [isSearching, setIsSearching] = useState<boolean>(false);
@@ -63,9 +56,6 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
 
   const searchParams = useSearchParams();
   // Extract search parameters
-  const mealTypeParam = searchParams.get("mealTypeKey");
-  const timeScheduledParam = searchParams.get("timeScheduled");
-  const mealPlanIdParam = searchParams.get("mealPlanId");
   const actionParam = searchParams.get("action");
 
   // Define the default active tab based on the current action

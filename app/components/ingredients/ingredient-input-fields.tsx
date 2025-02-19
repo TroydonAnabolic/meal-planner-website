@@ -1,34 +1,26 @@
 "use client";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
-import { getAllFoodNutrition } from "@/lib/nutrients";
 import Image from "next/image";
 import ImageUploadLabel from "../ui/inputs/image-upload";
-import { IFoodIngredient } from "@/models/interfaces/edamam/food/nutrients-request";
 
 import ToggleInput from "../ui/inputs/toggle-input";
-import {
-  macros,
-  scaleNutrients,
-  updateIngredientNutrients,
-} from "@/util/nutrients";
+import { macros } from "@/util/nutrients";
 import { FormActionType } from "@/models/interfaces/types";
-import NutrientsDetails from "../Nutrients/nutrient-details";
-import SelectFoodLabels from "../food/food-labels-dropdown";
-import {
-  LocalizationProvider,
-  StaticDateTimePicker,
-} from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone"; // Import the timezone plugin
 import utc from "dayjs/plugin/utc"; // Import the UTC plugin
-import { getLocalTimeFromUtc, getUtcTimeFromLocal } from "@/util/date-util";
 import {
   IIngredient,
   INutrients,
 } from "@/models/interfaces/ingredient/ingredient";
-import { Nutrients } from "@/constants/constants-enums";
+import {
+  getMeasureDescriptionFromString,
+  Nutrients,
+  UnitOfMeasure,
+} from "@/constants/constants-enums";
+import SelectDropdown from "../ui/inputs/select-dropdown";
+import { Measure } from "@/models/interfaces/food/food";
 
 dayjs.extend(timezone); // Extend dayjs with the timezone plugin
 dayjs.extend(utc); // Extend dayjs with UTC plugin
@@ -40,6 +32,7 @@ type IngredientInputFieldsProps = {
     | React.Dispatch<React.SetStateAction<IIngredient | undefined>>
     | undefined;
   readOnly: boolean;
+  // measure?: Measure;
 };
 
 const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
@@ -51,70 +44,18 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
   const [imageSrc, setImageSrc] = useState<string | undefined>(
     ingredient.image || undefined
   );
-  // State to control picker visibility
-  const [isCustom, setIsCustom] = useState(false);
+  const [unitOfMeasure, setUnitOfMeasure] = useState<UnitOfMeasure>(
+    UnitOfMeasure.Gram
+  );
 
-  //  * Adds a new ingredient to the ingredient and updates a list of ingredient ingredients.
-  //  */@param ingredientIngredient The selected IngredientIngredient to add.
-  //  */@param ingredient The selected IFoodIngredient to add.
-  //  */@param operation The operation to perform. Either 'add' or 'remove'.
-  //  */
-  //   const handleUpdateAllIngredientNutrient = async (
-  //     ingredient: IIngredient,
-  //     totalNutrients: INutrients,
-  //     operation?: "add" | "remove",
-  //     weightInGrams?: number
-  //   ) => {
-  //     const foodNutritionResp = await getAllFoodNutrition(ingredient);
-
-  //     if (!foodNutritionResp) {
-  //       // Handle the case where nutrient fetching failed
-  //       console.error("Failed to update ingredient nutrients.");
-  //       return;
-  //     }
-
-  //     // update the ingredients nutrient values based on the updated ingredient
-  //     const updatedIngredient: IIngredient = updateIngredientNutrients(
-  //       ingredient,
-  //       operation,
-  //       foodNutritionResp
+  // Update the ingredient to use grams as the default unit of measure if we clicked into a ingr we want to convert measure to grams, or convert during mapping
+  // useEffect(() => {
+  //   if (ingredient.foodId && ingredient.foodId !== null) {
+  //     const measureURI = getMeasureDescriptionFromString(
+  //       ingredient.measure.toLowerCase()
   //     );
-
-  //     if (!updatedIngredient) {
-  //       // Handle the case where nutrient fetching failed
-  //       console.error("Failed to update ingredient nutrients.");
-  //       return;
-  //     }
-
-  //     const finalIngredient: IIngredient = {
-  //       ...updatedIngredient, // Includes baseTotalNutrients, baseTotalDaily, baseTotalWeight, totalNutrients, totalDaily, calories, totalWeight
-  //       ingredients:
-  //         operation === "add"
-  //           ? [...(ingredient.ingredients || []), ingredientIngredient]
-  //           : ingredient.ingredients.filter(
-  //               (ing) => ing.foodId !== ingredientIngredient.foodId
-  //             ),
-  //       ingredientLines:
-  //         operation === "add"
-  //           ? [...(ingredient.ingredientLines || []), ingredientIngredient.text!]
-  //           : ingredient.ingredientLines.filter(
-  //               (line) => line !== ingredientIngredient.text!
-  //             ),
-  //       isCustom: true,
-  //       // Nutrient totals and weights are already updated in updatedIngredient
-  //     };
-
-  //     // Update totalWeight in grams
-  //     if (weightInGrams) {
-  //       finalIngredient.totalWeight =
-  //         (finalIngredient.totalWeight || 0) +
-  //         (operation === "add" ? weightInGrams : -weightInGrams);
-  //     }
-
-  //     console.log("Updated Ingredient:", finalIngredient);
-
-  //     setIngredient?.(finalIngredient);
-  //   };
+  //   }
+  // }, [ingredient.foodId, ingredient.measure]);
 
   // Handler for input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -211,7 +152,7 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
                     htmlFor="quantity"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Yield
+                    Quantity
                   </label>
                   <div className="mt-1">
                     <input
@@ -233,6 +174,44 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
                     />
                   </div>
                 </div>
+
+                <div>
+                  <label
+                    htmlFor="weight"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Weight
+                  </label>
+                  <div className="mt-3">
+                    <input
+                      id="weight"
+                      name="weight"
+                      type="number"
+                      min={1}
+                      value={ingredient.weight}
+                      defaultValue={1}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+                        if (value === 0) {
+                          return;
+                        }
+                        handleInputChange(e);
+                      }}
+                      readOnly={readOnly}
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <SelectDropdown
+                    label="Unit of Measure"
+                    options={Object.values(UnitOfMeasure)}
+                    selected={unitOfMeasure}
+                    onChange={setUnitOfMeasure}
+                    name="unit-of-measure"
+                    placeholder="Select unit"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -242,10 +221,10 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
             {/* 'Avoid' Toggle */}
             <div className="my-4">
               <ToggleInput
-                label="Make Favourite"
-                subLabel="Mark this ingredient as favourite"
-                enabled={ingredient.foodId !== null}
-                disableInput={readOnly}
+                label="Custom Ingredient"
+                subLabel=""
+                enabled={ingredient.foodId === null}
+                disableInput={ingredient.foodId !== null}
                 onChange={handleToggleCustom}
               />
             </div>
@@ -284,27 +263,6 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
                 </div>
               )}
 
-              {/* Enter main */}
-              <div className="mt-2 col-span-2">
-                <label
-                  htmlFor="weight"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Weight (grams)
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="weight"
-                    name="weight"
-                    readOnly={true}
-                    disabled={true}
-                    value={ingredient.weight.toFixed(1)}
-                    type="number"
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
-                  />
-                </div>
-              </div>
-
               {/* Macros */}
               <div className="mt-4 grid grid-cols-2 gap-4">
                 {macros.map((macro) => (
@@ -340,6 +298,7 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
                       </label>
                       <input
                         type="number"
+                        readOnly={readOnly}
                         value={
                           ingredient.totalNutrients &&
                           (ingredient.totalNutrients as unknown as INutrients)[
@@ -371,7 +330,6 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
                             };
                           });
                         }}
-                        readOnly={readOnly}
                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
                       />
                       <span className="text-xs text-gray-500">
