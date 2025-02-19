@@ -16,3 +16,11 @@ export type LabelSection =
   | "cuisineType"
   | "dishType"
   | "cautions";
+
+export type IMacro = {
+  tag: keyof INutrients;
+  icon: React.ReactNode;
+  unit: string;
+  label?: string;
+  className: string;
+};

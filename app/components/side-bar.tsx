@@ -14,6 +14,7 @@ import {
   AssignmentOutlined,
   RestaurantMenuOutlined,
   MicrowaveOutlined,
+  EggOutlined,
 } from "@mui/icons-material";
 
 import React, { useCallback } from "react";
@@ -98,6 +99,12 @@ const SideBar: React.FC<SideBarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       href: ROUTES.MEAL_PLANNER.MEALS, // Update with appropriate route if available
       icon: RestaurantMenuOutlined,
       current: pathname === ROUTES.MEAL_PLANNER.MEALS,
+    },
+    {
+      name: "Ingredients",
+      href: ROUTES.MEAL_PLANNER.INGREDIENTS, // Update with appropriate route if available
+      icon: EggOutlined,
+      current: pathname === ROUTES.MEAL_PLANNER.INGREDIENTS,
     },
     // Add more navigation items as needed
   ];

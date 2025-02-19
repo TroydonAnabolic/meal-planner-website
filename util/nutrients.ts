@@ -5,6 +5,11 @@ import {
   IFoodNutrients,
   IFoodNutrientsResponse,
 } from "@/models/interfaces/edamam/food/nutrients-response";
+import {
+  IIngredient,
+  INutrient,
+  INutrients,
+} from "@/models/interfaces/ingredient/ingredient";
 import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import {
   IRecipeInterface,
@@ -102,6 +107,74 @@ export const macros = [
     className: "text-yellow-500",
   },
 ];
+
+/**
+ * Updates the meal's nutrients based on the operation.
+ *
+ * @param meal - The meal to update.
+ * @param operation - The operation to perform: "add" or "remove".
+ * @param response - The nutrients response containing totalNutrients and totalWeight.
+ * @returns The updated meal.
+ */
+export const updateIngredientNutrients = (
+  ingredient: IIngredient,
+  operation: "add" | "remove" | undefined,
+  response: IFoodNutrients
+): IIngredient => {
+  if (!operation) {
+    console.warn("Operation is undefined. No changes made to the meal.");
+    return ingredient;
+  }
+
+  const updatedNutrients: { [key: string]: INutrient } = {
+    ...ingredient.totalNutrients,
+  };
+  const totalNutrients = response?.totalNutrients ?? {};
+  const totalWeight = response?.totalWeight || 0;
+
+  Object.keys(totalNutrients).forEach((key) => {
+    const nutrient = totalNutrients[key];
+    if (updatedNutrients[key]) {
+      // Nutrient already exists in the meal
+      if (operation === "add") {
+        updatedNutrients[key].quantity += nutrient.quantity;
+      } else if (operation === "remove") {
+        updatedNutrients[key].quantity -= nutrient.quantity;
+        // Ensure quantity doesn't go negative
+        if (updatedNutrients[key].quantity < 0) {
+          updatedNutrients[key].quantity = 0;
+        }
+      }
+    } else {
+      // Nutrient does not exist in the meal, initialize it
+      updatedNutrients[key] = {
+        id: (updatedNutrients[key] as INutrient)?.id || 0, // Provide a default value or handle appropriately
+        ingredientId: (updatedNutrients[key] as INutrient)?.ingredientId || 0, // Provide a default value or handle appropriately
+        label: nutrient.label,
+        quantity: operation === "add" ? nutrient.quantity : 0,
+        unit: nutrient.unit,
+      };
+    }
+  });
+
+  // Update the meal's weight based on the operation
+  let updatedWeight = ingredient.weight;
+  if (operation === "add") {
+    updatedWeight += totalWeight;
+  } else if (operation === "remove") {
+    updatedWeight -= totalWeight;
+    // Ensure weight doesn't go negative
+    if (updatedWeight < 0) {
+      updatedWeight = 0;
+    }
+  }
+
+  return {
+    ...ingredient,
+    totalNutrients: updatedNutrients,
+    weight: updatedWeight,
+  };
+};
 
 /**
  * Updates the meal's nutrients based on the operation.

@@ -132,7 +132,7 @@ const RecipesGrid: React.FC<RecipesGridProps> = ({
   // Initialize pagination
   const { currentPage, changePage } = usePagination({ defaultPage: 1 });
 
-  const recipesPerPage = 10; // Define recipes per page
+  const recipesPerPage = 12; // Define recipes per page - 3 cols of 4 rows
 
   // Calculate total pages
   const totalPages = Math.ceil((filteredRecipes?.length || 0) / recipesPerPage);

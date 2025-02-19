@@ -9,7 +9,7 @@ interface IFoodParser {
 }
 
 interface ParsedFood {
-  food: IFood;
+  hint: IFood;
   quantity: number;
   measure: Measure;
 }

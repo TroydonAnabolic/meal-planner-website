@@ -1,16 +1,18 @@
 export interface IIngredient {
-  id?: number;
+  id: number;
+  clientId: number;
+  mealId?: number;
+  recipeId?: number;
   text?: string;
   quantity?: number;
   measure: string;
   food: string;
   weight: number;
   foodCategory?: string;
-  foodId: string; // foodId is null for custom ingredients
+  foodId?: string | null; // foodId is null for custom ingredients
   image: string;
   totalNutrients?: INutrients;
-  totalDaily?: INutrients;
-  isCustom?: boolean;
+  // totalDaily?: INutrients;
 }
 
 export interface INutrients {
@@ -51,6 +53,7 @@ export interface INutrients {
 
 export interface INutrient {
   id: number;
+  ingredientId: number;
   label: string;
   quantity: number;
   unit: string;

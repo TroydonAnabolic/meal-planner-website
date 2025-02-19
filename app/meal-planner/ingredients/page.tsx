@@ -1,7 +1,8 @@
-import Ingredients from "@/app/components/Nutrients/Ingredients";
+import IngredientsGrid from "@/app/components/ingredients/ingredients-grid";
 import RecipesGrid from "@/app/components/recipes/recipes-grid";
 import { auth } from "@/auth";
 import { getRecipesByClientId } from "@/lib/recipe";
+import { getIngredientsByClientId } from "@/lib/server-side/ingredients";
 import { Metadata } from "next";
 import React from "react";
 
@@ -12,7 +13,7 @@ const IngredientsPage = async () => {
   const ingredientsData = await getIngredientsByClientId(clientId);
   return (
     <>
-      <Ingredients
+      <IngredientsGrid
         ingredientsData={ingredientsData}
         clientId={clientId}
         userId={session?.user.userId!}

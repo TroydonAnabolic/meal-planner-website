@@ -31,6 +31,7 @@ export const ROUTES = {
       VIEW_RECIPE_DETAILS: "/meal-planner/recipes/view",
     },
     MEALS: "/meal-planner/meals",
+    INGREDIENTS: "/meal-planner/ingredients",
     // Add more meal planner routes here
   },
 
