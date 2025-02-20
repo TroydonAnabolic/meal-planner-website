@@ -152,9 +152,15 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
   );
 
   const handleViewIngredientToAdd = (ingredient: IIngredient) => {
+
+  const updatedIngredient: IIngredient = {
+    ...ingredient,
+    foodId: null
+  };
+
     setActiveTab("Add Ingredient");
     setAction("Add");
-    setIngredient(ingredient);
+    setIngredient(updatedIngredient);
     setSearchResults([]);
   };
 
@@ -341,7 +347,6 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
               action={action}
               ingredient={ingredient}
               setIngredient={setIngredient}
-              readOnly={action === "View"}
             />
           </div>
         )}

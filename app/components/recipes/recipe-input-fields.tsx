@@ -32,24 +32,22 @@ import dayjs, { Dayjs } from "dayjs";
 import timezone from "dayjs/plugin/timezone"; // Import the timezone plugin
 import utc from "dayjs/plugin/utc"; // Import the UTC plugin
 import { getLocalTimeFromUtc, getUtcTimeFromLocal } from "@/util/date-util";
+import { useSearchParams } from "next/navigation";
+import { UrlAction } from "@/constants/constants-enums";
 
 dayjs.extend(timezone); // Extend dayjs with the timezone plugin
 dayjs.extend(utc); // Extend dayjs with UTC plugin
 
 type RecipeInputFieldsProps = {
-  action: FormActionType | "Search";
   recipe: IRecipeInterface;
   setRecipe:
     | React.Dispatch<React.SetStateAction<IRecipeInterface | undefined>>
     | undefined;
-  readOnly: boolean;
 };
 
 const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
-  action,
   recipe,
   setRecipe,
-  readOnly,
 }) => {
   const [imageSrc, setImageSrc] = useState<string | undefined>(
     recipe.image || undefined
@@ -62,6 +60,9 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
   // State to hold the selected date-time
   const [selectedDateTime, setSelectedDateTime] = useState<Dayjs | null>(null);
 
+  const searchParams = useSearchParams();
+const actionParam = searchParams.get("action");
+const readOnly = actionParam === UrlAction.View;
   //  * Adds a new ingredient to the recipe and updates a list of recipe ingredients.
   //  */@param recipeIngredient The selected RecipeIngredient to add.
   //  */@param ingredient The selected IFoodIngredient to add.
@@ -263,9 +264,9 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
         <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16">
           <div>
             <div className="">
-              <h2 className="text-lg font-medium text-gray-900">
-                {action} Recipe
-              </h2>
+            <h2 className="text-lg font-medium text-gray-900">
+                {((actionParam ?? '').charAt(0).toUpperCase() + (actionParam ?? '').slice(1)) || ''} Recipe
+                </h2>
 
               <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
                 <div className="col-span-2">

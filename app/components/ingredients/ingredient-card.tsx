@@ -42,7 +42,7 @@ const IngredientCard: React.FC<IngredientCardProps> = ({
       className="group relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm"
     >
       {/* Badge Indicator for Custom */}
-      {ingredient.foodId && (
+      {ingredient.foodId === null && (
         <span className="absolute top-2 left-2 flex items-center bg-yellow-500 text-white text-xs px-2 py-1 rounded-full z-10 opacity-80">
           <StarIcon className="h-4 w-4 mr-1" />
           Custom

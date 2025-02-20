@@ -51,8 +51,6 @@ export interface INutrients {
 }
 
 export interface INutrient {
-  id: number;
-  ingredientId: number;
   label: string;
   quantity: number;
   unit: string;

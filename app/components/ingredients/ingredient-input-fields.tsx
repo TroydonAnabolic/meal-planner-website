@@ -18,28 +18,27 @@ import {
   getMeasureDescriptionFromString,
   Nutrients,
   UnitOfMeasure,
+  UrlAction,
 } from "@/constants/constants-enums";
 import SelectDropdown from "../ui/inputs/select-dropdown";
 import { Measure } from "@/models/interfaces/food/food";
+import { useSearchParams } from "next/navigation";
+import { read } from "fs";
 
 dayjs.extend(timezone); // Extend dayjs with the timezone plugin
 dayjs.extend(utc); // Extend dayjs with UTC plugin
 
 type IngredientInputFieldsProps = {
-  action: FormActionType | "Search";
   ingredient: IIngredient;
   setIngredient:
     | React.Dispatch<React.SetStateAction<IIngredient | undefined>>
     | undefined;
-  readOnly: boolean;
   // measure?: Measure;
 };
 
 const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
-  action,
   ingredient,
   setIngredient,
-  readOnly,
 }) => {
   const [imageSrc, setImageSrc] = useState<string | undefined>(
     ingredient.image || undefined
@@ -47,15 +46,10 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
   const [unitOfMeasure, setUnitOfMeasure] = useState<UnitOfMeasure>(
     UnitOfMeasure.Gram
   );
-
-  // Update the ingredient to use grams as the default unit of measure if we clicked into a ingr we want to convert measure to grams, or convert during mapping
-  // useEffect(() => {
-  //   if (ingredient.foodId && ingredient.foodId !== null) {
-  //     const measureURI = getMeasureDescriptionFromString(
-  //       ingredient.measure.toLowerCase()
-  //     );
-  //   }
-  // }, [ingredient.foodId, ingredient.measure]);
+  const isCustom = ingredient.foodId === null;
+  const searchParams = useSearchParams();
+  const actionParam = searchParams.get("action");
+  const readOnly = actionParam === UrlAction.View;
 
   // Handler for input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +58,7 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
     setIngredient?.((prevIngredient) => ({
       ...prevIngredient!,
       [name]: name === "quantity" || name === "weight" ? Number(value) : value,
-      foodId: null,
+      foodId: null, // set to null to indicate custom ingredient when user changes any input
     }));
   };
 
@@ -122,7 +116,9 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
           <div>
             <div className="">
               <h2 className="text-lg font-medium text-gray-900">
-                {action} Ingredient
+                {(actionParam ?? "").charAt(0).toUpperCase() +
+                  (actionParam ?? "").slice(1) || ""}{" "}
+                Ingredient
               </h2>
 
               <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
@@ -141,7 +137,7 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
                       placeholder="Ingredient Name"
                       value={ingredient.food}
                       onChange={handleInputChange}
-                      readOnly={readOnly}
+                      readOnly={readOnly && isCustom}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
                     />
                   </div>
@@ -169,7 +165,7 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
                         }
                         handleInputChange(e);
                       }}
-                      readOnly={readOnly}
+                      readOnly={readOnly && isCustom}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
                     />
                   </div>
@@ -197,7 +193,7 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
                         }
                         handleInputChange(e);
                       }}
-                      readOnly={readOnly}
+                      readOnly={readOnly && isCustom}
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
                     />
                   </div>
@@ -210,6 +206,7 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
                     onChange={setUnitOfMeasure}
                     name="unit-of-measure"
                     placeholder="Select unit"
+                    disabled={readOnly && isCustom}
                   />
                 </div>
               </div>
@@ -223,8 +220,8 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
               <ToggleInput
                 label="Custom Ingredient"
                 subLabel=""
-                enabled={ingredient.foodId === null}
-                disableInput={ingredient.foodId !== null}
+                enabled={isCustom}
+                disableInput={!isCustom}
                 onChange={handleToggleCustom}
               />
             </div>
@@ -298,7 +295,7 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
                       </label>
                       <input
                         type="number"
-                        readOnly={readOnly}
+                        readOnly={readOnly && isCustom}
                         value={
                           ingredient.totalNutrients &&
                           (ingredient.totalNutrients as unknown as INutrients)[

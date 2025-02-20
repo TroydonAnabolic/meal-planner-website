@@ -15,6 +15,7 @@ interface DropdownProps<T extends string> {
   name: string;
   placeholder?: string; // Added optional placeholder prop
   containerClassName?: string; // Added optional containerClassName prop
+  disabled?: boolean; // Added optional disabled prop
 }
 
 const SelectDropdown = <T extends string>({
@@ -25,6 +26,7 @@ const SelectDropdown = <T extends string>({
   name,
   placeholder,
   containerClassName,
+  disabled,
 }: DropdownProps<T>) => (
   <div>
     <label
@@ -37,8 +39,12 @@ const SelectDropdown = <T extends string>({
       {/* Listbox with a hidden input */}
       <input type="hidden" name={name} value={selected} />{" "}
       {/* Hidden input to handle formData */}
-      <Listbox value={selected} onChange={onChange}>
-        <ListboxButton className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+      <Listbox value={selected} onChange={onChange} disabled={disabled}>
+        <ListboxButton
+          className={`relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 ${
+            disabled ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
           <span className="block truncate">{selected || placeholder}</span>{" "}
           {/* Handle placeholder */}
           <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">

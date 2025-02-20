@@ -29,6 +29,7 @@ import GlowyBanner from "../ui/banner/banner-with-glow";
 import { IIngredient } from "@/models/interfaces/ingredient/ingredient";
 import IngredientCard from "./ingredient-card";
 import IngredientModalContent from "./ingredients-modal-content";
+import { addIngredientAction, deleteIngredientAction, updateIngredientAction } from "@/actions/ingredients-action";
 
 type IngredientsGridProps = {
   ingredientsData: IIngredient[] | undefined; // Ingredients data fetched from API
@@ -215,8 +216,8 @@ const IngredientsGrid: React.FC<IngredientsGridProps> = ({
         // Update the ingredient image URL to the S3 URL
         const updatedIngredient = {
           ...ingredient,
-          image: objectUrl,
-          url: `${hostname}/${pathname}?page=${currentPage}&action=${UrlAction.View}&id=`,
+          image: objectUrl//,
+          // url: `${hostname}/${pathname}?page=${currentPage}&action=${UrlAction.View}&id=`,
         };
         const newIngredient = await addIngredientAction(updatedIngredient);
         if (newIngredient && newIngredient.id) {
@@ -384,7 +385,7 @@ const IngredientsGrid: React.FC<IngredientsGridProps> = ({
       {/* Filter Toggle */}
       <div className="flex justify-end p-4 mt-4 space-x-4">
         <ToggleInput
-          label="Show Meal Plan Ingredients"
+          label="Show Custom Ingredients"
           enabled={showCustomIngredients}
           onChange={() => setShowCustomIngredients(!showCustomIngredients)}
         />

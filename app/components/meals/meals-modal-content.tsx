@@ -327,22 +327,17 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
           // Add New Meal Tab Content
           <div className="space-y-6 py-6">
             {/* Back Button */}
-            {searchResults.length && searchMealSelected && (
+            {searchResults.length > 0 && searchMealSelected && (
               <button
                 type="button"
                 onClick={() => handleTabChange("Search Meals")}
                 className="mb-4 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none"
               >
-                &larr; Back to Search
+                Back to Search
               </button>
             )}
 
-            <MealInputFields
-              action={action}
-              meal={meal}
-              setMeal={setMeal}
-              readOnly={action === "View"}
-            />
+            <MealInputFields meal={meal} setMeal={setMeal} />
           </div>
         )}
       </FormModal>

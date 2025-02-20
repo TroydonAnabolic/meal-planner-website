@@ -50,25 +50,33 @@ export async function addIngredient(
 
     return addedIngredient;
   } catch (error: any) {
-    console.error("Error fetching ingredients by clientId:", error.message);
+    console.error("Error adding ingredients by clientId:", error.message);
   }
 }
 
 export async function updateIngredient(ingredient: IIngredient) {
-  const response = await instance.put(
-    `${BACKEND_URL_LIVE}/${DIETAPI_BASE}/ingredients`,
-    ingredient
-  );
-  const updatedIngredient: IIngredient = response.data;
-
-  return updatedIngredient;
+try {
+    const response = await instance.put(
+      `${BACKEND_URL_LIVE}/${DIETAPI_BASE}/ingredients`,
+      ingredient
+    );
+    const updatedIngredient: IIngredient = response.data;
+  
+    return updatedIngredient;
+} catch (error: any) {
+  console.error("Error updating ingredients by clientId:", error.message);
+}
 }
 
 export async function deleteIngredient(id: number) {
-  return await instance.delete(
-    `${BACKEND_URL_LIVE}/${DIETAPI_BASE}/ingredients`,
-    {
-      params: { id: id },
-    }
-  );
+try {
+    return await instance.delete(
+      `${BACKEND_URL_LIVE}/${DIETAPI_BASE}/ingredients`,
+      {
+        params: { id: id },
+      }
+    );
+} catch (error: any) {
+  console.error("Error deleting ingredients by clientId:", error.message);
+}
 }

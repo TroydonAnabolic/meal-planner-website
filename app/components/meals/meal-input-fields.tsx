@@ -8,7 +8,6 @@ import { IFoodIngredient } from "@/models/interfaces/edamam/food/nutrients-reque
 import { INutrients } from "@/models/interfaces/nutrition";
 
 import { macros, updateMealNutrients } from "@/util/nutrients";
-import { FormActionType } from "@/models/interfaces/types";
 import NutrientsDetails from "../Nutrients/nutrient-details";
 import MealIngredientSearch from "./meal-ingredient-search";
 import MealIngredientsGallery from "./meal-ingredients-gallery";
@@ -19,20 +18,19 @@ import { StaticDateTimePicker } from "@mui/x-date-pickers/StaticDateTimePicker";
 import SelectFoodLabels from "../food/food-labels-dropdown";
 import "dayjs/locale/en-nz";
 import { FormResult } from "@/types/form";
+import { useSearchParams } from "next/navigation";
+import { UrlAction } from "@/constants/constants-enums";
 
 type MealInputFieldsProps = {
-  action: FormActionType | "Search";
   meal: IMealInterface;
   setMeal: React.Dispatch<React.SetStateAction<IMealInterface | undefined>>;
-  readOnly: boolean;
 };
 
-const MealInputFields: React.FC<MealInputFieldsProps> = ({
-  action,
-  meal,
-  setMeal,
-  readOnly,
-}) => {
+const MealInputFields: React.FC<MealInputFieldsProps> = ({ meal, setMeal }) => {
+  const searchParams = useSearchParams();
+  const actionParam = searchParams.get("action");
+  const readOnly = actionParam === UrlAction.View;
+
   const [imageSrc, setImageSrc] = useState<string | undefined>(
     meal.image || undefined
   );
@@ -229,7 +227,9 @@ const MealInputFields: React.FC<MealInputFieldsProps> = ({
           <div>
             <div className="">
               <h2 className="text-lg font-medium text-gray-900">
-                {action} Meal
+                {(actionParam ?? "").charAt(0).toUpperCase() +
+                  (actionParam ?? "").slice(1) || ""}{" "}
+                Meal
               </h2>
 
               <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">

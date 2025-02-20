@@ -57,7 +57,7 @@ export function mapParsedFoodToIngredient(
   return results.hints.map((hint: IHint) => {
     const measure = "Gram";
     const selectedMeasure = hint.measures.find((m) => m.label === measure);
-    const weight = selectedMeasure?.weight || 0;
+    //const weight = selectedMeasure?.weight || 0;
 
     return {
       id: 0,
@@ -65,7 +65,7 @@ export function mapParsedFoodToIngredient(
       text: hint.food.label,
       measure: measure,
       quantity: 1,
-      weight: weight,
+      weight: 100,
       food: hint.food.label,
       image: hint.food.image,
       foodCategory: hint.food.category,
