@@ -4,7 +4,12 @@ import {
   IRecipeInterface,
   RecipeNutrient,
 } from "@/models/interfaces/recipe/recipe";
-import { MealNumber, MealType, Nutrients } from "@/constants/constants-enums";
+import {
+  getMeasureDescriptionFromString,
+  MealNumber,
+  MealType,
+  Nutrients,
+} from "@/constants/constants-enums";
 import { IMealInterface, IMealNutrient } from "@/models/interfaces/meal/Meal";
 import {
   IFoodParser,
@@ -108,6 +113,54 @@ export function mapParsedFoodToIngredient(
       },
     };
   });
+}
+
+export function mapIngredientToHint(ingredient: IIngredient) {
+  const totalNutrients = ingredient.totalNutrients as unknown as {
+    [key: string]: { quantity: number };
+  };
+
+  const measureURI = getMeasureDescriptionFromString(ingredient.measure);
+
+  return {
+    pluCode: {
+      code: "",
+      category: "",
+      commodity: "",
+      variety: "",
+      isRetailerAssigned: false,
+    },
+    food: {
+      foodId: ingredient.foodId || "",
+      label: ingredient.food,
+      image: ingredient.image,
+      nutrients: {
+        ENERC_KCAL: totalNutrients?.[Nutrients.ENERC_KCAL]?.quantity || 0,
+        PROCNT: totalNutrients?.[Nutrients.PROCNT]?.quantity || 0,
+        CHOCDF: totalNutrients?.[Nutrients.CHOCDF]?.quantity || 0,
+        FAT: totalNutrients?.[Nutrients.FAT]?.quantity || 0,
+        FIBTG: totalNutrients?.[Nutrients.FIBTG]?.quantity || 0,
+      },
+      uri: "",
+      knownAs: "",
+      brand: "",
+      category: "",
+      categoryLabel: "",
+      foodContentsLabel: "",
+      servingSizes: [],
+      servingsPerContainer: 1,
+    },
+    measures: [
+      {
+        label: ingredient.measure,
+        uri:
+          measureURI ||
+          "http://www.edamam.com/ontologies/edamam.owl#Measure_gram",
+        weight: 1,
+        qualified: [],
+      },
+    ],
+  };
 }
 
 /**

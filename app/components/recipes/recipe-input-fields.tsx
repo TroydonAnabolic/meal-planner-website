@@ -61,8 +61,8 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
   const [selectedDateTime, setSelectedDateTime] = useState<Dayjs | null>(null);
 
   const searchParams = useSearchParams();
-const actionParam = searchParams.get("action");
-const readOnly = actionParam === UrlAction.View;
+  const actionParam = searchParams.get("action");
+  const readOnly = actionParam === UrlAction.View;
   //  * Adds a new ingredient to the recipe and updates a list of recipe ingredients.
   //  */@param recipeIngredient The selected RecipeIngredient to add.
   //  */@param ingredient The selected IFoodIngredient to add.
@@ -264,9 +264,11 @@ const readOnly = actionParam === UrlAction.View;
         <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16">
           <div>
             <div className="">
-            <h2 className="text-lg font-medium text-gray-900">
-                {((actionParam ?? '').charAt(0).toUpperCase() + (actionParam ?? '').slice(1)) || ''} Recipe
-                </h2>
+              <h2 className="text-lg font-medium text-gray-900">
+                {(actionParam ?? "").charAt(0).toUpperCase() +
+                  (actionParam ?? "").slice(1) || ""}{" "}
+                Recipe
+              </h2>
 
               <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
                 <div className="col-span-2">
@@ -480,6 +482,7 @@ const readOnly = actionParam === UrlAction.View;
                             updateAllRecipeIngredients={
                               handleUpdateAllRecipeIngredient
                             }
+                            clientId={recipe.clientId}
                           />
                         </div>
                       </>

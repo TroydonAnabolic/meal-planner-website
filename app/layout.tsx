@@ -6,6 +6,7 @@ import SessionProvider from "./components/auth/session-provider";
 import { auth } from "@/auth";
 import { Session } from "next-auth";
 import GoogleAnalytics from "./components/seo/google-analytics";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Meal Planner",
@@ -46,6 +47,13 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        {" "}
+        <Script
+          src="https://developer.edamam.com/attribution/badge.js"
+          strategy="afterInteractive"
+        />
+      </head>
       <body className="flex flex-col min-h-screen">
         <SessionProvider basePath="" session={session}>
           <Header />
@@ -59,10 +67,6 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{
             __html: metadata.other?.["script:json-ld"] || "",
           }}
-        />
-        <script
-          src="https://developer.edamam.com/attribution/badge.js"
-          async
         />
       </body>
     </html>

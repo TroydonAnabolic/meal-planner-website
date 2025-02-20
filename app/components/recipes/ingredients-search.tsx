@@ -12,15 +12,21 @@ import { IFoodIngredient } from "@/models/interfaces/edamam/food/nutrients-reque
 
 import {
   getMeasureDescription,
+  getMeasureDescriptionFromString,
   Nutrients,
   UnitOfMeasure,
 } from "@/constants/constants-enums";
 import SelectDropdown from "../ui/inputs/select-dropdown";
+import ToggleInput from "../ui/inputs/toggle-input";
 import Image from "next/image";
 import { RecipeIngredient } from "@/models/interfaces/recipe/recipe";
+import { fetchIngredientsByClientId } from "@/lib/client-side/ingredients";
+import { IIngredient } from "@/models/interfaces/ingredient/ingredient";
+import { mapIngredientToHint } from "@/util/mappers";
 
 interface IngredientSearchProps {
   recipeId?: number;
+  clientId: number;
   updateAllRecipeIngredients: (
     ingredient: IFoodIngredient,
     recipeIngredient: RecipeIngredient,
@@ -32,6 +38,7 @@ interface IngredientSearchProps {
 
 const IngredientSearch: React.FC<IngredientSearchProps> = ({
   recipeId,
+  clientId,
   updateAllRecipeIngredients, // api call to get all recipe nutrients
   //updateRecipeIngredients,
 }) => {
@@ -45,6 +52,8 @@ const IngredientSearch: React.FC<IngredientSearchProps> = ({
     UnitOfMeasure.Gram
   );
   const [foodParse, setFoodParse] = useState<IFoodParser | undefined>();
+  const [customIngredients, setCustomIngredients] = useState<IHint[]>([]);
+  const [isCustom, setIsCustom] = useState<boolean>(false);
 
   /**
    * Debounced search to prevent excessive API calls.
@@ -75,9 +84,38 @@ const IngredientSearch: React.FC<IngredientSearchProps> = ({
   );
 
   useEffect(() => {
-    debouncedSearch(query);
+    if (!isCustom) {
+      debouncedSearch(query);
+    }
     return debouncedSearch.cancel;
-  }, [query, debouncedSearch]);
+  }, [query, debouncedSearch, isCustom]);
+
+  useEffect(() => {
+    if (isCustom) {
+      const fetchCustomIngredients = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+          const ingredients = await fetchIngredientsByClientId(clientId);
+          if (ingredients) {
+            const hints: IHint[] = ingredients.map((ingredient) => {
+              const hint = mapIngredientToHint(ingredient);
+              return hint;
+            });
+            setCustomIngredients(hints);
+          }
+        } catch (err) {
+          setError("Failed to fetch custom ingredients.");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchCustomIngredients();
+    } else {
+      setCustomIngredients([]);
+      setQuery("");
+    }
+  }, [isCustom, clientId]);
 
   /**
    * Handles the selection and preparation of an ingredient.
@@ -141,112 +179,123 @@ const IngredientSearch: React.FC<IngredientSearchProps> = ({
 
   return (
     <div className="mb-4">
+      <div className="mb-2">
+        <ToggleInput
+          label="Custom Ingredients"
+          enabled={isCustom}
+          onChange={setIsCustom}
+        />
+      </div>
       {!selectedFoodHint ? (
         <div>
-          <input
-            type="text"
-            placeholder="Search Ingredients..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="w-full rounded-md border border-gray-300 p-2 text-gray-700"
-          />
+          {!isCustom && (
+            <input
+              type="text"
+              placeholder="Search Ingredients..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full rounded-md border border-gray-300 p-2 text-gray-700"
+            />
+          )}
           {isLoading && <p className="mt-2 text-gray-500">Loading...</p>}
           {error && <p className="mt-2 text-red-500">{error}</p>}
           <ul className="mt-2 max-h-60 overflow-y-auto divide-y divide-gray-200">
-            {foodParse?.hints.map((hint, index) => (
-              <li
-                key={`${hint.food.foodId}-${index}`}
-                className="flex items-center justify-between p-4 hover:bg-gray-100 cursor-pointer transition-colors duration-200"
-                onClick={() => handleSelect(hint)}
-              >
-                {/* Image Section */}
-                <div className="flex-shrink-0">
-                  <Image
-                    src={hint.food.image || ""} // Fallback image if none provided
-                    alt={hint.food.label}
-                    width={50}
-                    height={50}
-                    className="rounded-md object-cover object-center"
-                  />
-                </div>
+            {(isCustom ? customIngredients : foodParse?.hints)?.map(
+              (hint, index) => (
+                <li
+                  key={`${hint.food.foodId}-${index}`}
+                  className="flex items-center justify-between p-4 hover:bg-gray-100 cursor-pointer transition-colors duration-200"
+                  onClick={() => handleSelect(hint)}
+                >
+                  {/* Image Section */}
+                  <div className="flex-shrink-0">
+                    <Image
+                      src={hint.food.image || ""} // Fallback image if none provided
+                      alt={hint.food.label}
+                      width={50}
+                      height={50}
+                      className="rounded-md object-cover object-center"
+                    />
+                  </div>
 
-                {/* Food Name and Macros Section */}
-                <div className="flex-1 ml-4 flex justify-between items-center">
-                  {/* Food Name */}
-                  <span className="text-gray-900 font-medium mr-4">
-                    {hint.food.label}
-                  </span>
+                  {/* Food Name and Macros Section */}
+                  <div className="flex-1 ml-4 flex justify-between items-center">
+                    {/* Food Name */}
+                    <span className="text-gray-900 font-medium mr-4">
+                      {hint.food.label}
+                    </span>
 
-                  {/* Macros Box */}
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* Calories */}
-                    <div className="flex items-center bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded">
-                      <span className="mr-1">🔥</span>
-                      <span>
-                        {hint.food.nutrients.ENERC_KCAL
-                          ? hint.food.nutrients.ENERC_KCAL.toFixed(1)
-                          : 0}{" "}
-                        kcal
-                      </span>
-                    </div>
+                    {/* Macros Box */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {/* Calories */}
+                      <div className="flex items-center bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded">
+                        <span className="mr-1">🔥</span>
+                        <span>
+                          {hint.food.nutrients.ENERC_KCAL
+                            ? hint.food.nutrients.ENERC_KCAL.toFixed(1)
+                            : 0}{" "}
+                          kcal
+                        </span>
+                      </div>
 
-                    {/* Protein */}
-                    <div className="flex items-center bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">
-                      <span className="mr-1">💪</span>
-                      <span>
-                        {hint.food.nutrients.PROCNT
-                          ? hint.food.nutrients.PROCNT.toFixed(1)
-                          : 0}{" "}
-                        g Protein
-                      </span>
-                    </div>
+                      {/* Protein */}
+                      <div className="flex items-center bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">
+                        <span className="mr-1">💪</span>
+                        <span>
+                          {hint.food.nutrients.PROCNT
+                            ? hint.food.nutrients.PROCNT.toFixed(1)
+                            : 0}{" "}
+                          g Protein
+                        </span>
+                      </div>
 
-                    {/* Carbohydrates */}
-                    <div className="flex items-center bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
-                      <span className="mr-1">🍞</span>
-                      <span>
-                        {hint.food.nutrients.CHOCDF
-                          ? hint.food.nutrients.CHOCDF.toFixed(1)
-                          : 0}{" "}
-                        g Carbs
-                      </span>
-                    </div>
+                      {/* Carbohydrates */}
+                      <div className="flex items-center bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                        <span className="mr-1">🍞</span>
+                        <span>
+                          {hint.food.nutrients.CHOCDF
+                            ? hint.food.nutrients.CHOCDF.toFixed(1)
+                            : 0}{" "}
+                          g Carbs
+                        </span>
+                      </div>
 
-                    {/* Fat */}
-                    <div className="flex items-center bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded">
-                      <span className="mr-1">🥑</span>
-                      <span>
-                        {hint.food.nutrients.FAT
-                          ? hint.food.nutrients.FAT.toFixed(1)
-                          : 0}{" "}
-                        g Fat
-                      </span>
+                      {/* Fat */}
+                      <div className="flex items-center bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded">
+                        <span className="mr-1">🥑</span>
+                        <span>
+                          {hint.food.nutrients.FAT
+                            ? hint.food.nutrients.FAT.toFixed(1)
+                            : 0}{" "}
+                          g Fat
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Add Button */}
-                <button
-                  className="ml-4 text-green-500 hover:text-green-600 transition-colors duration-200"
-                  aria-label={`Add ${hint.food.label}`}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
+                  {/* Add Button */}
+                  <button
+                    className="ml-4 text-green-500 hover:text-green-600 transition-colors duration-200"
+                    aria-label={`Add ${hint.food.label}`}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                </button>
-              </li>
-            ))}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                  </button>
+                </li>
+              )
+            )}
           </ul>
         </div>
       ) : (

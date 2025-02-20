@@ -17,7 +17,7 @@ export async function fetchRecipesByClientId(
 ): Promise<IRecipeInterface[] | undefined> {
   try {
     const response = await fetch(
-      `/api/recipes/add-meal-plan-recipes?clientId=${clientId}`,
+      `/api/recipes/fetch-recipes?clientId=${clientId}`,
       {
         method: "GET",
       }
