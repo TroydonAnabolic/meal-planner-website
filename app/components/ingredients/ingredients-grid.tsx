@@ -218,7 +218,7 @@ const IngredientsGrid: React.FC<IngredientsGridProps> = ({
           image: objectUrl,
           url: `${hostname}/${pathname}?page=${currentPage}&action=${UrlAction.View}&id=`,
         };
-        const newIngredient = await saveIngredient(updatedIngredient);
+        const newIngredient = await addIngredientAction(updatedIngredient);
         if (newIngredient && newIngredient.id) {
           upsertOptimisticIngredient({ type: "upsert", item: newIngredient });
         }
@@ -296,7 +296,7 @@ const IngredientsGrid: React.FC<IngredientsGridProps> = ({
           }
         }
 
-        const savedIngredient = await updateIngredient(ingredient);
+        const savedIngredient = await updateIngredientAction(ingredient);
         if (savedIngredient) {
           upsertOptimisticIngredient({ type: "upsert", item: savedIngredient });
           setSelectedIngredient(undefined);
@@ -336,7 +336,7 @@ const IngredientsGrid: React.FC<IngredientsGridProps> = ({
           }
         }
 
-        const result = await deleteIngredient(ingredient);
+        const result = await deleteIngredientAction(ingredient);
         // Optimistically update the UI by removing the deleted ingredient
         if (result && result.success) {
           upsertOptimisticIngredient({ type: "delete", item: ingredient });

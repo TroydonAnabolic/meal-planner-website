@@ -12,7 +12,7 @@ import {
   deleteRecipe,
   saveRecipe,
   updateRecipe,
-} from "@/actions/recipes.action";
+} from "@/actions/recipes-action";
 import CardsWithDetailsContainer from "../ui/cards-with-details";
 import RecipeModalContent from "./recipes-modal-content";
 import {

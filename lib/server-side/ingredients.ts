@@ -30,3 +30,45 @@ export async function getIngredientsByClientId(
     console.error("Error fetching recipes by clientId:", error);
   }
 }
+
+/**
+ * Adds a new ingredient to the backend.
+ *
+ * @param ingredient - The IIngredientInterface object to be saved.
+ * @returns The saved IIngredientInterface object, or undefined if failed.
+ */
+export async function addIngredient(
+  ingredient: IIngredient
+): Promise<IIngredient | undefined> {
+  try {
+    const response = await instance.post(
+      `${DIETAPI_BASE}/ingredients`,
+      ingredient
+    );
+
+    const addedIngredient: IIngredient = response.data;
+
+    return addedIngredient;
+  } catch (error: any) {
+    console.error("Error fetching ingredients by clientId:", error.message);
+  }
+}
+
+export async function updateIngredient(ingredient: IIngredient) {
+  const response = await instance.put(
+    `${BACKEND_URL_LIVE}/${DIETAPI_BASE}/ingredients`,
+    ingredient
+  );
+  const updatedIngredient: IIngredient = response.data;
+
+  return updatedIngredient;
+}
+
+export async function deleteIngredient(id: number) {
+  return await instance.delete(
+    `${BACKEND_URL_LIVE}/${DIETAPI_BASE}/ingredients`,
+    {
+      params: { id: id },
+    }
+  );
+}

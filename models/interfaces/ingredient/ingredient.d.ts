@@ -12,7 +12,6 @@ export interface IIngredient {
   foodId?: string | null; // foodId is null for custom ingredients
   image: string;
   totalNutrients?: INutrients;
-  // totalDaily?: INutrients;
 }
 
 export interface INutrients {
