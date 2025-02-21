@@ -152,11 +152,10 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
   );
 
   const handleViewIngredientToAdd = (ingredient: IIngredient) => {
-
-  const updatedIngredient: IIngredient = {
-    ...ingredient,
-    foodId: null
-  };
+    const updatedIngredient: IIngredient = {
+      ...ingredient,
+      foodId: null,
+    };
 
     setActiveTab("Add Ingredient");
     setAction("Add");
@@ -267,6 +266,18 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
     [ingredient.clientId, ingredientAction]
   );
 
+  const handleDuplicate = useCallback(() => {
+    const duplicatedIngredient = { ...ingredient, id: 0 }; // Reset ID for new ingredient
+    setIngredient(duplicatedIngredient);
+    setAction("Add");
+    setActiveTab("Add Ingredient");
+
+    const params = new URLSearchParams(window.location.search);
+    params.set("action", UrlAction.Add);
+    params.delete("id");
+    window.history.pushState(null, "", `${pathname}?${params.toString()}`);
+  }, [ingredient, setIngredient, setAction, pathname]);
+
   /**
    * Handler for viewing ingredient details.
    * This should be passed down to the parent to open the IngredientDetailsDrawer.
@@ -293,6 +304,16 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
         deleteButtonText={deleteButtonText}
         onDelete={onDelete}
         onClose={onClose} // Pass 'onClose' prop received from parent
+        duplicateButtonText={
+          actionParam == UrlAction.Edit || actionParam == UrlAction.View
+            ? "Duplicate"
+            : undefined
+        }
+        onDuplicate={
+          actionParam == UrlAction.Edit || actionParam == UrlAction.View
+            ? handleDuplicate
+            : undefined
+        }
       >
         <div className="flex justify-center">
           <TabsWithPills tabs={tabs} onTabChange={handleTabChange} />
@@ -344,7 +365,6 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
           // Add New Ingredient Tab Content
           <div className="space-y-6 py-6">
             <IngredientInputFields
-              action={action}
               ingredient={ingredient}
               setIngredient={setIngredient}
             />

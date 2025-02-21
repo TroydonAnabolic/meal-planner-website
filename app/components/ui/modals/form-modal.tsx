@@ -22,6 +22,8 @@ type FormModalProps = {
   deleteButtonText?: string;
   onDelete?: ((data: any) => Promise<void>) | ((data: any) => void);
   onClose?: () => void; // New prop
+  duplicateButtonText: string | undefined; // New prop for duplicate button text
+  onDuplicate: ((data: any) => void) | undefined; // New prop for duplicate action
 };
 // components/ui/modals/form-modal.tsx
 
@@ -38,6 +40,8 @@ const FormModal: React.FC<FormModalProps> = ({
   deleteButtonText,
   onDelete,
   onClose, // Destructure 'onClose'
+  duplicateButtonText, // New prop for duplicate button text
+  onDuplicate, // New prop for duplicate action
 }) => {
   const handleClose = () => {
     setOpen(false);
@@ -105,20 +109,33 @@ const FormModal: React.FC<FormModalProps> = ({
                   </div>
 
                   {/* Footer */}
-                  <div className="flex justify-end px-4 py-3 sm:px-6">
-                    {/* Delete Button */}
-                    {onDelete && deleteButtonText && (
-                      <button
-                        type="button"
-                        onClick={onDelete}
-                        className="mr-4 rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                      >
-                        {deleteButtonText}
-                      </button>
+                  <div className="flex justify-between px-4 py-3 sm:px-6">
+                    {/* Duplicate Button */}
+                    {onDuplicate && duplicateButtonText && (
+                      <div className="flex justify-start">
+                        <button
+                          type="button"
+                          onClick={onDuplicate}
+                          className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          {duplicateButtonText}
+                        </button>
+                      </div>
                     )}
 
-                    {/* Cancel and Form Action Buttons */}
-                    <div className="  ">
+                    <div className="flex justify-end flex-1">
+                      {/* Delete Button */}
+                      {onDelete && deleteButtonText && (
+                        <button
+                          type="button"
+                          onClick={onDelete}
+                          className="mr-4 rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        >
+                          {deleteButtonText}
+                        </button>
+                      )}
+
+                      {/* Cancel and Form Action Buttons */}
                       <button
                         type="button"
                         onClick={handleClose}
