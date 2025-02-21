@@ -466,7 +466,7 @@ const MealsGrid: React.FC<MealsGridProps> = ({ mealsData, client }) => {
   }, [action, selectedMeal, confirmDelete]);
 
   const handleClickAdd = useCallback(() => {
-    setAction("Add");
+    setAction("Search");
     setSelectedMeal(defaultMeal);
     setModalOpen(true);
 

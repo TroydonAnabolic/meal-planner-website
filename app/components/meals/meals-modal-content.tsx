@@ -10,7 +10,7 @@ import { FormActionType } from "@/models/interfaces/types";
 import MealInputFields from "./meal-input-fields";
 import MealSearchResultsGrid from "./meal-search-results-grid";
 import { mapRecipeToMeal } from "@/util/mappers";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 type MealModalContentProps = {
   action: FormActionType | "Search";
@@ -43,19 +43,23 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
   const getDefaultActiveTab = () => {
     switch (action) {
       case "Add":
-        return "Search";
+        return "Add Meal";
+      case "Search":
+        return "Search Meals";
       case "View":
         return "View Meal";
       case "Edit":
         return "Edit Meal";
       default:
-        return "Search";
+        return "Search Meals";
     }
   };
   // Initialize activeTab based on the initial action
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState<string>(getDefaultActiveTab());
   const [searchMealSelected, setSearchMealSelected] = useState<boolean>(false);
+  const searchParams = useSearchParams();
+  const actionParam = searchParams.get("action");
   // Reset activeTab when the modal is opened
   useEffect(() => {
     if (open) {
@@ -74,12 +78,12 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
   const [searchError, setSearchError] = useState<string | null>(null);
   // Define tabs based on the current action
   const tabs =
-    action === "Add"
+    action === "Add" || actionParam === UrlAction.Add || action === "Search"
       ? [
           {
             name: "Search Meals",
             href: "#",
-            current: activeTab === "Search",
+            current: activeTab === "Search Meals",
           },
           {
             name: "Add Meal",
@@ -125,22 +129,19 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
    */
   const handleTabChange = useCallback(
     (tabName: string) => {
-      if (action === "Add") {
-        if (tabName === "Add Meal") {
-          setActiveTab(tabName);
-          setAction("Add");
-        } else if (tabName === "Search Meals") {
-          setAction("Add");
-          setActiveTab("Search");
-        }
-      } else if (action === "Edit" || action === "View") {
-        if (tabName === "Edit Meal") {
-          handleEditMeal();
-        } else if (tabName === "View Meal") {
-          handleViewMeal();
-        }
+      if (tabName === "Add Meal") {
         setActiveTab(tabName);
+        setAction("Add");
+      } else if (tabName === "Search Meals") {
+        setAction("Search");
+        setActiveTab("Search Meals");
       }
+      if (tabName === "Edit Meal") {
+        handleEditMeal();
+      } else if (tabName === "View Meal") {
+        handleViewMeal();
+      }
+      setActiveTab(tabName);
     },
     [action, setAction]
   );
@@ -205,7 +206,7 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
    * Determines the dialog title based on the current action.
    */
   const getDialogTitle = () => {
-    if (activeTab === "Search" && action === "Add") {
+    if (activeTab === "Search Meals" && action === "Search") {
       return "Find meals";
     }
     switch (action) {
@@ -224,7 +225,7 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
    * Determines the dialog description based on the current action.
    */
   const getDialogDescription = () => {
-    if (activeTab === "find" && action === "Add") {
+    if (activeTab === "Search Meals" && action === "Add") {
       return "Search for new meals using the search bar below.";
     }
     switch (action) {
@@ -238,6 +239,18 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
         return "";
     }
   };
+
+  const handleDuplicate = useCallback(() => {
+    const duplicatedMeal = { ...meal, id: 0 }; // Reset ID for new ingredient
+    setMeal(duplicatedMeal);
+    setAction("Add");
+    setActiveTab("Add Meal");
+
+    const params = new URLSearchParams(window.location.search);
+    params.set("action", UrlAction.Add);
+    params.delete("id");
+    window.history.pushState(null, "", `${pathname}?${params.toString()}`);
+  }, [meal, setMeal, setAction, pathname]);
 
   /**
    * Handler for viewing meal details.
@@ -263,13 +276,23 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
         deleteButtonText={deleteButtonText}
         onDelete={onDelete}
         onClose={onClose}
+        duplicateButtonText={
+          actionParam == UrlAction.Edit || actionParam == UrlAction.View
+            ? "Duplicate"
+            : undefined
+        }
+        onDuplicate={
+          actionParam == UrlAction.Edit || actionParam == UrlAction.View
+            ? handleDuplicate
+            : undefined
+        }
       >
         <div className="flex justify-center">
           <TabsWithPills tabs={tabs} onTabChange={handleTabChange} />
         </div>
 
         {/* Conditional Rendering Based on Active Tab, only when we are adding a meal */}
-        {activeTab === "Search" && action === "Add" ? (
+        {activeTab === "Search Meals" && action === "Search" ? (
           // Find New Meal Tab Content
           <div className="space-y-6 py-6">
             {/* Search Bar */}

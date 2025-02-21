@@ -25,6 +25,6 @@ const IngredientsPage = async () => {
 export default IngredientsPage;
 
 export const metadata: Metadata = {
-  title: "Meal Planner - Recipes",
+  title: "Meal Planner - Ingredients",
   description: "Generate personalized meal plans easily.",
 };

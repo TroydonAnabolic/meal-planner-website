@@ -182,8 +182,10 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     (tabName: string) => {
       if (tabName === "Add Recipe") {
         setAction("Add");
+        setActiveTab("Add Recipes");
       } else if (tabName === "Search Recipes") {
         setAction("Search");
+        setActiveTab("Search Recipes");
       } else if (tabName === "Edit Recipe") {
         handleEditRecipe();
       } else if (tabName === "View Recipe") {
@@ -342,6 +344,18 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     [recipe.clientId, recipeAction]
   );
 
+  const handleDuplicate = useCallback(() => {
+    const duplicatedIngredient = { ...recipe, id: 0 }; // Reset ID for new ingredient
+    setRecipe(duplicatedIngredient);
+    setAction("Add");
+    setActiveTab("Add Recipes");
+
+    const params = new URLSearchParams(window.location.search);
+    params.set("action", UrlAction.Add);
+    params.delete("id");
+    window.history.pushState(null, "", `${pathname}?${params.toString()}`);
+  }, [recipe, setRecipe, setAction, pathname]);
+
   /**
    * Handler for viewing recipe details.
    * This should be passed down to the parent to open the RecipeDetailsDrawer.
@@ -366,6 +380,16 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
         deleteButtonText={deleteButtonText}
         onDelete={onDelete}
         onClose={onClose} // Pass 'onClose' prop received from parent
+        duplicateButtonText={
+          actionParam == UrlAction.Edit || actionParam == UrlAction.View
+            ? "Duplicate"
+            : undefined
+        }
+        onDuplicate={
+          actionParam == UrlAction.Edit || actionParam == UrlAction.View
+            ? handleDuplicate
+            : undefined
+        }
       >
         <div className="flex justify-center">
           <TabsWithPills tabs={tabs} onTabChange={handleTabChange} />
@@ -416,12 +440,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
         ) : (
           // Add New Recipe Tab Content
           <div className="space-y-6 py-6">
-            <RecipeInputFields
-              action={action}
-              recipe={recipe}
-              setRecipe={setRecipe}
-              readOnly={action === "View"}
-            />
+            <RecipeInputFields recipe={recipe} setRecipe={setRecipe} />
           </div>
         )}
       </FormModal>
