@@ -63,6 +63,7 @@ const IngredientSearch: React.FC<IngredientSearchProps> = ({
       debounce(async (searchTerm: string) => {
         if (searchTerm.length < 3) {
           setFoodParse(undefined);
+          setCustomIngredients([]);
           return;
         }
 
@@ -70,9 +71,24 @@ const IngredientSearch: React.FC<IngredientSearchProps> = ({
         setError(null);
 
         try {
-          const response: IFoodParser = await fetchFood(searchTerm);
-          if (response) {
-            setFoodParse(response);
+          if (isCustom) {
+            const ingredients = await fetchIngredientsByClientId(clientId);
+            const filteredIngredients = ingredients?.filter((ingredient) =>
+              ingredient.food.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            if (filteredIngredients) {
+              const hints: IHint[] = filteredIngredients.map((ingredient) => {
+                const hint = mapIngredientToHint(ingredient);
+                return hint;
+              });
+              setCustomIngredients(hints);
+            }
+          } else {
+            const response: IFoodParser = await fetchFood(searchTerm);
+            if (response) {
+              setFoodParse(response);
+            }
           }
         } catch (err) {
           setError("Failed to fetch ingredients.");
@@ -80,42 +96,13 @@ const IngredientSearch: React.FC<IngredientSearchProps> = ({
           setIsLoading(false);
         }
       }, 500),
-    []
+    [isCustom, clientId]
   );
 
   useEffect(() => {
-    if (!isCustom) {
-      debouncedSearch(query);
-    }
+    debouncedSearch(query);
     return debouncedSearch.cancel;
-  }, [query, debouncedSearch, isCustom]);
-
-  useEffect(() => {
-    if (isCustom) {
-      const fetchCustomIngredients = async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-          const ingredients = await fetchIngredientsByClientId(clientId);
-          if (ingredients) {
-            const hints: IHint[] = ingredients.map((ingredient) => {
-              const hint = mapIngredientToHint(ingredient);
-              return hint;
-            });
-            setCustomIngredients(hints);
-          }
-        } catch (err) {
-          setError("Failed to fetch custom ingredients.");
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchCustomIngredients();
-    } else {
-      setCustomIngredients([]);
-      setQuery("");
-    }
-  }, [isCustom, clientId]);
+  }, [query, debouncedSearch]);
 
   /**
    * Handles the selection and preparation of an ingredient.
@@ -188,15 +175,13 @@ const IngredientSearch: React.FC<IngredientSearchProps> = ({
       </div>
       {!selectedFoodHint ? (
         <div>
-          {!isCustom && (
-            <input
-              type="text"
-              placeholder="Search Ingredients..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-full rounded-md border border-gray-300 p-2 text-gray-700"
-            />
-          )}
+          <input
+            type="text"
+            placeholder="Search Ingredients..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full rounded-md border border-gray-300 p-2 text-gray-700"
+          />
           {isLoading && <p className="mt-2 text-gray-500">Loading...</p>}
           {error && <p className="mt-2 text-red-500">{error}</p>}
           <ul className="mt-2 max-h-60 overflow-y-auto divide-y divide-gray-200">
