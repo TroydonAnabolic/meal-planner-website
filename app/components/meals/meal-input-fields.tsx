@@ -414,6 +414,7 @@ const MealInputFields: React.FC<MealInputFieldsProps> = ({ meal, setMeal }) => {
                             updateAllMealIngredients={
                               handleUpdateAllMealIngredient
                             }
+                            clientId={meal.clientId}
                           />
                         </div>
                       </>
