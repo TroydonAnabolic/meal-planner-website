@@ -11,12 +11,22 @@ import { FormActionType } from "@/models/interfaces/types";
 import { usePathname, useSearchParams } from "next/navigation";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { parseDate } from "@/util/date-util";
 import {
   getMealTypeFromTime,
   getScheduledTimeFromMealTypeKey,
 } from "@/util/meal-utils";
 import { getEnumKeysByValues } from "@/util/enum-util";
+import {
+  FacebookShareButton,
+  FacebookIcon,
+  FacebookMessengerShareButton,
+  FacebookMessengerIcon,
+  TwitterShareButton,
+  TwitterIcon,
+  EmailShareButton,
+  EmailIcon,
+} from "react-share";
+import { nutrientFields } from "@/util/nutrients";
 
 dayjs.extend(customParseFormat);
 
@@ -56,6 +66,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
   // Loading and error states for search functionality
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [showShareIcons, setShowShareIcons] = useState(false);
 
   const searchParams = useSearchParams();
   // Extract search parameters
@@ -355,6 +366,31 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     params.delete("id");
     window.history.pushState(null, "", `${pathname}?${params.toString()}`);
   }, [recipe, setRecipe, setAction, pathname]);
+  const toggleShareIcons = () => {
+    setShowShareIcons(!showShareIcons);
+  };
+
+  // Function to generate the shareable link with
+  const generateShareableLink = () => {
+    const baseUrl = window.location.origin;
+    const recipeDetails = JSON.stringify(recipe);
+    return `${baseUrl}/recipe/?recipe=${encodeURIComponent(recipeDetails)}`;
+  };
+  const facebookHashTag = `I found this recipe on Meal Planner: ${recipe.label}`;
+
+  const nutrientDetails = nutrientFields
+    .map((nutrient) => {
+      const nutrientValue =
+        recipe.totalNutrients && recipe.totalNutrients[nutrient.tag]
+          ? ` ${nutrient.label} ${
+              recipe.totalNutrients[nutrient.tag].quantity
+            } ${nutrient.unit}`
+          : ` ${nutrient.label} 0 ${nutrient.unit}`;
+      return nutrientValue;
+    })
+    .join(" ");
+
+  const facebookHashTagWithNutrients = `I found this recipe on Meal Planner: ${recipe.label} ${nutrientDetails}`;
 
   /**
    * Handler for viewing recipe details.
@@ -391,8 +427,55 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
             : undefined
         }
       >
-        <div className="flex justify-center">
+        <div className="flex justify-between items-center">
           <TabsWithPills tabs={tabs} onTabChange={handleTabChange} />
+          {(actionParam == UrlAction.View || actionParam == UrlAction.Edit) && (
+            <div className="relative">
+              <button
+                type="button"
+                onClick={toggleShareIcons}
+                className="rounded-md bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                Share
+              </button>
+              {showShareIcons && (
+                <div className="absolute right-0 mt-2 flex space-x-2">
+                  <FacebookShareButton
+                    url={window.location.origin}
+                    title={`Check out this ingredient: ${recipe.label}`}
+                    hashtag={facebookHashTag}
+                  >
+                    <FacebookIcon size={32} round />
+                  </FacebookShareButton>
+                  {/* <FacebookMessengerShareButton
+                    url={window.location.origin}
+                    title={`Check out this ingredient: ${ingredient.food}`}
+                    appId={process.env.NEXT_PUBLIC_FACEBOOK_APP_ID as string}
+                    redirectUri={`${window.location.href.replace(
+                      "edit",
+                      "view"
+                    )}`}
+                  >
+                    <FacebookMessengerIcon size={32} round />
+                  </FacebookMessengerShareButton> */}
+                  <TwitterShareButton
+                    url={window.location.origin}
+                    title={`Check out this ingredient: ${facebookHashTagWithNutrients} ${generateShareableLink()}`}
+                    hashtags={["mealplanner"]}
+                  >
+                    <TwitterIcon size={32} round />
+                  </TwitterShareButton>
+                  <EmailShareButton
+                    url={window.location.origin}
+                    subject={`Check out this ingredient: ${recipe.label}`}
+                    body={`I found this ingredient on Meal Planner: ${facebookHashTagWithNutrients} ${generateShareableLink()}`}
+                  >
+                    <EmailIcon size={32} round />
+                  </EmailShareButton>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Conditional Rendering Based on Active Tab, only when we are adding a recipe */}
