@@ -11,6 +11,17 @@ import MealInputFields from "./meal-input-fields";
 import MealSearchResultsGrid from "./meal-search-results-grid";
 import { mapRecipeToMeal } from "@/util/mappers";
 import { usePathname, useSearchParams } from "next/navigation";
+import {
+  FacebookShareButton,
+  FacebookIcon,
+  FacebookMessengerShareButton,
+  FacebookMessengerIcon,
+  TwitterShareButton,
+  TwitterIcon,
+  EmailShareButton,
+  EmailIcon,
+} from "react-share";
+import { macros, nutrientFields } from "@/util/nutrients";
 
 type MealModalContentProps = {
   action: FormActionType | "Search";
@@ -58,6 +69,8 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState<string>(getDefaultActiveTab());
   const [searchMealSelected, setSearchMealSelected] = useState<boolean>(false);
+  const [showShareIcons, setShowShareIcons] = useState(false);
+
   const searchParams = useSearchParams();
   const actionParam = searchParams.get("action");
   // Reset activeTab when the modal is opened
@@ -252,6 +265,48 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
     window.history.pushState(null, "", `${pathname}?${params.toString()}`);
   }, [meal, setMeal, setAction, pathname]);
 
+  const toggleShareIcons = () => {
+    setShowShareIcons(!showShareIcons);
+  };
+
+  // Function to generate the shareable link with filtered nutrients
+  const generateShareableLink = () => {
+    const baseUrl = window.location.origin;
+    const filteredNutrients = macros.reduce((acc, nutrient) => {
+      if (meal.nutrients && meal.nutrients[nutrient.tag] && acc) {
+        acc[nutrient.tag] = meal.nutrients[nutrient.tag];
+      }
+      return acc;
+    }, {} as IMealInterface["nutrients"]);
+
+    const mealToShare = {
+      name: meal.name,
+      mealTypeKey: meal.mealTypeKey,
+      weight: meal.weight,
+      ingredientLines: meal.ingredientLines,
+      nutrients: filteredNutrients,
+    };
+
+    const mealDetails = JSON.stringify(mealToShare);
+    return `${baseUrl}/meal/?meal=${encodeURIComponent(mealDetails)}`;
+  };
+
+  const shareDescription = `I found this meal on Meal Planner: ${meal.name}`;
+
+  const nutrientDetails = nutrientFields
+    .map((nutrient) => {
+      const nutrientValue =
+        meal.nutrients && meal.nutrients[nutrient.tag]
+          ? ` ${nutrient.label} ${meal.nutrients[nutrient.tag].quantity} ${
+              nutrient.unit
+            }`
+          : ` ${nutrient.label} 0 ${nutrient.unit}`;
+      return nutrientValue;
+    })
+    .join(" ");
+
+  const shareDescriptionLong = `I found this meal on Meal Planner: ${meal.name} ${nutrientDetails}`;
+
   /**
    * Handler for viewing meal details.
    * This should be passed down to the parent to open the MealDetailsDrawer.
@@ -287,8 +342,55 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
             : undefined
         }
       >
-        <div className="flex justify-center">
+        <div className="flex justify-between items-center">
           <TabsWithPills tabs={tabs} onTabChange={handleTabChange} />
+          {(actionParam == UrlAction.View || actionParam == UrlAction.Edit) && (
+            <div className="relative">
+              <button
+                type="button"
+                onClick={toggleShareIcons}
+                className="rounded-md bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                Share
+              </button>
+              {showShareIcons && (
+                <div className="absolute right-0 mt-2 flex space-x-2">
+                  <FacebookShareButton
+                    url={generateShareableLink()}
+                    title={`Check out this meal: ${meal.name}`}
+                    hashtag={`#mealplanning #${shareDescription}`}
+                  >
+                    <FacebookIcon size={32} round />
+                  </FacebookShareButton>
+                  {/* <FacebookMessengerShareButton
+                    url={generateShareableLink()}
+                    title={`Check out this meal: ${meal.name}`}
+                    appId={process.env.NEXT_PUBLIC_FACEBOOK_APP_ID as string}
+                    redirectUri={`${window.location.href.replace(
+                      "edit",
+                      "view"
+                    )}`}
+                  >
+                    <FacebookMessengerIcon size={32} round />
+                  </FacebookMessengerShareButton> */}
+                  <TwitterShareButton
+                    url={generateShareableLink()}
+                    title={`Check out this meal: ${shareDescription}`}
+                    hashtags={["mealplanner"]}
+                  >
+                    <TwitterIcon size={32} round />
+                  </TwitterShareButton>
+                  <EmailShareButton
+                    url={window.location.origin}
+                    subject={`Check out this meal: ${meal.name}`}
+                    body={`I found this meal on Meal Planner: ${shareDescription} ${generateShareableLink()}`}
+                  >
+                    <EmailIcon size={32} round />
+                  </EmailShareButton>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Conditional Rendering Based on Active Tab, only when we are adding a meal */}

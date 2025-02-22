@@ -27,7 +27,6 @@ import {
   EmailIcon,
 } from "react-share";
 import { macros, nutrientFields } from "@/util/nutrients";
-import { get } from "http";
 
 dayjs.extend(customParseFormat);
 
@@ -371,8 +370,6 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     setShowShareIcons(!showShareIcons);
   };
 
-  // Function to generate the shareable link with
-  // Function to generate the shareable link with filtered nutrients
   // Function to generate the shareable link with filtered nutrients
   const generateShareableLink = () => {
     const baseUrl = window.location.origin;
