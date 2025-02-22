@@ -27,6 +27,7 @@ import {
   EmailIcon,
 } from "react-share";
 import { nutrientFields } from "@/util/nutrients";
+import { get } from "http";
 
 dayjs.extend(customParseFormat);
 
@@ -371,12 +372,27 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
   };
 
   // Function to generate the shareable link with
+  // Function to generate the shareable link with filtered nutrients
   const generateShareableLink = () => {
     const baseUrl = window.location.origin;
-    const recipeDetails = JSON.stringify(recipe);
+    const filteredNutrients = nutrientFields.reduce((acc, nutrient) => {
+      if (recipe.totalNutrients && recipe.totalNutrients[nutrient.tag] && acc) {
+        acc[nutrient.tag] = recipe.totalNutrients[nutrient.tag];
+      }
+      return acc;
+    }, {} as IRecipeInterface["totalNutrients"]);
+
+    const recipeToShare = {
+      ...recipe,
+      totalNutrients: filteredNutrients,
+      images: undefined,
+    };
+
+    const recipeDetails = JSON.stringify(recipeToShare);
     return `${baseUrl}/recipe/?recipe=${encodeURIComponent(recipeDetails)}`;
   };
-  const facebookHashTag = `I found this recipe on Meal Planner: ${recipe.label}`;
+
+  const shareDescription = `I found this recipe on Meal Planner: ${recipe.label}`;
 
   const nutrientDetails = nutrientFields
     .map((nutrient) => {
@@ -390,7 +406,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     })
     .join(" ");
 
-  const facebookHashTagWithNutrients = `I found this recipe on Meal Planner: ${recipe.label} ${nutrientDetails}`;
+  const shareDescriptionLong = `I found this recipe on Meal Planner: ${recipe.label} ${nutrientDetails}`;
 
   /**
    * Handler for viewing recipe details.
@@ -442,8 +458,8 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
                 <div className="absolute right-0 mt-2 flex space-x-2">
                   <FacebookShareButton
                     url={window.location.origin}
-                    title={`Check out this ingredient: ${recipe.label}`}
-                    hashtag={facebookHashTag}
+                    title={`Check out this recipe: ${recipe.label}`}
+                    hashtag={`${shareDescriptionLong}`}
                   >
                     <FacebookIcon size={32} round />
                   </FacebookShareButton>
@@ -459,16 +475,16 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
                     <FacebookMessengerIcon size={32} round />
                   </FacebookMessengerShareButton> */}
                   <TwitterShareButton
-                    url={window.location.origin}
-                    title={`Check out this ingredient: ${facebookHashTagWithNutrients} ${generateShareableLink()}`}
+                    url={generateShareableLink()}
+                    title={`Check out this recipe: ${shareDescription} `}
                     hashtags={["mealplanner"]}
                   >
                     <TwitterIcon size={32} round />
                   </TwitterShareButton>
                   <EmailShareButton
                     url={window.location.origin}
-                    subject={`Check out this ingredient: ${recipe.label}`}
-                    body={`I found this ingredient on Meal Planner: ${facebookHashTagWithNutrients} ${generateShareableLink()}`}
+                    subject={`Check out this recipe: ${recipe.label}`}
+                    body={`I found this recipe on Meal Planner: ${shareDescriptionLong} ${generateShareableLink()}`}
                   >
                     <EmailIcon size={32} round />
                   </EmailShareButton>

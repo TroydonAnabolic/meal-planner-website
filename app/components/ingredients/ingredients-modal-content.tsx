@@ -301,7 +301,34 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
   // Function to generate the shareable link with
   const generateShareableLink = () => {
     const baseUrl = window.location.origin;
-    const ingredientDetails = JSON.stringify(ingredient);
+
+    const filteredNutrients = nutrientFields.reduce(
+      (acc: Partial<INutrients>, nutrient) => {
+        if (
+          ingredient.totalNutrients &&
+          ingredient.totalNutrients[
+            nutrient.tag as unknown as keyof INutrients
+          ] &&
+          acc
+        ) {
+          acc[nutrient.tag as unknown as keyof INutrients] =
+            ingredient.totalNutrients[
+              nutrient.tag as unknown as keyof INutrients
+            ];
+        }
+        return acc;
+      },
+      {} as Partial<INutrients>
+    );
+
+    const ingredientToShare = {
+      ...ingredient,
+      totalNutrients: filteredNutrients,
+      images: undefined,
+    };
+
+    const ingredientDetails = JSON.stringify(ingredientToShare);
+
     return `${baseUrl}/ingredient/?ingredient=${encodeURIComponent(
       ingredientDetails
     )}`;
@@ -397,7 +424,7 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
                     <FacebookMessengerIcon size={32} round />
                   </FacebookMessengerShareButton> */}
                   <TwitterShareButton
-                    url={window.location.origin}
+                    url={generateShareableLink()}
                     title={`Check out this ingredient: ${facebookHashTagWithNutrients} ${generateShareableLink()}`}
                     hashtags={["mealplanner"]}
                   >
