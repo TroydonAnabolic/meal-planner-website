@@ -108,6 +108,23 @@ export const macros = [
   },
 ];
 
+export const nutrientFields: {
+  tag: Nutrients;
+  label: string;
+  unit: string;
+}[] = [
+  { tag: Nutrients.ENERC_KCAL, label: "Calories", unit: "kcal" },
+  { tag: Nutrients.PROCNT, label: "Protein", unit: "g" },
+  { tag: Nutrients.FAT, label: "Total Lipid Fat", unit: "g" },
+  { tag: Nutrients.FASAT, label: "Saturated Fat", unit: "g" },
+  { tag: Nutrients.FATRN, label: "Trans Fat", unit: "g" },
+  { tag: Nutrients.CHOCDF, label: "Carbs", unit: "g" },
+  { tag: Nutrients.SUGAR, label: "Sugars", unit: "g" },
+  { tag: Nutrients.FIBTG, label: "Fiber", unit: "g" },
+  { tag: Nutrients.NA, label: "Sodium", unit: "mg" },
+  { tag: Nutrients.K, label: "Potassium", unit: "mg" },
+];
+
 /**
  * Updates the meal's nutrients based on the operation.
  *
@@ -116,65 +133,65 @@ export const macros = [
  * @param response - The nutrients response containing totalNutrients and totalWeight.
  * @returns The updated meal.
  */
-export const updateIngredientNutrients = (
-  ingredient: IIngredient,
-  operation: "add" | "remove" | undefined,
-  response: IFoodNutrients
-): IIngredient => {
-  if (!operation) {
-    console.warn("Operation is undefined. No changes made to the meal.");
-    return ingredient;
-  }
+// export const updateIngredientNutrients = (
+//   ingredient: IIngredient,
+//   operation: "add" | "remove" | undefined,
+//   response: IFoodNutrients
+// ): IIngredient => {
+//   if (!operation) {
+//     console.warn("Operation is undefined. No changes made to the meal.");
+//     return ingredient;
+//   }
 
-  const updatedNutrients: { [key: string]: INutrient } = {
-    ...ingredient.totalNutrients,
-  };
-  const totalNutrients = response?.totalNutrients ?? {};
-  const totalWeight = response?.totalWeight || 0;
+//   const updatedNutrients: { [key: string]: INutrient } = {
+//     ...ingredient.totalNutrients,
+//   };
+//   const totalNutrients = response?.totalNutrients ?? {};
+//   const totalWeight = response?.totalWeight || 0;
 
-  Object.keys(totalNutrients).forEach((key) => {
-    const nutrient = totalNutrients[key];
-    if (updatedNutrients[key]) {
-      // Nutrient already exists in the meal
-      if (operation === "add") {
-        updatedNutrients[key].quantity += nutrient.quantity;
-      } else if (operation === "remove") {
-        updatedNutrients[key].quantity -= nutrient.quantity;
-        // Ensure quantity doesn't go negative
-        if (updatedNutrients[key].quantity < 0) {
-          updatedNutrients[key].quantity = 0;
-        }
-      }
-    } else {
-      // Nutrient does not exist in the meal, initialize it
-      updatedNutrients[key] = {
-        id: (updatedNutrients[key] as INutrient)?.id || 0, // Provide a default value or handle appropriately
-        ingredientId: (updatedNutrients[key] as INutrient)?.ingredientId || 0, // Provide a default value or handle appropriately
-        label: nutrient.label,
-        quantity: operation === "add" ? nutrient.quantity : 0,
-        unit: nutrient.unit,
-      };
-    }
-  });
+//   Object.keys(totalNutrients).forEach((key) => {
+//     const nutrient = totalNutrients[key];
+//     if (updatedNutrients[key]) {
+//       // Nutrient already exists in the meal
+//       if (operation === "add") {
+//         updatedNutrients[key].quantity += nutrient.quantity;
+//       } else if (operation === "remove") {
+//         updatedNutrients[key].quantity -= nutrient.quantity;
+//         // Ensure quantity doesn't go negative
+//         if (updatedNutrients[key].quantity < 0) {
+//           updatedNutrients[key].quantity = 0;
+//         }
+//       }
+//     } else {
+//       // Nutrient does not exist in the meal, initialize it
+//       updatedNutrients[key] = {
+//         id: (updatedNutrients[key] as INutrient)?.id || 0, // Provide a default value or handle appropriately
+//         ingredientId: (updatedNutrients[key] as INutrient)?.ingredientId || 0, // Provide a default value or handle appropriately
+//         label: nutrient.label,
+//         quantity: operation === "add" ? nutrient.quantity : 0,
+//         unit: nutrient.unit,
+//       };
+//     }
+//   });
 
-  // Update the meal's weight based on the operation
-  let updatedWeight = ingredient.weight;
-  if (operation === "add") {
-    updatedWeight += totalWeight;
-  } else if (operation === "remove") {
-    updatedWeight -= totalWeight;
-    // Ensure weight doesn't go negative
-    if (updatedWeight < 0) {
-      updatedWeight = 0;
-    }
-  }
+//   // Update the meal's weight based on the operation
+//   let updatedWeight = ingredient.weight;
+//   if (operation === "add") {
+//     updatedWeight += totalWeight;
+//   } else if (operation === "remove") {
+//     updatedWeight -= totalWeight;
+//     // Ensure weight doesn't go negative
+//     if (updatedWeight < 0) {
+//       updatedWeight = 0;
+//     }
+//   }
 
-  return {
-    ...ingredient,
-    totalNutrients: updatedNutrients,
-    weight: updatedWeight,
-  };
-};
+//   return {
+//     ...ingredient,
+//     totalNutrients: updatedNutrients,
+//     weight: updatedWeight,
+//   };
+// };
 
 /**
  * Updates the meal's nutrients based on the operation.

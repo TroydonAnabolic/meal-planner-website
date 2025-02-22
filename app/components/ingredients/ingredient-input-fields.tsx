@@ -5,7 +5,7 @@ import Image from "next/image";
 import ImageUploadLabel from "../ui/inputs/image-upload";
 
 import ToggleInput from "../ui/inputs/toggle-input";
-import { macros } from "@/util/nutrients";
+import { macros, nutrientFields } from "@/util/nutrients";
 import { FormActionType } from "@/models/interfaces/types";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone"; // Import the timezone plugin
@@ -88,24 +88,6 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
   ) => {
     event.currentTarget.src = placeholderImage;
   };
-
-  // Define the nutrients you want to create input fields for
-  const nutrientFields: {
-    tag: Nutrients;
-    label: string;
-    unit: string;
-  }[] = [
-    { tag: Nutrients.ENERC_KCAL, label: "Calories", unit: "kcal" },
-    { tag: Nutrients.PROCNT, label: "Protein", unit: "g" },
-    { tag: Nutrients.FAT, label: "Total Lipid Fat", unit: "g" },
-    { tag: Nutrients.FASAT, label: "Saturated Fat", unit: "g" },
-    { tag: Nutrients.FATRN, label: "Trans Fat", unit: "g" },
-    { tag: Nutrients.CHOCDF, label: "Carbs", unit: "g" },
-    { tag: Nutrients.SUGAR, label: "Sugars", unit: "g" },
-    { tag: Nutrients.FIBTG, label: "Fiber", unit: "g" },
-    { tag: Nutrients.NA, label: "Sodium", unit: "mg" },
-    { tag: Nutrients.K, label: "Potassium", unit: "mg" },
-  ];
 
   return (
     <>
