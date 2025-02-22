@@ -46,10 +46,10 @@ async function getCertificate() {
     const isProd = process.env.NODE_ENV === "production";
     // !TODO: use cert after properly applying all rate limit
     const httpsAgent = new https.Agent({
-      ca: isProd ? caCert : undefined, // Trust only the specified certificate
-      // ca: undefined, // Trust only the specified certificate
-      rejectUnauthorized: isProd ? true : false, //
-      //rejectUnauthorized: false, //
+      //ca: isProd ? caCert : undefined, // Trust only the specified certificate
+      ca: undefined, // Trust only the specified certificate
+      //rejectUnauthorized: isProd ? true : false, //
+      rejectUnauthorized: false, //
     });
 
     // Set Axios global defaults

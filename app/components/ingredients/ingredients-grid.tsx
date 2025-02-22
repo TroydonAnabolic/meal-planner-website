@@ -29,7 +29,11 @@ import GlowyBanner from "../ui/banner/banner-with-glow";
 import { IIngredient } from "@/models/interfaces/ingredient/ingredient";
 import IngredientCard from "./ingredient-card";
 import IngredientModalContent from "./ingredients-modal-content";
-import { addIngredientAction, deleteIngredientAction, updateIngredientAction } from "@/actions/ingredients-action";
+import {
+  addIngredientAction,
+  deleteIngredientAction,
+  updateIngredientAction,
+} from "@/actions/ingredients-action";
 
 type IngredientsGridProps = {
   ingredientsData: IIngredient[] | undefined; // Ingredients data fetched from API
@@ -190,6 +194,7 @@ const IngredientsGrid: React.FC<IngredientsGridProps> = ({
           if (!objectUrl) {
             throw new Error("Failed to upload the image to S3");
           }
+          // TODO: save image to s3 if possible
         } else if (ingredient.image.includes("edamam")) {
           const buffer = await fetchImageAndConvertToBuffer(ingredient.image);
 
@@ -216,7 +221,7 @@ const IngredientsGrid: React.FC<IngredientsGridProps> = ({
         // Update the ingredient image URL to the S3 URL
         const updatedIngredient = {
           ...ingredient,
-          image: objectUrl//,
+          image: objectUrl, //,
           // url: `${hostname}/${pathname}?page=${currentPage}&action=${UrlAction.View}&id=`,
         };
         const newIngredient = await addIngredientAction(updatedIngredient);
