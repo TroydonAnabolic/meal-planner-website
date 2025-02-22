@@ -324,7 +324,6 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
     const ingredientToShare = {
       ...ingredient,
       totalNutrients: filteredNutrients,
-      images: undefined,
     };
 
     const ingredientDetails = JSON.stringify(ingredientToShare);

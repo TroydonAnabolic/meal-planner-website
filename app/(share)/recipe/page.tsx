@@ -1,6 +1,6 @@
 import { Nutrients } from "@/constants/constants-enums";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
-import { nutrientFields } from "@/util/nutrients";
+import { macros, nutrientFields } from "@/util/nutrients";
 
 export default async function ShareRecipePage({
   searchParams,
@@ -36,15 +36,23 @@ export default async function ShareRecipePage({
           <p className="mb-2">
             <strong>Total Time:</strong> {recipe.totalTime} minutes
           </p>
+          <div className="mb-4">
+            <strong>Ingredients:</strong>
+            <ul className="list-disc list-inside ml-4">
+              {recipe.ingredientLines.map((line, index) => (
+                <li key={index}>{line}</li>
+              ))}
+            </ul>
+          </div>
           <div>
             <strong>Nutrients:</strong>
             <ul className="list-disc list-inside ml-4">
-              {nutrientFields.map((nutrient) => (
+              {macros.map((nutrient) => (
                 <li key={nutrient.tag} className="flex flex-col">
                   {recipe.totalNutrients && recipe.totalNutrients[nutrient.tag]
-                    ? ` ${nutrient.label} ${
-                        recipe.totalNutrients[nutrient.tag].quantity
-                      } ${nutrient.unit}`
+                    ? ` ${nutrient.label} ${recipe.totalNutrients[
+                        nutrient.tag
+                      ].quantity.toFixed(2)} ${nutrient.unit}`
                     : ` ${nutrient.label} 0 ${nutrient.unit}`}
                 </li>
               ))}

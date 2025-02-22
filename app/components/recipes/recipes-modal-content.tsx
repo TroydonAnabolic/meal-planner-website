@@ -26,7 +26,7 @@ import {
   EmailShareButton,
   EmailIcon,
 } from "react-share";
-import { nutrientFields } from "@/util/nutrients";
+import { macros, nutrientFields } from "@/util/nutrients";
 import { get } from "http";
 
 dayjs.extend(customParseFormat);
@@ -373,9 +373,10 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
 
   // Function to generate the shareable link with
   // Function to generate the shareable link with filtered nutrients
+  // Function to generate the shareable link with filtered nutrients
   const generateShareableLink = () => {
     const baseUrl = window.location.origin;
-    const filteredNutrients = nutrientFields.reduce((acc, nutrient) => {
+    const filteredNutrients = macros.reduce((acc, nutrient) => {
       if (recipe.totalNutrients && recipe.totalNutrients[nutrient.tag] && acc) {
         acc[nutrient.tag] = recipe.totalNutrients[nutrient.tag];
       }
@@ -383,9 +384,12 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     }, {} as IRecipeInterface["totalNutrients"]);
 
     const recipeToShare = {
-      ...recipe,
+      label: recipe.label,
+      source: recipe.source,
+      totalTime: recipe.totalTime,
+      yield: recipe.yield,
+      ingredientLines: recipe.ingredientLines,
       totalNutrients: filteredNutrients,
-      images: undefined,
     };
 
     const recipeDetails = JSON.stringify(recipeToShare);

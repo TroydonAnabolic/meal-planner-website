@@ -15,13 +15,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [
-    require("daisyui"),
-    require("@tailwindcss/forms"),
-    require("tailwind-scrollbar-hide"),
-  ],
-  daisyui: {
-    themes: ["pastel"],
-  },
+  plugins: [require("@tailwindcss/forms"), require("tailwind-scrollbar-hide")],
 };
 export default config;
