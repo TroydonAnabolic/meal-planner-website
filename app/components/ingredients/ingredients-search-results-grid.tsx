@@ -6,17 +6,17 @@ import { ChevronRightIcon } from "@heroicons/react/24/outline";
 type IngredientSearchResultsGridProps = {
   ingredients: IIngredient[];
   onViewDetails: (ingredient: IIngredient) => void;
-  onAddIngredient: (ingredient: IIngredient) => void;
+  //onAddIngredient: (ingredient: IIngredient) => void;
 };
 
 const IngredientSearchResultsGrid: React.FC<
   IngredientSearchResultsGridProps
-> = ({ ingredients, onViewDetails, onAddIngredient }) => {
-  const handleAddIngredient = (ingredient: IIngredient) => {
-    onAddIngredient({
-      ...ingredient,
-    });
-  };
+> = ({ ingredients, onViewDetails }) => {
+  // const handleAddIngredient = (ingredient: IIngredient) => {
+  //   onAddIngredient({
+  //     ...ingredient,
+  //   });
+  // };
 
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -44,14 +44,14 @@ const IngredientSearchResultsGrid: React.FC<
               {ingredient.foodCategory}
             </p>
             <div className="mt-auto flex justify-between items-center">
-              <button
+              {/* <button
                 type="button"
                 onClick={() => handleAddIngredient(ingredient)}
                 className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-2 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 aria-label={`Add ${ingredient.food}`}
               >
                 Add
-              </button>
+              </button> */}
               {/* View Details Button */}
               <button
                 type="button"

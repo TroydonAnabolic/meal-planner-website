@@ -174,7 +174,10 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
     };
 
     setActiveTab("Add Ingredient");
-    setAction("Add");
+    setAction("View");
+    const params = new URLSearchParams(window.location.search);
+    params.set("action", UrlAction.View);
+
     setIngredient(updatedIngredient);
     setSearchResults([]);
   };
@@ -263,24 +266,24 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
    * Handler for adding a ingredient from search results.
    * Sets isCustom to false before adding.
    */
-  const handleAddIngredientFromSearch = useCallback(
-    async (ingredientToAdd: IIngredient) => {
-      setIngredient(ingredientToAdd);
+  // const handleAddIngredientFromSearch = useCallback(
+  //   async (ingredientToAdd: IIngredient) => {
+  //     setIngredient(ingredientToAdd);
 
-      const updatedIngredient: IIngredient = {
-        ...ingredientToAdd,
-        clientId: ingredient.clientId,
-        // image: "/aiimages/food/default-food.svg",
-      };
-      if (ingredientAction) {
-        await ingredientAction(updatedIngredient);
-        console.log("ingredientAction called successfully");
-      } else {
-        console.error("ingredientAction is not defined");
-      }
-    },
-    [ingredient.clientId, ingredientAction]
-  );
+  //     const updatedIngredient: IIngredient = {
+  //       ...ingredientToAdd,
+  //       clientId: ingredient.clientId,
+  //       // image: "/aiimages/food/default-food.svg",
+  //     };
+  //     if (ingredientAction) {
+  //       await ingredientAction(updatedIngredient);
+  //       console.log("ingredientAction called successfully");
+  //     } else {
+  //       console.error("ingredientAction is not defined");
+  //     }
+  //   },
+  //   [ingredient.clientId, ingredientAction]
+  // );
 
   const handleDuplicate = useCallback(() => {
     const duplicatedIngredient = { ...ingredient, id: 0 }; // Reset ID for new ingredient
@@ -370,23 +373,49 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
       <FormModal
         dialogTitle={getDialogTitle()}
         dialogDescription={getDialogDescription()}
-        buttonText={action === "View" ? undefined : action}
+        buttonText={
+          actionParam === UrlAction.View &&
+          ingredient.id === 0 &&
+          ingredient.foodId === null
+            ? undefined
+            : action
+        }
         open={open}
         setOpen={setOpen}
         formAction={
-          action !== "View" ? () => ingredientAction(ingredient) : undefined
+          actionParam === UrlAction.View &&
+          ingredient.id === 0 &&
+          ingredient.foodId === null
+            ? undefined
+            : () => ingredientAction(ingredient)
         }
         // Pass Delete Button Props Only for View and Edit
-        deleteButtonText={deleteButtonText}
-        onDelete={onDelete}
+        deleteButtonText={
+          actionParam == (UrlAction.Edit || actionParam == UrlAction.View) &&
+          ingredient.id !== 0 &&
+          ingredient.foodId === null
+            ? deleteButtonText
+            : undefined
+        }
+        onDelete={
+          actionParam == (UrlAction.Edit || actionParam == UrlAction.View) &&
+          ingredient.id !== 0 &&
+          ingredient.foodId === null
+            ? onDelete
+            : undefined
+        }
         onClose={onClose} // Pass 'onClose' prop received from parent
         duplicateButtonText={
-          actionParam == UrlAction.Edit || actionParam == UrlAction.View
+          actionParam == (UrlAction.Edit || actionParam == UrlAction.View) &&
+          ingredient.id !== 0 &&
+          ingredient.foodId === null
             ? "Duplicate"
             : undefined
         }
         onDuplicate={
-          actionParam == UrlAction.Edit || actionParam == UrlAction.View
+          actionParam == (UrlAction.Edit || actionParam == UrlAction.View) &&
+          ingredient.id !== 0 &&
+          ingredient.foodId === null
             ? handleDuplicate
             : undefined
         }
@@ -477,7 +506,7 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
                 <IngredientSearchResultsGrid
                   ingredients={searchResults}
                   onViewDetails={handleViewIngredientToAdd}
-                  onAddIngredient={handleAddIngredientFromSearch}
+                  //onAddIngredient={handleAddIngredientFromSearch}
                 />
               ) : (
                 <p className="text-sm text-gray-500">No ingredients found.</p>
