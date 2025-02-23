@@ -43,11 +43,13 @@ type RecipeInputFieldsProps = {
   setRecipe:
     | React.Dispatch<React.SetStateAction<IRecipeInterface | undefined>>
     | undefined;
+  handleClear: () => void;
 };
 
 const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
   recipe,
   setRecipe,
+  handleClear,
 }) => {
   const [imageSrc, setImageSrc] = useState<string | undefined>(
     recipe.image || undefined
@@ -254,6 +256,31 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
     event: React.SyntheticEvent<HTMLImageElement, Event>
   ) => {
     event.currentTarget.src = placeholderImage;
+  };
+
+  // Handler to reset all fields and state
+  const handleClearFields = () => {
+    setRecipe?.({
+      ...recipe,
+      label: "",
+      url: "",
+      yield: 1,
+      totalTime: 0,
+      totalCO2Emissions: 0,
+      timeScheduled: undefined,
+      avoid: false,
+      isFavourite: false,
+      image: "",
+      totalWeight: 0,
+      totalNutrients: {},
+      totalDaily: {},
+      ingredients: [],
+      ingredientLines: [],
+      isCustom: true,
+    });
+    setImageSrc(undefined);
+    setSelectedDateTime(null);
+    handleClear();
   };
 
   return (
@@ -504,7 +531,6 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
               </div>
             </div>
           </div>
-
           {/* Rigth Panel Section - Image upload + Read only fields here*/}
           <div className="mt-6 lg:mt-0">
             {/* 'Avoid' Toggle */}
@@ -618,6 +644,18 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
               </div>
             </div>
           </div>
+          {(!readOnly ||
+            !recipe.ingredients.every((ing) => ing.foodId === "")) && (
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={handleClearFields}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                Clear All Fields
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </>

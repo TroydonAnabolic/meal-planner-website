@@ -384,7 +384,7 @@ const RecipesGrid: React.FC<RecipesGridProps> = ({
   );
 
   const handleClickAdd = useCallback(() => {
-    setAction("Search");
+    setAction("Add");
     setSelectedRecipe(defaultRecipe);
     setModalOpen(true);
 

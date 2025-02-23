@@ -22,7 +22,7 @@ export interface RecipeIngredient {
   food: string;
   weight: number;
   foodCategory?: string;
-  foodId: string; // foodId is null for custom ingredients
+  foodId: string;
   image: string;
   totalNutrients?: RecipeTotalNutrients;
   totalDaily?: RecipeTotalNutrients;

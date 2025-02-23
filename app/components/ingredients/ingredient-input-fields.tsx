@@ -33,12 +33,14 @@ type IngredientInputFieldsProps = {
   setIngredient:
     | React.Dispatch<React.SetStateAction<IIngredient | undefined>>
     | undefined;
+  handleClear: () => void;
   // measure?: Measure;
 };
 
 const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
   ingredient,
   setIngredient,
+  handleClear,
 }) => {
   const [imageSrc, setImageSrc] = useState<string | undefined>(
     ingredient.image || undefined
@@ -49,7 +51,7 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
   const isCustom = ingredient.foodId === null;
   const searchParams = useSearchParams();
   const actionParam = searchParams.get("action");
-  const readOnly = actionParam === UrlAction.View;
+  const readOnly = actionParam === UrlAction.View || !isCustom;
 
   // Handler for input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,22 +73,31 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
     }));
   };
 
-  const handleToggleCustom = (isCustom: boolean) => {
-    if (readOnly) {
-      return;
-    }
-    setIngredient?.((prev) => ({
-      ...prev!,
-      foodId: null,
-    }));
-  };
-
   const placeholderImage = "/aiimages/food/avocado.jpg";
 
   const handleImageError = (
     event: React.SyntheticEvent<HTMLImageElement, Event>
   ) => {
     event.currentTarget.src = placeholderImage;
+  };
+
+  // Handler to reset all fields and state
+  const handleClearFields = () => {
+    setIngredient?.({
+      ...ingredient,
+      text: "",
+      quantity: 1,
+      measure: "",
+      food: "",
+      weight: 1,
+      foodCategory: "",
+      foodId: null,
+      image: "",
+      totalNutrients: {},
+    });
+    setImageSrc(undefined);
+    setUnitOfMeasure(UnitOfMeasure.Gram);
+    handleClear();
   };
 
   return (
@@ -197,16 +208,6 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
 
           {/* Rigth Panel Section - Image upload + Read only fields here*/}
           <div className="mt-6 lg:mt-0">
-            {/* 'Avoid' Toggle */}
-            <div className="my-4">
-              <ToggleInput
-                label="Custom Ingredient"
-                subLabel=""
-                enabled={isCustom}
-                disableInput={!isCustom}
-                onChange={handleToggleCustom}
-              />
-            </div>
             {/* Ingredient Image */}
             <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-4">
               <h3 className="sr-only">Ingredient image</h3>
@@ -321,6 +322,18 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
             </div>
           </div>
         </div>
+        {/* Clear Button */}
+        {!readOnly && (
+          <div className="mt-6 flex justify-end">
+            <button
+              type="button"
+              onClick={handleClearFields}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            >
+              Clear All Fields
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

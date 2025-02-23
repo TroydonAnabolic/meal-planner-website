@@ -73,7 +73,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
   const mealTypeParam = searchParams.get("mealTypeKey");
   const timeScheduledParam = searchParams.get("timeScheduled");
   const mealPlanIdParam = searchParams.get("mealPlanId");
-  const actionParam = searchParams.get("action");
+  let actionParam = searchParams.get("action");
 
   // Define the default active tab based on the current action
   const getDefaultActiveTab = () => {
@@ -207,6 +207,14 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     [handleEditRecipe, handleViewRecipe, setAction]
   );
 
+  // Handler to reset all fields and state
+  const handleClear = () => {
+    setAction("Add");
+    const params = new URLSearchParams(window.location.search);
+    params.set("action", UrlAction.Add);
+    actionParam = UrlAction.Add;
+  };
+
   const handleViewRecipeToAdd = (recipe: IRecipeInterface) => {
     recipe.mealTypeKey = getMealTypeFromTime(undefined);
 
@@ -231,9 +239,12 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     }
 
     setActiveTab("Add Recipe");
-    setAction("Add");
+    setAction("View");
     setRecipe(recipe);
     setSearchResults([]);
+    const params = new URLSearchParams(window.location.search);
+    params.set("action", UrlAction.View);
+    actionParam = UrlAction.View;
   };
 
   /**
@@ -310,51 +321,6 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     }
   };
 
-  /**
-   * Handler for adding a recipe from search results.
-   * Sets isCustom to false before adding.
-   */
-  const handleAddRecipeFromSearch = useCallback(
-    async (recipeToAdd: IRecipeInterface) => {
-      setRecipe(recipeToAdd);
-
-      if (mealTypeParam) {
-        recipeToAdd.mealTypeKey = [mealTypeParam];
-      } else {
-        recipeToAdd.mealTypeKey = getEnumKeysByValues(
-          MealType,
-          recipeToAdd.mealType as MealType[]
-        );
-      }
-
-      if (timeScheduledParam) {
-        const scheduledTime = getScheduledTimeFromMealTypeKey(
-          mealTypeParam as keyof typeof MealType
-        );
-        recipeToAdd.timeScheduled = scheduledTime;
-        //recipeToAdd.timeScheduled = parseDate(timeScheduledParam);
-      }
-
-      if (mealPlanIdParam) {
-        recipeToAdd.mealPlanId = parseInt(mealPlanIdParam, 10);
-      }
-
-      const updatedRecipe: IRecipeInterface = {
-        ...recipeToAdd,
-        isCustom: false,
-        clientId: recipe.clientId,
-        // image: "/aiimages/food/default-food.svg",
-      };
-      if (recipeAction) {
-        await recipeAction(updatedRecipe);
-        console.log("recipeAction called successfully");
-      } else {
-        console.error("recipeAction is not defined");
-      }
-    },
-    [recipe.clientId, recipeAction]
-  );
-
   const handleDuplicate = useCallback(() => {
     const duplicatedIngredient = { ...recipe, id: 0 }; // Reset ID for new ingredient
     setRecipe(duplicatedIngredient);
@@ -408,14 +374,15 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     .join(" ");
 
   const shareDescriptionLong = `I found this recipe on Meal Planner: ${recipe.label} ${nutrientDetails}`;
+  actionParam = searchParams.get("action");
+  const showActionButton =
+    action !== "View" && recipe.ingredients.every((i) => i.foodId === null);
 
-  /**
-   * Handler for viewing recipe details.
-   * This should be passed down to the parent to open the RecipeDetailsDrawer.
-   * However, since RecipeDrawersContent is itself inside a drawer,
-   * we need to manage RecipeDetailsDrawer state here or lift state up.
-   * For simplicity, we'll assume RecipeDetailsDrawer is managed externally.
-   */
+  const showDeleteOrDupBtn =
+    actionParam == (UrlAction.Edit || actionParam == UrlAction.View) &&
+    recipe.id !== 0 &&
+    recipe.ingredients.every((i) => i.foodId === null);
+
   // If RecipeDetailsDrawer is managed externally, you can pass a callback to handle details
   // For this example, we'll skip implementation
   // TODO: Implement recipe search filter
@@ -425,24 +392,16 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
       <FormModal
         dialogTitle={getDialogTitle()}
         dialogDescription={getDialogDescription()}
-        buttonText={action === "View" ? undefined : action}
+        buttonText={showActionButton ? action : undefined}
         open={open}
         setOpen={setOpen}
-        formAction={action !== "View" ? () => recipeAction(recipe) : undefined}
+        formAction={showActionButton ? () => recipeAction(recipe) : undefined}
         // Pass Delete Button Props Only for View and Edit
-        deleteButtonText={deleteButtonText}
-        onDelete={onDelete}
+        deleteButtonText={showDeleteOrDupBtn ? deleteButtonText : undefined}
+        onDelete={showDeleteOrDupBtn ? onDelete : undefined}
         onClose={onClose} // Pass 'onClose' prop received from parent
-        duplicateButtonText={
-          actionParam == UrlAction.Edit || actionParam == UrlAction.View
-            ? "Duplicate"
-            : undefined
-        }
-        onDuplicate={
-          actionParam == UrlAction.Edit || actionParam == UrlAction.View
-            ? handleDuplicate
-            : undefined
-        }
+        duplicateButtonText={showDeleteOrDupBtn ? "Duplicate" : undefined}
+        onDuplicate={showDeleteOrDupBtn ? handleDuplicate : undefined}
       >
         <div className="flex justify-between items-center">
           <TabsWithPills tabs={tabs} onTabChange={handleTabChange} />
@@ -530,7 +489,6 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
                 <RecipeSearchResultsGrid
                   recipes={searchResults}
                   onViewDetails={handleViewRecipeToAdd}
-                  onAddRecipe={handleAddRecipeFromSearch}
                 />
               ) : (
                 <p className="text-sm text-gray-500">No recipes found.</p>
@@ -540,7 +498,11 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
         ) : (
           // Add New Recipe Tab Content
           <div className="space-y-6 py-6">
-            <RecipeInputFields recipe={recipe} setRecipe={setRecipe} />
+            <RecipeInputFields
+              recipe={recipe}
+              setRecipe={setRecipe}
+              handleClear={handleClear}
+            />
           </div>
         )}
       </FormModal>

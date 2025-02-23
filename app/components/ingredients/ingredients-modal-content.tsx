@@ -183,6 +183,14 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
     setSearchResults([]);
   };
 
+  // Handler to reset all fields and state
+  const handleClear = () => {
+    setAction("Add");
+    const params = new URLSearchParams(window.location.search);
+    params.set("action", UrlAction.Add);
+    actionParam = UrlAction.Add;
+  };
+
   /**
    * Fetches ingredients from the Edamam API based on the search query.
    * Updates the searchResults state with the fetched ingredients.
@@ -493,6 +501,7 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
             <IngredientInputFields
               ingredient={ingredient}
               setIngredient={setIngredient}
+              handleClear={handleClear}
             />
           </div>
         )}

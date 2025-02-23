@@ -8,13 +8,11 @@ import { ChevronRightIcon } from "@heroicons/react/24/outline";
 type RecipeSearchResultsGridProps = {
   recipes: IRecipeInterface[];
   onViewDetails: (recipe: IRecipeInterface) => void;
-  onAddRecipe: (recipe: IRecipeInterface) => void;
 };
 
 const RecipeSearchResultsGrid: React.FC<RecipeSearchResultsGridProps> = ({
   recipes,
   onViewDetails,
-  onAddRecipe,
 }) => {
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -41,15 +39,6 @@ const RecipeSearchResultsGrid: React.FC<RecipeSearchResultsGridProps> = ({
             </h3>
             <p className="mt-1 text-sm text-gray-500">{recipe.source}</p>
             <div className="mt-4 flex items-center justify-between">
-              {/* Add Recipe Button */}
-              <button
-                type="button"
-                onClick={() => onAddRecipe(recipe)}
-                className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                aria-label={`Add ${recipe.label} to your recipes`}
-              >
-                Add
-              </button>
               {/* View Details Button */}
               <button
                 type="button"
