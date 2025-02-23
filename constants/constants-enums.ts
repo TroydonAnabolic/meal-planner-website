@@ -85,6 +85,7 @@ export enum DayOfTheWeek {
 }
 
 export enum UrlAction {
+  // Search = "search",
   Add = "add",
   Edit = "edit",
   View = "view",

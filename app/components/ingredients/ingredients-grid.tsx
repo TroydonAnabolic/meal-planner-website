@@ -361,7 +361,7 @@ const IngredientsGrid: React.FC<IngredientsGridProps> = ({
   );
 
   const handleClickAdd = useCallback(() => {
-    setAction("Search");
+    setAction("Add");
     setSelectedIngredient(defaultIngredient);
     setModalOpen(true);
 

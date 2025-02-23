@@ -72,7 +72,7 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
 
   const searchParams = useSearchParams();
   // Extract search parameters
-  const actionParam = searchParams.get("action");
+  let actionParam = searchParams.get("action");
 
   // Define the default active tab based on the current action
   const getDefaultActiveTab = () => {
@@ -95,6 +95,7 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
   useEffect(() => {
     if (open) {
       setActiveTab(getDefaultActiveTab());
+      //setAction("Add");
     }
   }, [open, action]);
 
@@ -110,9 +111,9 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
             current: activeTab === "Search Ingredients",
           },
           {
-            name: "Add Ingredient",
+            name: "Add Ingredients",
             href: "#",
-            current: activeTab === "Add Ingredient",
+            current: activeTab === "Add Ingredients",
           },
         ]
       : [
@@ -177,7 +178,7 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
     setAction("View");
     const params = new URLSearchParams(window.location.search);
     params.set("action", UrlAction.View);
-
+    actionParam = UrlAction.View;
     setIngredient(updatedIngredient);
     setSearchResults([]);
   };
@@ -262,29 +263,6 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
     }
   };
 
-  /**
-   * Handler for adding a ingredient from search results.
-   * Sets isCustom to false before adding.
-   */
-  // const handleAddIngredientFromSearch = useCallback(
-  //   async (ingredientToAdd: IIngredient) => {
-  //     setIngredient(ingredientToAdd);
-
-  //     const updatedIngredient: IIngredient = {
-  //       ...ingredientToAdd,
-  //       clientId: ingredient.clientId,
-  //       // image: "/aiimages/food/default-food.svg",
-  //     };
-  //     if (ingredientAction) {
-  //       await ingredientAction(updatedIngredient);
-  //       console.log("ingredientAction called successfully");
-  //     } else {
-  //       console.error("ingredientAction is not defined");
-  //     }
-  //   },
-  //   [ingredient.clientId, ingredientAction]
-  // );
-
   const handleDuplicate = useCallback(() => {
     const duplicatedIngredient = { ...ingredient, id: 0 }; // Reset ID for new ingredient
     setIngredient(duplicatedIngredient);
@@ -357,6 +335,12 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
 
   const facebookHashTagWithNutrients = `I found this ingredient on Meal Planner: ${ingredient.food} ${ingredient.quantity} ${ingredient.measure} ${nutrientDetails}`;
 
+  actionParam = searchParams.get("action");
+
+  const showActionButton =
+    action !== "View" &&
+    //ingredient.id >= 0 &&
+    ingredient.foodId === null;
   /**
    * Handler for viewing ingredient details.
    * This should be passed down to the parent to open the IngredientDetailsDrawer.
@@ -373,21 +357,11 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
       <FormModal
         dialogTitle={getDialogTitle()}
         dialogDescription={getDialogDescription()}
-        buttonText={
-          actionParam === UrlAction.View &&
-          ingredient.id === 0 &&
-          ingredient.foodId === null
-            ? undefined
-            : action
-        }
+        buttonText={showActionButton ? action : undefined}
         open={open}
         setOpen={setOpen}
         formAction={
-          actionParam === UrlAction.View &&
-          ingredient.id === 0 &&
-          ingredient.foodId === null
-            ? undefined
-            : () => ingredientAction(ingredient)
+          showActionButton ? () => ingredientAction(ingredient) : undefined
         }
         // Pass Delete Button Props Only for View and Edit
         deleteButtonText={
