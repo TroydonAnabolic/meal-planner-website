@@ -72,7 +72,7 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
   const [showShareIcons, setShowShareIcons] = useState(false);
 
   const searchParams = useSearchParams();
-  const actionParam = searchParams.get("action");
+  let actionParam = searchParams.get("action");
   // Reset activeTab when the modal is opened
   useEffect(() => {
     if (open) {
@@ -169,10 +169,21 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
     meaToAdd.mealPlanId = meal.mealPlanId;
     meaToAdd.clientId = meal.clientId;
 
-    setActiveTab("Add");
+    setActiveTab("Add Meal");
+    setAction("View");
     setMeal(meaToAdd);
     setSearchMealSelected(true);
-    // setSearchResults([]);
+    const params = new URLSearchParams(window.location.search);
+    params.set("action", UrlAction.View);
+    actionParam = UrlAction.View;
+  };
+
+  // Handler to reset all fields and state
+  const handleClear = () => {
+    setAction("Add");
+    const params = new URLSearchParams(window.location.search);
+    params.set("action", UrlAction.Add);
+    actionParam = UrlAction.Add;
   };
 
   /**
@@ -293,19 +304,15 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
 
   const shareDescription = `I found this meal on Meal Planner: ${meal.name}`;
 
-  const nutrientDetails = nutrientFields
-    .map((nutrient) => {
-      const nutrientValue =
-        meal.nutrients && meal.nutrients[nutrient.tag]
-          ? ` ${nutrient.label} ${meal.nutrients[nutrient.tag].quantity} ${
-              nutrient.unit
-            }`
-          : ` ${nutrient.label} 0 ${nutrient.unit}`;
-      return nutrientValue;
-    })
-    .join(" ");
+  actionParam = searchParams.get("action");
 
-  const shareDescriptionLong = `I found this meal on Meal Planner: ${meal.name} ${nutrientDetails}`;
+  const showActionButton =
+    action !== "View" && meal.ingredients.every((i) => i.foodId === "");
+
+  const showDeleteOrDupBtn =
+    actionParam == (UrlAction.Edit || actionParam == UrlAction.View) &&
+    meal.id !== 0 &&
+    meal.ingredients.every((i) => i.foodId === "");
 
   /**
    * Handler for viewing meal details.
@@ -323,24 +330,16 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
       <FormModal
         dialogTitle={getDialogTitle()}
         dialogDescription={getDialogDescription()}
-        buttonText={action === "View" ? undefined : action}
+        buttonText={showActionButton ? action : undefined}
         open={open}
         setOpen={setOpen}
-        formAction={action !== "View" ? () => mealAction(meal) : undefined}
+        formAction={showActionButton ? () => mealAction(meal) : undefined}
         // Pass Delete Button Props Only for View and Edit
-        deleteButtonText={deleteButtonText}
+        deleteButtonText={showDeleteOrDupBtn ? deleteButtonText : undefined}
         onDelete={onDelete}
         onClose={onClose}
-        duplicateButtonText={
-          actionParam == UrlAction.Edit || actionParam == UrlAction.View
-            ? "Duplicate"
-            : undefined
-        }
-        onDuplicate={
-          actionParam == UrlAction.Edit || actionParam == UrlAction.View
-            ? handleDuplicate
-            : undefined
-        }
+        duplicateButtonText={showDeleteOrDupBtn ? "Duplicate" : undefined}
+        onDuplicate={showDeleteOrDupBtn ? handleDuplicate : undefined}
       >
         <div className="flex justify-between items-center">
           <TabsWithPills tabs={tabs} onTabChange={handleTabChange} />
@@ -462,7 +461,11 @@ const MealModalContent: React.FC<MealModalContentProps> = ({
               </button>
             )}
 
-            <MealInputFields meal={meal} setMeal={setMeal} />
+            <MealInputFields
+              meal={meal}
+              setMeal={setMeal}
+              handleClear={handleClear}
+            />
           </div>
         )}
       </FormModal>

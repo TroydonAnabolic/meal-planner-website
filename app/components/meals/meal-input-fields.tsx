@@ -24,9 +24,14 @@ import { UrlAction } from "@/constants/constants-enums";
 type MealInputFieldsProps = {
   meal: IMealInterface;
   setMeal: React.Dispatch<React.SetStateAction<IMealInterface | undefined>>;
+  handleClear: () => void;
 };
 
-const MealInputFields: React.FC<MealInputFieldsProps> = ({ meal, setMeal }) => {
+const MealInputFields: React.FC<MealInputFieldsProps> = ({
+  meal,
+  setMeal,
+  handleClear,
+}) => {
   const searchParams = useSearchParams();
   const actionParam = searchParams.get("action");
   const readOnly = actionParam === UrlAction.View;
@@ -216,6 +221,27 @@ const MealInputFields: React.FC<MealInputFieldsProps> = ({ meal, setMeal }) => {
     event: React.SyntheticEvent<HTMLImageElement, Event>
   ) => {
     event.currentTarget.src = placeholderImage;
+  };
+
+  // Handler to reset all fields and state
+  const handleClearFields = () => {
+    setMeal({
+      ...meal,
+      name: "",
+      foodSourceUrl: "",
+      timeScheduled: new Date(),
+      timeConsumed: undefined,
+      image: "",
+      weight: 0,
+      nutrients: {},
+      ingredients: [],
+      ingredientLines: [],
+    });
+    setImageSrc(undefined);
+    setSelectedDateTime(null);
+    setIsPickerOpen(false);
+    setFieldBeingEdited(null);
+    handleClear();
   };
 
   return (
@@ -522,6 +548,18 @@ const MealInputFields: React.FC<MealInputFieldsProps> = ({ meal, setMeal }) => {
               </div>
             </div>
           </div>
+          {(!readOnly ||
+            !meal.ingredients.every((ing) => ing.foodId === "")) && (
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={handleClearFields}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                Clear All Fields
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </LocalizationProvider>

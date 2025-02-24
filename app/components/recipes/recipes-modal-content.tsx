@@ -375,13 +375,14 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
 
   const shareDescriptionLong = `I found this recipe on Meal Planner: ${recipe.label} ${nutrientDetails}`;
   actionParam = searchParams.get("action");
+
   const showActionButton =
-    action !== "View" && recipe.ingredients.every((i) => i.foodId === null);
+    action !== "View" && recipe.ingredients.every((i) => i.foodId === "");
 
   const showDeleteOrDupBtn =
     actionParam == (UrlAction.Edit || actionParam == UrlAction.View) &&
     recipe.id !== 0 &&
-    recipe.ingredients.every((i) => i.foodId === null);
+    recipe.ingredients.every((i) => i.foodId === "");
 
   // If RecipeDetailsDrawer is managed externally, you can pass a callback to handle details
   // For this example, we'll skip implementation
