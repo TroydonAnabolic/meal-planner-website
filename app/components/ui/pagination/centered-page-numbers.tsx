@@ -24,6 +24,7 @@ const CenteredPageNumbers: React.FC<PaginationProps> = ({
     for (let i = startPage; i <= endPage; i++) {
       pages.push(
         <button
+          type="button"
           key={i}
           onClick={() => onPageChange(i)} // Use the passed getPageLink function
           aria-current={i === currentPage ? "page" : undefined}
@@ -47,6 +48,7 @@ const CenteredPageNumbers: React.FC<PaginationProps> = ({
     >
       <div className="-mt-px flex w-0 flex-1">
         <button
+          type="button"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className={`inline-flex items-center border-t-2 border-transparent px-1 pt-4 text-sm font-medium ${
@@ -66,6 +68,7 @@ const CenteredPageNumbers: React.FC<PaginationProps> = ({
       <div className="hidden md:-mt-px md:flex">{generatePageNumbers()}</div>
       <div className="-mt-px flex w-0 flex-1 justify-end">
         <button
+          type="button"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           aria-disabled={currentPage === totalPages}

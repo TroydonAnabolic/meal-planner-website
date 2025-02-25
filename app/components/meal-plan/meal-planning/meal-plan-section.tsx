@@ -1,7 +1,7 @@
 // app/meal-planner/dashboard/page.tsx
 "use client";
 import React, { useState, useCallback, useEffect, forwardRef } from "react";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
@@ -28,16 +28,17 @@ import { FoodLoader } from "../../loader/food-loader";
 import ToggleInput from "../../ui/inputs/toggle-input";
 
 type MealPlanSectionProps = {
-  initialMealPlan: IMealPlan;
+  //  initialMealPlan: IMealPlan;
   selectedMealPlan: IMealPlan;
   mealPlans: IMealPlan[];
   setMealPlans: React.Dispatch<React.SetStateAction<IMealPlan[]>>;
   setSelectedMealPlan: React.Dispatch<React.SetStateAction<IMealPlan>>;
+  recipes: IRecipeInterface[];
+  setRecipes: React.Dispatch<React.SetStateAction<IRecipeInterface[]>>;
   recipesLoading: boolean;
   recipesError: string | null;
   selectedLabel: string;
   setSelectedLabel: React.Dispatch<React.SetStateAction<string>>;
-  recipes: IRecipeInterface[];
   fetchAndSetRecipes: (mealPlan: IMealPlan) => Promise<void>;
   clientId: number;
   confirmModalProps: ConfirmActionModalProps;
@@ -49,11 +50,12 @@ type MealPlanSectionProps = {
 const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
   (
     {
-      initialMealPlan,
+      //initialMealPlan,
       selectedMealPlan,
       setSelectedMealPlan,
       mealPlans,
       setMealPlans,
+      setRecipes,
       recipesLoading,
       recipesError,
       selectedLabel,
@@ -68,6 +70,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
   ) => {
     const [formResult, setFormResult] = useState<FormResult | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [mode, setMode] = useState<string>("view");
     const defaultMealPlan: IMealPlan = getDefaultMealPlan(clientId);
     const [nutritionSummary, setNutritionSummary] = useState<
       Record<string, { total: number; consumed: number; remaining: number }>
@@ -113,6 +116,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
     // extract start and end date from selected option and then set selected meal plan
     const handleMealPlanChange = (selectedId: string) => {
       if (selectedId === "new") {
+        setRecipes([]);
         setSelectedMealPlan(defaultMealPlan);
         setSelectedLabel("New Meal Plan");
         return;
@@ -140,7 +144,12 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
         selectedMealPlan.id > 0 ? selectedMealPlan.id : mealPlanId;
 
       setLoading(true);
-      const result = await submitMealPlan(selectedMealPlan);
+
+      // fetch recipes for selected meal plan
+      // /fetchAndSetRecipes(selectedMealPlan);
+
+      // save meal plan with current recipes
+      const result = await submitMealPlan(selectedMealPlan, recipes);
       setFormResult(result);
       setLoading(false);
       if (result.success) {
@@ -185,6 +194,26 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
       setLoading(false);
     };
 
+    // Add the handleStartDateChange function
+    const handleStartDateChange = (date: Dayjs | null) => {
+      if (date) {
+        setSelectedMealPlan((prev) => ({
+          ...prev,
+          startDate: date.toISOString(),
+        }));
+      }
+    };
+
+    // Add the handleEndDateChange function
+    const handleEndDateChange = (date: Dayjs | null) => {
+      if (date) {
+        setSelectedMealPlan((prev) => ({
+          ...prev,
+          endDate: date.toISOString(),
+        }));
+      }
+    };
+
     return (
       <div
         className="md:max-w-screen-xl lg:max-w-screen-2xl mx-auto p-6"
@@ -202,7 +231,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
               label="Select Meal Plan"
               name="mealPlan"
               buttonLabel={selectedLabel}
-              value={selectedMealPlan.id.toString()} // Passed value prop
+              value={selectedMealPlan.id?.toString()} // Passed value prop
               options={[
                 {
                   label: "New Meal Plan",
@@ -233,16 +262,14 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
                         label="Start Date"
                         className="px-4 py-2 mr-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-md"
                         value={dayjs(selectedMealPlan.startDate)}
-                        disabled
-                        // onChange={handleStartDateChange}
+                        onChange={handleStartDateChange}
                       />
                       <DatePicker
                         format="DD/MM/YYYY"
                         label="End Date"
                         className="px-4 py-2 ml-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-md"
                         value={dayjs(selectedMealPlan.endDate)}
-                        // onChange={handleEndDateChange}
-                        disabled
+                        onChange={handleEndDateChange}
                       />
                     </LocalizationProvider>
                   </div>
@@ -281,15 +308,17 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
                     {!recipesLoading && !recipesError && (
                       <div className="mt-6">
                         <HorizontalScrollContainer>
-                          <RecipeList
-                            recipes={recipes}
-                            mealPlan={selectedMealPlan}
-                            //   clientData={clientData}
-                            startDate={dayjs(selectedMealPlan.startDate)}
-                            endDate={dayjs(selectedMealPlan.endDate)}
-                            allowEmptyRows={true}
-                            mode={selectedMealPlan.id === 0 ? "add" : "edit"} // Set mode based on meal plan
-                          />
+                          <div className="flex flex-col ">
+                            <RecipeList
+                              recipes={recipes}
+                              mealPlan={selectedMealPlan}
+                              //   clientData={clientData}
+                              startDate={dayjs(selectedMealPlan.startDate)}
+                              endDate={dayjs(selectedMealPlan.endDate)}
+                              allowEmptyRows={true}
+                              mode={selectedMealPlan.id === 0 ? "add" : "edit"} // Set mode based on meal plan
+                            />
+                          </div>
                         </HorizontalScrollContainer>
                       </div>
                     )}

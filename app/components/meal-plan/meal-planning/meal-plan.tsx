@@ -5,15 +5,11 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 import MealPlanSection from "./meal-plan-section";
 import { useSession } from "next-auth/react";
-import {
-  generateEmptySelections,
-  getCurrentMealPlan,
-  getDefaultMealPlan,
-} from "@/util/meal-plan-utils";
+import { getCurrentMealPlan, getDefaultMealPlan } from "@/util/meal-plan-utils";
 import dayjs from "dayjs";
 import { ConfirmActionModalProps } from "../../ui/modals/confirm-action-modal";
 import ReactDOMServer from "react-dom/server";
-import { getLocalTimeFromUtc, getUtcTimeFromLocal } from "@/util/date-util";
+import { getLocalTimeFromUtc } from "@/util/date-util";
 
 interface MealPlanProps {
   mealPlanData: IMealPlan[] | undefined;
@@ -131,7 +127,9 @@ const MealPlan: React.FC<MealPlanProps> = ({
 
   const printFn = useReactToPrint({
     contentRef: componentRef,
-    documentTitle: "AwesomeFileName",
+    documentTitle: `Meal Plan - ${selectedLabel}- ${dayjs().format(
+      "DD/MM/YYYY"
+    )} - ${clientId} `,
     onAfterPrint: handleAfterPrint,
     onBeforePrint: handleBeforePrint,
   });
@@ -234,16 +232,17 @@ const MealPlan: React.FC<MealPlanProps> = ({
         />
 
         <MealPlanSection
-          initialMealPlan={initialMealPlan}
+          //    initialMealPlan={initialMealPlan}
           selectedMealPlan={selectedMealPlan}
           mealPlans={mealPlans}
           setMealPlans={setMealPlans}
+          recipes={recipes}
+          setRecipes={setRecipes}
           setSelectedMealPlan={setSelectedMealPlan}
           recipesLoading={recipesLoading}
           recipesError={recipesError}
           selectedLabel={selectedLabel}
           setSelectedLabel={setSelectedLabel}
-          recipes={recipes}
           fetchAndSetRecipes={fetchAndSetRecipes}
           clientId={clientId}
           confirmModalProps={confirmModalProps}

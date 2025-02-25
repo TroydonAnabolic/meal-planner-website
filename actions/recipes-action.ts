@@ -33,7 +33,7 @@ export async function saveRecipe(
       throw error;
     }
   } finally {
-    revalidatePath(ROUTES.MEAL_PLANNER.RECIPES.MANAGE_RECIPES);
+    revalidatePath(ROUTES.MEAL_PLANNER.BASE);
   }
 }
 
@@ -56,7 +56,7 @@ export async function updateRecipe(
       throw error;
     }
   } finally {
-    revalidatePath(ROUTES.MEAL_PLANNER.RECIPES.MANAGE_RECIPES);
+    revalidatePath(ROUTES.MEAL_PLANNER.BASE);
   }
 }
 
@@ -75,6 +75,6 @@ export async function deleteRecipe(
     }
     return { success: false, errors };
   } finally {
-    revalidatePath(ROUTES.MEAL_PLANNER.RECIPES.MANAGE_RECIPES);
+    revalidatePath(ROUTES.MEAL_PLANNER.BASE);
   }
 }

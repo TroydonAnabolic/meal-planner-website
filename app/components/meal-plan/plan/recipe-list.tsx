@@ -345,7 +345,7 @@ const RecipeList: React.FC<RecipeListProps> = ({
                             mealTypeKey: mealType.toLowerCase(),
                             timeScheduled: days[dayIndex]?.dateTime || "",
                             mealPlanId:
-                              (mealPlan as IMealPlan).id.toString() || "0",
+                              (mealPlan as IMealPlan).id?.toString() || "0",
                           })}`}
                           target="_blank"
                           className="flex flex-col items-center justify-center h-full w-full"

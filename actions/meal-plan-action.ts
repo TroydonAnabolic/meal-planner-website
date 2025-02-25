@@ -18,7 +18,7 @@ import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
 import { FormResult } from "@/types/form";
 import { getEnumKeysByValues } from "@/util/enum-util";
 import { mapRecipeToMeal } from "@/util/mappers";
-import { generateMealsForPlan } from "@/util/meal-generator-util";
+import { formatUri, generateMealsForPlan } from "@/util/meal-generator-util";
 import { getMealTypeFromTime } from "@/util/meal-utils";
 import dayjs from "dayjs";
 import { revalidatePath } from "next/cache";
@@ -29,16 +29,29 @@ import { isRedirectError } from "next/dist/client/components/redirect";
  * Note: In Next.js 13, server actions should be defined in a separate file or within a `use server` function.
  */
 export const submitMealPlan = async (
-  mealPlan: IMealPlan
+  mealPlan: IMealPlan,
+  recipes: IRecipeInterface[]
 ): Promise<FormResult> => {
   const errors: { [key: string]: string } = {};
 
   try {
     let addedMealPlan: IMealPlan | undefined;
 
-    if (mealPlan.id === 0) {
+    // assign the meal plan the current recipes
+    for (const recipe of recipes) {
+      for (const selectionItem of mealPlan?.selection || []) {
+        for (const section of Object.values(selectionItem.sections)) {
+          const formattedUri = formatUri(recipe.uri);
+          section.assigned = recipe.uri;
+          section._links.self.href = formattedUri; // Update the section URI
+        }
+      }
+    }
+
+    if (mealPlan.id === 0 || mealPlan.id === null) {
       // Create new meal plan
-      addedMealPlan = await addMealPlan(mealPlan);
+
+      addedMealPlan = await addMealPlan({ ...mealPlan, id: 0 });
       if (!addedMealPlan) {
       }
       return {
