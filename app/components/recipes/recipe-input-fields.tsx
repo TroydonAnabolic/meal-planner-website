@@ -202,14 +202,19 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
       }
     }
 
-    setRecipe?.((prevRecipe) => ({
-      ...prevRecipe!,
+    const updatedRecipe = {
+      ...recipe!,
       [name]:
-        name === "yield" || name === "totalTime" || name === "totalCO2Emissions"
+        name === "yield" ||
+        name === "totalTime" ||
+        name === "totalCO2Emissions" ||
+        name === "totalWeight"
           ? Number(value)
           : value,
       isCustom: true,
-    }));
+    };
+
+    setRecipe?.(updatedRecipe);
   };
   // Handler for multi-select dropdowns
   const handleMultiSelectDropdown = useCallback(
@@ -466,7 +471,7 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
                           orientation="portrait"
                           ampm={true}
                           minutesStep={1}
-                          //disabled={isMealPlanRecipe}
+                          disabled={isMealPlanRecipe}
                           value={selectedDateTime}
                           onChange={handleDateTimeChange}
                           className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500  text-gray-700"
@@ -591,19 +596,40 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
               {/* Enter main */}
               <div className="mt-2 col-span-2">
                 <label
-                  htmlFor="total-weight"
+                  htmlFor="totalWeight"
                   className="block text-sm font-medium text-gray-700"
                 >
                   Total weight (grams)
                 </label>
                 <div className="mt-1">
                   <input
-                    id="total-weight"
-                    name="total-weight"
-                    readOnly={true}
-                    disabled={true}
-                    value={recipe.totalWeight.toFixed(1)}
+                    id="totalWeight"
+                    name="totalWeight"
+                    readOnly={readOnly}
+                    step={1}
+                    defaultValue={0}
+                    value={
+                      typeof recipe.totalWeight === "number"
+                        ? Math.round(recipe.totalWeight).toString()
+                        : "0"
+                    }
+                    min={0}
                     type="number"
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      console.log(
+                        "Input Quantity:",
+                        e.target.value,
+                        "Parsed:",
+                        value
+                      );
+                      handleInputChange({
+                        target: {
+                          name: "totalWeight",
+                          value: !isNaN(value) ? value.toString() : "0",
+                        },
+                      } as React.ChangeEvent<HTMLInputElement>);
+                    }}
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-700"
                   />
                 </div>

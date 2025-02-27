@@ -1,13 +1,16 @@
 "use server";
 
-import { MealType } from "@/constants/constants-enums";
+import { MealType, Nutrients } from "@/constants/constants-enums";
 import { ROUTES } from "@/constants/routes";
 import {
   addRecipe,
   deleteRecipe as removeRecipe,
   updateRecipe as update,
 } from "@/lib/recipe";
-import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
+import {
+  IRecipeInterface,
+  RecipeNutrients,
+} from "@/models/interfaces/recipe/recipe";
 import { FormResult } from "@/types/form";
 import { revalidatePath } from "next/cache";
 import { isRedirectError } from "next/dist/client/components/redirect";
@@ -22,6 +25,12 @@ export async function saveRecipe(
         (meal) => MealType[meal as keyof typeof MealType]
       );
     }
+
+    recipe.calories = (
+      recipe.totalNutrients
+        ? recipe.totalNutrients[Nutrients.ENERC_KCAL as keyof RecipeNutrients]
+        : { quantity: 0 }
+    ).quantity;
 
     // Call the update API
     const addedRecipe = await addRecipe(recipe);

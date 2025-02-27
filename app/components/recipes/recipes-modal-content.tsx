@@ -162,8 +162,8 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
       return updatedRecipe;
     });
     if (actionParam && actionParam === UrlAction.Add) {
-      setActiveTab("Search Recipes");
-      setAction("Search");
+      setActiveTab("Add Recipes");
+      setAction("Add");
     }
   };
 

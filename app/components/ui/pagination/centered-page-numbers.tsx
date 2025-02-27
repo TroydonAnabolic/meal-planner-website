@@ -49,7 +49,7 @@ const CenteredPageNumbers: React.FC<PaginationProps> = ({
       <div className="-mt-px flex w-0 flex-1">
         <button
           type="button"
-          onClick={() => onPageChange(currentPage - 1)}
+          onClick={() => onPageChange(1)} // Go to the first page
           disabled={currentPage === 1}
           className={`inline-flex items-center border-t-2 border-transparent px-1 pt-4 text-sm font-medium ${
             currentPage === 1
@@ -62,14 +62,14 @@ const CenteredPageNumbers: React.FC<PaginationProps> = ({
             aria-hidden="true"
             className="mr-3 h-5 text-gray-400"
           />
-          Previous
+          First
         </button>
       </div>
       <div className="hidden md:-mt-px md:flex">{generatePageNumbers()}</div>
       <div className="-mt-px flex w-0 flex-1 justify-end">
         <button
           type="button"
-          onClick={() => onPageChange(currentPage + 1)}
+          onClick={() => onPageChange(totalPages)} // Go to the last page
           disabled={currentPage === totalPages}
           aria-disabled={currentPage === totalPages}
           className={`inline-flex items-center border-t-2 border-transparent px-2 pt-4 text-sm font-medium ${
@@ -78,7 +78,7 @@ const CenteredPageNumbers: React.FC<PaginationProps> = ({
               : "text-gray-500 hover:border-gray-300 hover:text-gray-700"
           }`}
         >
-          Next
+          Last
           <ArrowLongRightIcon
             aria-hidden="true"
             className="ml-3 h-5 text-gray-400"
