@@ -50,7 +50,7 @@ const MealIngredientSearch: React.FC<MealIngredientSearchProps> = ({
   );
   const [foodParse, setFoodParse] = useState<IFoodParser | undefined>();
   const [customIngredients, setCustomIngredients] = useState<IHint[]>([]);
-  const [isCustom, setIsCustom] = useState<boolean>(false);
+  const [isCustom, setIsCustom] = useState<boolean>(true);
 
   /**
    * Debounced search to prevent excessive API calls.
@@ -163,13 +163,13 @@ const MealIngredientSearch: React.FC<MealIngredientSearchProps> = ({
 
   return (
     <div className="mb-4">
-      <div className="mb-2">
+      {/* <div className="mb-2">
         <ToggleInput
           label="Custom Ingredients"
           enabled={isCustom}
           onChange={setIsCustom}
         />
-      </div>
+      </div> */}
       {!selectedFoodHint ? (
         <div>
           <input

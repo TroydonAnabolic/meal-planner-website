@@ -53,7 +53,7 @@ const IngredientSearch: React.FC<IngredientSearchProps> = ({
   );
   const [foodParse, setFoodParse] = useState<IFoodParser | undefined>();
   const [customIngredients, setCustomIngredients] = useState<IHint[]>([]);
-  const [isCustom, setIsCustom] = useState<boolean>(false);
+  const [isCustom, setIsCustom] = useState<boolean>(true);
 
   /**
    * Debounced search to prevent excessive API calls.
@@ -84,12 +84,13 @@ const IngredientSearch: React.FC<IngredientSearchProps> = ({
               });
               setCustomIngredients(hints);
             }
-          } else {
-            const response: IFoodParser = await fetchFood(searchTerm);
-            if (response) {
-              setFoodParse(response);
-            }
-          }
+          } //else //{
+          //   const response: IFoodParser = await fetchFood(searchTerm);
+          //   if (response) {
+          //     setFoodParse(response);
+          //   }
+          // }
+
         } catch (err) {
           setError("Failed to fetch ingredients.");
         } finally {
@@ -166,13 +167,13 @@ const IngredientSearch: React.FC<IngredientSearchProps> = ({
 
   return (
     <div className="mb-4">
-      <div className="mb-2">
+      {/* <div className="mb-2">
         <ToggleInput
           label="Custom Ingredients"
           enabled={isCustom}
           onChange={setIsCustom}
         />
-      </div>
+      </div> */}
       {!selectedFoodHint ? (
         <div>
           <input

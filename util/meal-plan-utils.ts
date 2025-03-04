@@ -4,6 +4,7 @@ import { Nutrients } from "@/constants/constants-enums";
 import { IMealPlan, SelectionItem } from "@/models/interfaces/diet/meal-plan";
 import { IMealInterface } from "@/models/interfaces/meal/Meal";
 import dayjs, { Dayjs } from "dayjs";
+import { v4 as uuidv4 } from "uuid"; // Import UUID library
 
 export const generateEmptySelections = (
   startDate: Dayjs,
@@ -12,46 +13,58 @@ export const generateEmptySelections = (
   const selections = [];
   let current = startDate.clone();
 
-  const selection: SelectionItem = {
-    sections: {
-      Breakfast: {
-        assigned: "",
-        _links: {
-          self: {
-            title: "Recipe details",
-            href: "",
-          },
-        },
-      },
-      Lunch: {
-        assigned: "",
-        _links: {
-          self: {
-            title: "Recipe details",
-            href: "",
-          },
-        },
-      },
-      Dinner: {
-        assigned: "",
-        _links: {
-          self: {
-            title: "Recipe details",
-            href: "",
-          },
-        },
-      },
-    },
+  const createUniqueUri = (mealType: string) => {
+    var host =
+      process.env.NODE_ENV === "production"
+        ? process.env.NEXT_PUBLIC_DOMAIN_PROD
+        : process.env.NEXT_PUBLIC_DOMAIN_DEV;
+
+    return `https://${host}/recipes/${mealType.toLowerCase()}-${uuidv4()}`;
   };
+  // const createHref = (mealType: string) => {
+  //   return `https:api//${window.location.origin}/recipes/${mealType.toLowerCase()}-${uuidv4()}`;
+  // };
 
   while (current.isBefore(endDate) || current.isSame(endDate, "day")) {
-    selections.push(selection);
+    const selection: SelectionItem = {
+      sections: {
+        Breakfast: {
+          assigned: createUniqueUri("Breakfast"),
+          _links: {
+            self: {
+              title: "Recipe details",
+              href: createUniqueUri("Breakfast"),
+            },
+          },
+        },
+        Lunch: {
+          assigned: createUniqueUri("Lunch"),
+          _links: {
+            self: {
+              title: "Recipe details",
+              href: createUniqueUri("Lunch"),
+            },
+          },
+        },
+        Dinner: {
+          assigned: createUniqueUri("Dinner"),
+          _links: {
+            self: {
+              title: "Recipe details",
+              href: createUniqueUri("Dinner"),
+            },
+          },
+        },
+      },
+    };
 
+    selections.push(selection);
     current = current.add(1, "day");
   }
 
   return selections;
 };
+
 export function getCurrentMealPlan(
   mealPlanData: IMealPlan[],
   today: dayjs.Dayjs,

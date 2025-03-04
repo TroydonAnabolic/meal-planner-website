@@ -183,6 +183,7 @@ const RecipesGrid: React.FC<RecipesGridProps> = ({
     params.delete("mealType");
     params.delete("timeScheduled");
     params.delete("mealPlanId");
+    params.delete("mealTypeKey");
     params.delete("action");
     params.delete("id");
     params.set("page", String(currentPage)); // Ensure 'page' remains
@@ -246,8 +247,9 @@ const RecipesGrid: React.FC<RecipesGridProps> = ({
           ...recipe,
           image: objectUrl,
           url: recipe.isCustom
-            ? `${hostname}/${pathname}?page=${currentPage}&action=${UrlAction.View}&id=`
+            ? `${window.location.origin}${pathname}?page=${currentPage}&action=${UrlAction.View}&id=`
             : recipe.url,
+          uri: `${window.location.origin}#recipe_`,
         };
         const newRecipe = await saveRecipe(updatedRecipe);
         if (newRecipe && newRecipe.id) {

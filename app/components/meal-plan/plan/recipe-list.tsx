@@ -72,7 +72,6 @@ const RecipeList: React.FC<RecipeListProps> = ({
 
   const recipeMap = useMemo(() => {
     const map = new Map<string, IRecipeInterface>();
-
     // Define the order of MealType based on the enum
     const mealTypeOrder = Object.values(MealType);
 
@@ -148,8 +147,6 @@ const RecipeList: React.FC<RecipeListProps> = ({
       }
       return daysArray.slice(startIdx, endIdx);
     }, [startDate, endDate, startIdx, endIdx]);
-
-  const usedRecipeIdsByGroup = useRef<Map<string, Set<string>>>(new Map());
 
   const createQueryString = useCallback(
     (params: { [key: string]: string | string[] }) => {
@@ -290,11 +287,11 @@ const RecipeList: React.FC<RecipeListProps> = ({
                                   className={`text-xs mt-1 ${macro.className}`}
                                 >
                                   {recipe.totalNutrients &&
-                                  recipe.totalNutrients[macro.tag]
+                                    recipe.totalNutrients[macro.tag]
                                     ? `${(
-                                        recipe.totalNutrients[macro.tag]
-                                          .quantity / recipe.yield
-                                      ).toFixed(0)}${macro.unit}`
+                                      recipe.totalNutrients[macro.tag]
+                                        .quantity / recipe.yield
+                                    ).toFixed(0)}${macro.unit}`
                                     : "0g"}
                                 </span>
                               </div>
@@ -320,10 +317,9 @@ const RecipeList: React.FC<RecipeListProps> = ({
                             <Link
                               href={
                                 mode === "view"
-                                  ? `${
-                                      ROUTES.MEAL_PLANNER.RECIPES
-                                        .VIEW_RECIPE_DETAILS
-                                    }/${extractRecipeIdFromUri(recipe.uri)}`
+                                  ? `${ROUTES.MEAL_PLANNER.RECIPES
+                                    .VIEW_RECIPE_DETAILS
+                                  }/${extractRecipeIdFromUri(recipe.uri)}`
                                   : `${ROUTES.MEAL_PLANNER.RECIPES.MANAGE_RECIPES}?page=1&action=edit&id=${recipe.id}`
                               }
                               target="_blank"
@@ -335,30 +331,30 @@ const RecipeList: React.FC<RecipeListProps> = ({
                           </div>
                         </div>
                       ) : // if there is no recipe on this cell then add it
-                      allowEmptyRows && mode === "edit" ? (
-                        <Link
-                          href={`${
-                            ROUTES.MEAL_PLANNER.RECIPES.MANAGE_RECIPES
-                          }?${createQueryString({
-                            page: "1",
-                            action: "add",
-                            mealTypeKey: mealType.toLowerCase(),
-                            timeScheduled: days[dayIndex]?.dateTime || "",
-                            mealPlanId:
-                              (mealPlan as IMealPlan).id?.toString() || "0",
-                          })}`}
-                          target="_blank"
-                          className="flex flex-col items-center justify-center h-full w-full"
-                          aria-label="Add a recipe"
-                        >
-                          <span className="text-gray-500">+</span>
-                          <span className="text-sm text-gray-500">
-                            Add Recipe
-                          </span>
-                        </Link>
-                      ) : (
-                        <span className="text-sm text-gray-500">-</span>
-                      )}
+                        allowEmptyRows && mode === "edit" ? (
+                          <Link
+                            href={`${ROUTES.MEAL_PLANNER.RECIPES.MANAGE_RECIPES
+                              }?${createQueryString({
+                                page: "1",
+                                action: "add",
+                                mealTypeKey: mealType.toLowerCase(),
+                                timeScheduled: days[dayIndex]?.dateTime || "",
+                                mealPlanId:
+                                  (mealPlan as IMealPlan).id?.toString() || "0",
+                                //recipeUri: section.assigned
+                              })}`}
+                            target="_blank"
+                            className="flex flex-col items-center justify-center h-full w-full"
+                            aria-label="Add a recipe"
+                          >
+                            <span className="text-gray-500">+</span>
+                            <span className="text-sm text-gray-500">
+                              Add Recipe
+                            </span>
+                          </Link>
+                        ) : (
+                          <span className="text-sm text-gray-500">-</span>
+                        )}
                     </td>
                   );
                 })}

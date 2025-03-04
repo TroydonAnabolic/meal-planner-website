@@ -105,29 +105,29 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
       actionParam === UrlAction.Add ||
       action === "Search"
       ? [
-          {
-            name: "Search Recipes",
-            href: "#",
-            current: activeTab === "Search Recipes",
-          },
-          {
-            name: "Add Recipe",
-            href: "#",
-            current: activeTab === "Add Recipe",
-          },
-        ]
+        {
+          name: "Search Recipes",
+          href: "#",
+          current: activeTab === "Search Recipes",
+        },
+        {
+          name: "Add Recipe",
+          href: "#",
+          current: activeTab === "Add Recipe",
+        },
+      ]
       : [
-          {
-            name: "View Recipe",
-            href: "#",
-            current: activeTab === "View Recipe",
-          },
-          {
-            name: "Edit Recipe",
-            href: "#",
-            current: activeTab === "Edit Recipe",
-          },
-        ];
+        {
+          name: "View Recipe",
+          href: "#",
+          current: activeTab === "View Recipe",
+        },
+        {
+          name: "Edit Recipe",
+          href: "#",
+          current: activeTab === "Edit Recipe",
+        },
+      ];
   }, [activeTab, action, actionParam]);
 
   useEffect(() => {
@@ -149,7 +149,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
 
       if (timeScheduledParam) {
         const scheduledTime = getScheduledTimeFromMealTypeKey(
-          mealTypeParam as keyof typeof MealType
+          mealTypeParam as keyof typeof MealType, timeScheduledParam as string
         );
         updatedRecipe.timeScheduled = scheduledTime;
         //recipeToAdd.timeScheduled = parseDate(timeScheduledParam);
@@ -228,7 +228,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
 
     if (timeScheduledParam) {
       const scheduledTime = getScheduledTimeFromMealTypeKey(
-        mealTypeParam as keyof typeof MealType
+        mealTypeParam as keyof typeof MealType, timeScheduledParam
       );
       recipe.timeScheduled = scheduledTime;
       //recipeToAdd.timeScheduled = parseDate(timeScheduledParam);
@@ -365,9 +365,8 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     .map((nutrient) => {
       const nutrientValue =
         recipe.totalNutrients && recipe.totalNutrients[nutrient.tag]
-          ? ` ${nutrient.label} ${
-              recipe.totalNutrients[nutrient.tag].quantity
-            } ${nutrient.unit}`
+          ? ` ${nutrient.label} ${recipe.totalNutrients[nutrient.tag].quantity
+          } ${nutrient.unit}`
           : ` ${nutrient.label} 0 ${nutrient.unit}`;
       return nutrientValue;
     })

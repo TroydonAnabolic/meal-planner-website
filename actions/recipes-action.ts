@@ -27,7 +27,8 @@ export async function saveRecipe(
     }
 
     recipe.calories = (
-      recipe.totalNutrients
+      recipe.totalNutrients &&
+      recipe.totalNutrients[Nutrients.ENERC_KCAL as keyof RecipeNutrients]
         ? recipe.totalNutrients[Nutrients.ENERC_KCAL as keyof RecipeNutrients]
         : { quantity: 0 }
     ).quantity;

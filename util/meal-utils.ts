@@ -54,7 +54,8 @@ export const groupMealsByWeek = (
 };
 
 export const getScheduledTimeFromMealTypeKey = (
-  mealTypeKey: keyof typeof MealType
+  mealTypeKey: keyof typeof MealType,
+  timeScheduledParam: string
 ): Date => {
   // Use an array of tuples to handle potential duplicate values
   const mealNumberMapping: [keyof typeof MealType, MealNumber][] = [
@@ -95,10 +96,12 @@ export const getScheduledTimeFromMealTypeKey = (
     hoursIn24Format = 0; // Handle midnight (12:00 AM)
   }
 
-  const today = new Date();
-  today.setHours(hoursIn24Format, minutes, 0, 0); // Set extracted time
+  // Parse the timeScheduledParam using dayjs with custom format
+  const parsedDate = dayjs(timeScheduledParam, "DD/MM/YYYY hh:mm A").toDate();
 
-  return today;
+  parsedDate.setHours(hoursIn24Format, minutes, 0, 0); // Set extracted time
+
+  return parsedDate;
 };
 
 export const getMealTypeFromTime = (
