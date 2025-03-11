@@ -31,9 +31,9 @@ dayjs.extend(utc); // Extend dayjs with UTC plugin
 type IngredientInputFieldsProps = {
   ingredient: IIngredient;
   setIngredient:
-    | React.Dispatch<React.SetStateAction<IIngredient | undefined>>
-    | undefined;
-  handleClear: () => void;
+  | React.Dispatch<React.SetStateAction<IIngredient | undefined>>
+  | undefined;
+  handleClear?: () => void;
   // measure?: Measure;
 };
 
@@ -97,7 +97,8 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
     });
     setImageSrc(undefined);
     setUnitOfMeasure(UnitOfMeasure.Gram);
-    handleClear();
+    handleClear ? handleClear() : undefined;
+
   };
 
   return (
@@ -253,12 +254,12 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
                     <span className="mr-1">{macro.icon}</span>
                     <span>
                       {ingredient.totalNutrients &&
-                      ingredient.totalNutrients[
+                        ingredient.totalNutrients[
                         macro.tag as unknown as keyof INutrients
-                      ]
+                        ]
                         ? ingredient.totalNutrients[
-                            macro.tag as unknown as keyof INutrients
-                          ].quantity.toFixed(1)
+                          macro.tag as unknown as keyof INutrients
+                        ].quantity.toFixed(1)
                         : 0}{" "}
                       {macro.unit} {macro.label}
                     </span>
@@ -281,13 +282,13 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
                         readOnly={readOnly && isCustom}
                         value={
                           ingredient.totalNutrients &&
-                          (ingredient.totalNutrients as unknown as INutrients)[
+                            (ingredient.totalNutrients as unknown as INutrients)[
                             nutrient.tag as unknown as keyof INutrients
-                          ]
+                            ]
                             ? (
-                                ingredient.totalNutrients as unknown as INutrients
-                              )[nutrient.tag as unknown as keyof INutrients]
-                                .quantity
+                              ingredient.totalNutrients as unknown as INutrients
+                            )[nutrient.tag as unknown as keyof INutrients]
+                              .quantity
                             : 0
                         }
                         onChange={(e) => {

@@ -1,9 +1,16 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
+import path from "path";
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method === "GET") {
-    const files = fs.readdirSync("./documents");
-    res.status(200).json(files);
+export const GET = async (req: NextRequest) => {
+  try {
+    const files = fs.readdirSync(path.join(process.cwd(), "documents"));
+    return NextResponse.json(files, { status: 200 });
+  } catch (error) {
+    console.error("Error reading files:", error);
+    return NextResponse.json(
+      { error: "Failed to read files" },
+      { status: 500 }
+    );
   }
 };

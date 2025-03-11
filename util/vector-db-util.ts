@@ -39,7 +39,7 @@ export async function updateVectorDB(
   totalDocumentChunksUpseted = 0;
   const modelname = "mixedbread-ai/mxbai-embed-large-v1";
   const extractor = await pipeline("feature-extraction", modelname, {
-    progress_callback: (progress) => console.log(progress),
+    //progress_callback: (progress) => console.log(progress),
   });
   console.log(extractor);
   for (const doc of docs) {

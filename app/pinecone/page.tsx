@@ -4,18 +4,18 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Progress } from '@/components/ui/progress'
 import { Textarea } from '@/components/ui/textarea'
 
-import { Progress } from '@radix-ui/react-progress'
 import { Database, LucideLoader2, MoveUp, RefreshCcw } from 'lucide-react'
 import React, { useState } from 'react'
 
 type Props = {}
 
-const VectorDBPage: React.FC<Props> = ({ }) => {
+const VectorDBPage = (props: Props) => {
     const [isUploading, setisUploading] = useState(false)
-    const [indexname, setIndexname] = useState("");
-    const [namespace, setNamespace] = useState("");
+    const [indexname, setIndexname] = useState("meal-planner-web");
+    const [namespace, setNamespace] = useState("testspace");
     const [fileListAsText, setfileListAsText] = useState("");
 
 
@@ -61,10 +61,20 @@ const VectorDBPage: React.FC<Props> = ({ }) => {
 
                 const data = new TextDecoder().decode(value);
                 console.log(data);
-                const { filename, totalChunks, chunksUpserted, isComplete } = JSON.parse(data);
+
+                // Split the data string to handle multiple JSON objects
+                const jsonObjects = data.split('}{').map((str, index, array) => {
+                    if (index === 0) return str + '}';
+                    if (index === array.length - 1) return '{' + str;
+                    return '{' + str + '}';
+                });
+
+                // Process only the first JSON object
+                const firstJsonObject = jsonObjects[0];
+                const { filename, totalChunks, chunksUpserted, isComplete } = JSON.parse(firstJsonObject);
                 const currentProgress = (chunksUpserted / totalChunks) * 100;
                 setProgress(currentProgress);
-                setFilename(`${filename} [${chunksUpserted}/${totalChunks}]`)
+                setFilename(`${filename} [${chunksUpserted}/${totalChunks}]`);
             }
         } catch (error) {
             console.error("Error reading response: ", error);
@@ -72,10 +82,8 @@ const VectorDBPage: React.FC<Props> = ({ }) => {
             reader.releaseLock();
         }
     }
-
     return (
-        <main className="mt-20 max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-screen text-center">
-
+        <main className='flex flex-col items-center p-24'>
             <Card>
                 <CardHeader>
                     <CardTitle>Update Knowledge Base</CardTitle>
@@ -129,6 +137,3 @@ const VectorDBPage: React.FC<Props> = ({ }) => {
 }
 
 export default VectorDBPage
-
-
-

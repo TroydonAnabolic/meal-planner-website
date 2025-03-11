@@ -24,7 +24,7 @@ import { UrlAction } from "@/constants/constants-enums";
 type MealInputFieldsProps = {
   meal: IMealInterface;
   setMeal: React.Dispatch<React.SetStateAction<IMealInterface | undefined>>;
-  handleClear: () => void;
+  handleClear?: () => void;
 };
 
 const MealInputFields: React.FC<MealInputFieldsProps> = ({
@@ -168,14 +168,14 @@ const MealInputFields: React.FC<MealInputFieldsProps> = ({
         operation === "add"
           ? [...(meal.ingredients || []), mealIngredient]
           : meal.ingredients.filter(
-              (ing) => ing.foodId !== mealIngredient.foodId
-            ),
+            (ing) => ing.foodId !== mealIngredient.foodId
+          ),
       ingredientLines:
         operation === "add"
           ? [...(meal.ingredientLines || []), mealIngredient.text!]
           : meal.ingredientLines.filter(
-              (line) => line !== mealIngredient.text!
-            ),
+            (line) => line !== mealIngredient.text!
+          ),
     };
 
     console.log("Updated Meal:", finalMeal);
@@ -241,7 +241,8 @@ const MealInputFields: React.FC<MealInputFieldsProps> = ({
     setSelectedDateTime(null);
     setIsPickerOpen(false);
     setFieldBeingEdited(null);
-    handleClear();
+    handleClear ? handleClear() : undefined;
+
   };
 
   return (
@@ -328,8 +329,8 @@ const MealInputFields: React.FC<MealInputFieldsProps> = ({
                       value={
                         meal.timeScheduled
                           ? dayjs(meal.timeScheduled).format(
-                              "DD/MM/YYYY hh:mm A"
-                            )
+                            "DD/MM/YYYY hh:mm A"
+                          )
                           : ""
                       }
                       readOnly={readOnly}
@@ -364,8 +365,8 @@ const MealInputFields: React.FC<MealInputFieldsProps> = ({
                         value={
                           meal.timeConsumed
                             ? dayjs(meal.timeConsumed).format(
-                                "DD/MM/YYYY hh:mm A"
-                              )
+                              "DD/MM/YYYY hh:mm A"
+                            )
                             : ""
                         }
                         readOnly
@@ -550,16 +551,16 @@ const MealInputFields: React.FC<MealInputFieldsProps> = ({
           </div>
           {(!readOnly ||
             !meal.ingredients.every((ing) => ing.foodId === "")) && (
-            <div className="mt-6 flex justify-end">
-              <button
-                type="button"
-                onClick={handleClearFields}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                Clear All Fields
-              </button>
-            </div>
-          )}
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleClearFields}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Clear All Fields
+                </button>
+              </div>
+            )}
         </div>
       </div>
     </LocalizationProvider>

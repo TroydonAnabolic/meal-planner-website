@@ -41,9 +41,9 @@ dayjs.extend(utc); // Extend dayjs with UTC plugin
 type RecipeInputFieldsProps = {
   recipe: IRecipeInterface;
   setRecipe:
-    | React.Dispatch<React.SetStateAction<IRecipeInterface | undefined>>
-    | undefined;
-  handleClear: () => void;
+  | React.Dispatch<React.SetStateAction<IRecipeInterface | undefined>>
+  | undefined;
+  handleClear?: () => void;
 };
 
 const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
@@ -103,14 +103,14 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
         operation === "add"
           ? [...(recipe.ingredients || []), recipeIngredient]
           : recipe.ingredients.filter(
-              (ing) => ing.foodId !== recipeIngredient.foodId
-            ),
+            (ing) => ing.foodId !== recipeIngredient.foodId
+          ),
       ingredientLines:
         operation === "add"
           ? [...(recipe.ingredientLines || []), recipeIngredient.text!]
           : recipe.ingredientLines.filter(
-              (line) => line !== recipeIngredient.text!
-            ),
+            (line) => line !== recipeIngredient.text!
+          ),
       isCustom: true,
       // Nutrient totals and weights are already updated in updatedRecipe
     };
@@ -206,9 +206,9 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
       ...recipe!,
       [name]:
         name === "yield" ||
-        name === "totalTime" ||
-        name === "totalCO2Emissions" ||
-        name === "totalWeight"
+          name === "totalTime" ||
+          name === "totalCO2Emissions" ||
+          name === "totalWeight"
           ? Number(value)
           : value,
       isCustom: true,
@@ -285,7 +285,7 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
     });
     setImageSrc(undefined);
     setSelectedDateTime(null);
-    handleClear();
+    handleClear ? handleClear() : undefined;
   };
 
   return (
@@ -438,8 +438,8 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
                       value={
                         recipe.timeScheduled
                           ? dayjs(recipe.timeScheduled).format(
-                              "DD/MM/YYYY hh:mm A"
-                            )
+                            "DD/MM/YYYY hh:mm A"
+                          )
                           : ""
                       }
                       readOnly={readOnly}
@@ -672,16 +672,16 @@ const RecipeInputFields: React.FC<RecipeInputFieldsProps> = ({
           </div>
           {(!readOnly ||
             !recipe.ingredients.every((ing) => ing.foodId === "")) && (
-            <div className="mt-6 flex justify-end">
-              <button
-                type="button"
-                onClick={handleClearFields}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                Clear All Fields
-              </button>
-            </div>
-          )}
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleClearFields}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Clear All Fields
+                </button>
+              </div>
+            )}
         </div>
       </div>
     </>
