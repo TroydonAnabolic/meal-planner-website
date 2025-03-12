@@ -29,6 +29,8 @@ import ToggleInput from "../../ui/inputs/toggle-input";
 import { defaultMealPlanPreference } from "@/constants/constants-objects";
 import { createMealPlan } from "@/lib/client-side/meal-plan";
 import { useReactToPrint, UseReactToPrintFn } from "react-to-print";
+import ReactDOMServer from "react-dom/server";
+import { useSession } from "next-auth/react";
 
 type MealPlanGeneratorProps = {
   clientData: IClientInterface;
@@ -36,12 +38,8 @@ type MealPlanGeneratorProps = {
   setConfirmModalProps: React.Dispatch<
     React.SetStateAction<ConfirmActionModalProps>
   >;
-  recipes: IRecipeInterface[];
-  setRecipes: React.Dispatch<React.SetStateAction<IRecipeInterface[]>>;
-  mealPlan: IMealPlan | null;
-  setMealPlan: React.Dispatch<React.SetStateAction<IMealPlan | null>>;
-  emailLoading: boolean;
-  handleEmailMealPlan: () => Promise<void>;
+  isLoading: boolean | null;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const COOKIE_NAME = "lastMealPlanTime";
@@ -63,24 +61,23 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
     {
       //initialMealPlan,
       clientData,
-      mealPlan,
-      setMealPlan,
-      recipes,
-      setRecipes,
       confirmModalProps,
       setConfirmModalProps,
-      emailLoading,
-      handleEmailMealPlan
+      isLoading,
+      setIsLoading
     },
     ref
   ) => {
     const [excluded, setExcluded] = useState<string[]>([]);
+    const [recipes, setRecipes] = useState<IRecipeInterface[]>([]);
+    const [mealPlan, setMealPlan] = useState<IMealPlan | null>(null);
     const [mealPlanPreferences, setMealPlanPreferences] =
       useState<IMealPlanPreferences | null>(
         clientData.ClientSettingsDto?.mealPlanPreferences ||
         defaultMealPlanPreference
       );
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [emailLoading, setEmailLoading] = useState(false);
+    const { data: session, status } = useSession();
     const [useFavouriteRecipes, setUseFavouriteRecipes] =
       useState<boolean>(false);
     const [isBannedOpen, setIsBannedOpen] = useState<boolean>(true);
@@ -200,6 +197,56 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
       },
       [setConfirmModalProps, closeConfirmModal, setUseFavouriteRecipes]
     );
+
+    const renderMealPlanToHTML = (mealPlanSection: any): string => {
+      return ReactDOMServer.renderToStaticMarkup(mealPlanSection);
+    };
+
+    const handleEmailMealPlan = React.useCallback(async () => {
+      const mealPlanHtml = renderMealPlanToHTML(RecipeListContainer());
+
+      try {
+        setEmailLoading(true);
+        const response = await fetch("/api/email/meal-plan", {
+          method: "POST",
+          body: JSON.stringify({
+            mealPlanHtml,
+            mealPlans: [mealPlan],
+            recipes,
+            clientId: clientData.Id,
+            toEmail: session?.user.email,
+            givenName: session?.user.givenName,
+          }),
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to send email");
+        }
+
+        setConfirmModalProps({
+          open: true,
+          title: "Meal plan emailed successfully!",
+          message: "Meal plan emailed successfully!",
+          confirmText: "OK",
+          onConfirm: () => {
+            setConfirmModalProps({
+              ...confirmModalProps,
+              open: false,
+            });
+          },
+          cancelText: "",
+          onClose: () => { },
+          type: "primary",
+        });
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Failed to email meal plan. Please try again later.");
+      } finally {
+        setEmailLoading(false);
+      }
+    }, [mealPlan, recipes, clientData, session]);
+
 
     const handleGenerateMealPlan = async () => {
       setIsLoading(true);
@@ -323,6 +370,72 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
       }
     }, []);
 
+    const ActionButton = ({
+      onClick,
+      disabled = false,
+      text,
+      isLoading = false,
+      additionalClasses = "",
+    }: {
+      onClick: () => void;
+      disabled?: boolean;
+      text: string;
+      isLoading?: boolean;
+      additionalClasses?: string;
+    }) => (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        className={`absolute z-10 w-60 px-6 py-2 mb-8 bg-gray-400 text-white rounded-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 disabled:bg-gray-300 ${additionalClasses}`}
+      >
+        {isLoading ? "Processing..." : text}
+      </button>
+    );
+    const RecipeListContainer = () => {
+      return (
+        <div ref={ref} className={shoppingList ? "w-3/4" : ""}>
+          {!isLoading && recipes?.length > 0 && (
+            <RecipeList
+              mealPlan={mealPlan!}
+              recipes={recipes}
+              startDate={startDate}
+              endDate={endDate}
+            />
+          )}
+
+          {/* Empty State */}
+          {recipes?.length === 0 && (
+            <EmptyStateDashedBorders>
+              {/* Bowl of Fruits SVG Path */}
+
+              {!isLoading && (
+                <>
+                  <span className="mt-4 block text-lg font-semibold text-gray-300">
+                    Your meal plan will appear here once generated. Start by
+                    clicking &apos; Generate Meal Plan&apos;!
+                  </span>
+                  <Image
+                    className="opacity-50"
+                    src="/aiimages/food/fruits-basket.svg"
+                    alt="Empty State"
+                    width={64}
+                    height={64}
+                  />
+                </>
+              )}
+              {/* Loading Indicator */}
+              {isLoading && (
+                <div className="flex justify-center my-6">
+                  <FoodLoader />
+                </div>
+              )}
+            </EmptyStateDashedBorders>
+          )}
+        </div>
+      )
+    }
+
     return (
       <div >
         {isBannedOpen && clientData.Id > 0 && (
@@ -353,19 +466,16 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
         )}
 
         <div className="mx-auto p-4 flex flex-col items-center justify-center max-w-7xl min-h-screen">
-          {/* <ActionButton
-            onClick={printFn}
-            text="Print Meal Plan"
-            additionalClasses="top-20 right-14"
-          />
 
-          <ActionButton
-            onClick={handleEmailMealPlan}
-            disabled={emailLoading}
-            text="Email Meal Plan"
-            isLoading={emailLoading}
-            additionalClasses="top-32 right-14"
-          /> */}
+          {!isLoading && (
+            <ActionButton
+              onClick={handleEmailMealPlan}
+              disabled={emailLoading}
+              text="Email Meal Plan"
+              isLoading={emailLoading}
+              additionalClasses="top-32 right-14"
+            />
+          )}
 
           <h1 className="text-2xl font-bold p-4 text-gray-800">
             Plan Your Meals
@@ -475,45 +585,7 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
 
             <div className="mt-6 flex space-x-4">
               {/* Recipes Grid or Empty State */}
-              <div ref={ref} className={shoppingList ? "w-3/4" : ""}>
-                {!isLoading && recipes?.length > 0 && (
-                  <RecipeList
-                    mealPlan={mealPlan!}
-                    recipes={recipes}
-                    startDate={startDate}
-                    endDate={endDate}
-                  />
-                )}
-
-                {/* Empty State */}
-                {recipes?.length === 0 && (
-                  <EmptyStateDashedBorders>
-                    {/* Bowl of Fruits SVG Path */}
-
-                    {!isLoading && (
-                      <>
-                        <span className="mt-4 block text-lg font-semibold text-gray-300">
-                          Your meal plan will appear here once generated. Start by
-                          clicking &apos; Generate Meal Plan&apos;!
-                        </span>
-                        <Image
-                          className="opacity-50"
-                          src="/aiimages/food/fruits-basket.svg"
-                          alt="Empty State"
-                          width={64}
-                          height={64}
-                        />
-                      </>
-                    )}
-                    {/* Loading Indicator */}
-                    {isLoading && (
-                      <div className="flex justify-center my-6">
-                        <FoodLoader />
-                      </div>
-                    )}
-                  </EmptyStateDashedBorders>
-                )}
-              </div>
+              <RecipeListContainer />
 
               {/* Shopping List Table */}
               {clientData.Id > 0 &&

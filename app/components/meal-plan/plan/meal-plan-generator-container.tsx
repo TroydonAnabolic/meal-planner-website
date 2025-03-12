@@ -19,9 +19,9 @@ const MealPlanGeneratorContainer: React.FC<MealPlanGeneratorContainerProps> = ({
 }) => {
     const [recipes, setRecipes] = useState<IRecipeInterface[]>([]);
     const [mealPlan, setMealPlan] = useState<IMealPlan | null>(null);
-    const { data: session, status } = useSession();
     const componentRef = React.useRef(null);
-    const [emailLoading, setEmailLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
     const [confirmModalProps, setConfirmModalProps] =
         useState<ConfirmActionModalProps>({
             open: false,
@@ -52,57 +52,6 @@ const MealPlanGeneratorContainer: React.FC<MealPlanGeneratorContainerProps> = ({
         onAfterPrint: handleAfterPrint,
         onBeforePrint: handleBeforePrint,
     });
-
-    const renderMealPlanToHTML = (mealPlanSection: any): string => {
-        return ReactDOMServer.renderToStaticMarkup(mealPlanSection);
-    };
-
-    const handleEmailMealPlan = React.useCallback(async () => {
-        const mealPlanHtml = renderMealPlanToHTML(GeneratorContainer());
-
-        try {
-            setEmailLoading(true);
-            const response = await fetch("/api/email/meal-plan", {
-                method: "POST",
-                body: JSON.stringify({
-                    mealPlanHtml,
-                    mealPlans: [mealPlan],
-                    recipes,
-                    clientId: clientData.Id,
-                    toEmail: session?.user.email,
-                    givenName: session?.user.givenName,
-                }),
-                headers: { "Content-Type": "application/json" },
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to send email");
-            }
-
-            setConfirmModalProps({
-                open: true,
-                title: "Meal plan emailed successfully!",
-                message: "Meal plan emailed successfully!",
-                confirmText: "OK",
-                onConfirm: () => {
-                    setConfirmModalProps({
-                        ...confirmModalProps,
-                        open: false,
-                    });
-                },
-                cancelText: "",
-                onClose: () => { },
-                type: "primary",
-            });
-        } catch (error) {
-            console.error("Error:", error);
-            alert("Failed to email meal plan. Please try again later.");
-        } finally {
-            setEmailLoading(false);
-        }
-    }, [mealPlan, recipes, clientData, session]);
-
-
 
     const ActionButton = ({
         onClick,
@@ -136,24 +85,20 @@ const MealPlanGeneratorContainer: React.FC<MealPlanGeneratorContainerProps> = ({
                     additionalClasses="top-20 right-14"
                 />
 
-                <ActionButton
+                {/* <ActionButton
                     onClick={handleEmailMealPlan}
                     disabled={emailLoading}
                     text="Email Meal Plan"
                     isLoading={emailLoading}
                     additionalClasses="top-32 right-14"
-                />
+                /> */}
                 <MealPlanGenerator
                     confirmModalProps={confirmModalProps}
                     setConfirmModalProps={setConfirmModalProps}
                     clientData={clientData}
-                    mealPlan={mealPlan}
-                    setMealPlan={setMealPlan}
-                    recipes={recipes}
-                    setRecipes={setRecipes}
                     ref={componentRef}
-                    emailLoading={emailLoading}
-                    handleEmailMealPlan={handleEmailMealPlan}
+                    isLoading={isLoading}
+                    setIsLoading={setIsLoading}
                 />
             </>
         );

@@ -1,5 +1,4 @@
 import MealPlanGeneratorContainer from "@/app/components/meal-plan/plan/meal-plan-generator-container";
-import PlanMeal from "@/app/components/meal-plan/plan/plan-meal";
 import { auth } from "@/auth";
 import { getClient } from "@/lib/server-side/client";
 import { initializeClientSettings } from "@/util/client-settings-util";
