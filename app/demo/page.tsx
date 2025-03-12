@@ -9,6 +9,7 @@ import { initializeClientSettings } from "@/util/client-settings-util";
 import { defaultMealPlanPreference } from "@/constants/constants-objects";
 import GlowyBanner from "../components/ui/banner/banner-with-glow";
 import GlowyBannerWithLink from "../components/ui/banner/banner-with-glow-and-link";
+import MealPlanGeneratorContainer from "../components/meal-plan/plan/meal-plan-generator-container";
 
 type PlanMealDemoProps = {};
 
@@ -56,7 +57,7 @@ const PlanMealDemo: React.FC<PlanMealDemoProps> = () => {
           />
         </div>
         <div className="flex flex-col flex-grow justify-center items-center">
-          <MealPlanGenerator clientData={clientData} />
+          <MealPlanGeneratorContainer clientData={clientData} />
         </div>
       </div>
     </main>

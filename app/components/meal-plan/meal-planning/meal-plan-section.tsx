@@ -106,9 +106,9 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
         message: "",
         confirmText: "",
         colorScheme: "",
-        onConfirm: () => {},
+        onConfirm: () => { },
         cancelText: "",
-        onClose: () => {},
+        onClose: () => { },
         type: "primary",
       });
     }, []);
@@ -164,7 +164,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
             closeConfirmModal();
           },
           cancelText: "",
-          onClose: () => {},
+          onClose: () => { },
           colorScheme: "bg-green-600 hover:bg-green-500",
         }));
       } else if (result.errors) {
@@ -179,7 +179,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
             closeConfirmModal();
           },
           cancelText: "",
-          onClose: () => {},
+          onClose: () => { },
           colorScheme: "bg-red-600 hover:bg-red-500",
         }));
       }
@@ -217,7 +217,6 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
     return (
       <div
         className="md:max-w-screen-xl lg:max-w-screen-2xl mx-auto p-6"
-        ref={ref}
       >
         {loading && (
           <div className="flex justify-center my-6">
@@ -303,7 +302,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
                   </div>
                 )}
                 <div className="flex space-x-4 mt-6">
-                  <div className="w-7/10">
+                  <div ref={ref} className="w-7/10">
                     {/* Render RecipeList when recipes are loaded */}
                     {!recipesLoading && !recipesError && (
                       <div className="mt-6">
@@ -348,19 +347,18 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
               {/* Form Result */}
               {formResult ? (
                 <div
-                  className={`p-4 rounded-md ${
-                    formResult.success
+                  className={`p-4 rounded-md ${formResult.success
                       ? "bg-green-100 text-green-800"
                       : formResult?.errors?.loading
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
                 >
                   {formResult.success
                     ? "Meal plan saved successfully!"
                     : formResult?.errors?.general
-                    ? formResult.errors.general
-                    : formResult?.errors?.loading}
+                      ? formResult.errors.general
+                      : formResult?.errors?.loading}
                 </div>
               ) : (
                 <div className="flex-grow"></div> // Spacer div
@@ -417,7 +415,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
                                   closeConfirmModal();
                                 },
                                 cancelText: "",
-                                onClose: () => {},
+                                onClose: () => { },
                                 colorScheme: "bg-green-600 hover:bg-yellow-500",
                               }));
                             } catch (error) {

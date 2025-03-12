@@ -1,3 +1,4 @@
+import MealPlanGeneratorContainer from "@/app/components/meal-plan/plan/meal-plan-generator-container";
 import PlanMeal from "@/app/components/meal-plan/plan/plan-meal";
 import { auth } from "@/auth";
 import { getClient } from "@/lib/server-side/client";
@@ -16,7 +17,7 @@ const PlanMealPage = async (props: Props) => {
 
   return (
     <>
-      <PlanMeal clientData={clientData} />
+      <MealPlanGeneratorContainer clientData={clientData} />
     </>
   );
 };
