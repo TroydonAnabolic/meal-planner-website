@@ -218,20 +218,25 @@ export function getMatchingRecipe(
   favouriteRecipes: IRecipeInterface[] | undefined,
   fetchedRecipe: IRecipeInterface
 ) {
-  return favouriteRecipes?.find((fav) => {
+  if (!favouriteRecipes) return undefined;
+
+  const matchingFavorites = favouriteRecipes.filter((fav) => {
     // Normalize mealTypeKey for comparison
     const fetchedRecipeMealTypes = fetchedRecipe.mealTypeKey?.map((type) =>
       type.toLowerCase()
     );
     const favMealTypes = fav.mealTypeKey?.map((type) => type.toLowerCase());
-
     if (!fetchedRecipeMealTypes || !favMealTypes) return false;
 
-    // Check for meal type intersection
-    const hasMealTypeIntersection = favMealTypes.some((favType) =>
+    // Check if there is an intersection
+    return favMealTypes.some((favType) =>
       fetchedRecipeMealTypes.includes(favType)
     );
-
-    return hasMealTypeIntersection;
   });
+
+  if (matchingFavorites.length > 0) {
+    const randomIndex = Math.floor(Math.random() * matchingFavorites.length);
+    return matchingFavorites[randomIndex];
+  }
+  return undefined;
 }

@@ -106,7 +106,7 @@ const SelectFoodLabels = <T,>({
                 onSelect={(selected) =>
                   handleMultiSelectDropdown(typeKey, selected)
                 }
-                requireSelection={requireSelection}
+                requireSelection={requireSelection || typeKey === 'mealTypeKey'}
                 readOnly={readOnly}
               />
             </div>

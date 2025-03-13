@@ -29,6 +29,7 @@ import ToggleInput from "../../ui/inputs/toggle-input";
 import { defaultMealPlanPreference } from "@/constants/constants-objects";
 import { createMealPlan } from "@/lib/client-side/meal-plan";
 import { useReactToPrint, UseReactToPrintFn } from "react-to-print";
+import { useSession } from "next-auth/react";
 
 type MealPlanGeneratorProps = {
   clientData: IClientInterface;
@@ -40,8 +41,6 @@ type MealPlanGeneratorProps = {
   setRecipes: React.Dispatch<React.SetStateAction<IRecipeInterface[]>>;
   mealPlan: IMealPlan | null;
   setMealPlan: React.Dispatch<React.SetStateAction<IMealPlan | null>>;
-  emailLoading: boolean;
-  handleEmailMealPlan: () => Promise<void>;
 };
 
 const COOKIE_NAME = "lastMealPlanTime";
@@ -68,9 +67,7 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
       recipes,
       setRecipes,
       confirmModalProps,
-      setConfirmModalProps,
-      emailLoading,
-      handleEmailMealPlan
+      setConfirmModalProps
     },
     ref
   ) => {
@@ -82,10 +79,10 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
       );
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [useFavouriteRecipes, setUseFavouriteRecipes] =
-      useState<boolean>(false);
+      useState<boolean>(true);
     const [isBannedOpen, setIsBannedOpen] = useState<boolean>(true);
     const [isBugBannerOpen, setIsBugBannerOpen] = useState<boolean>(true);
-
+    const { data: session } = useSession();
     const [startDate, setStartDate] = useState<Dayjs | null>(
       dayjs().startOf("week")
     );
@@ -109,7 +106,6 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
         ].max
         : undefined
     );
-    const componentRef = React.useRef(null);
 
     const closeConfirmModal = useCallback(() => {
       setIsLoading(false);
@@ -179,32 +175,36 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
       setMealPlanPreferences(updatedMealPlanPreferences);
     };
 
-    const handleToggleFavourite = useCallback(
-      (isFavourite: boolean) => {
-        if (isFavourite) {
-          setConfirmModalProps({
-            open: true,
-            title: "Use Favourites",
-            message:
-              "Favourited recipes that match the corresponding meal type (e.g. lunch/dinner) and scheduled time will replace the generated recipes in your meal plan.",
-            confirmText: "OK",
-            colorScheme: "bg-blue-600 hover:bg-blue-500",
-            onConfirm: closeConfirmModal,
-            cancelText: "",
-            onClose: () => { },
-            type: "info",
-          });
-        }
-
-        setUseFavouriteRecipes(isFavourite);
-      },
-      [setConfirmModalProps, closeConfirmModal, setUseFavouriteRecipes]
-    );
+    const handleToggleFavourite = useCallback((enabled: boolean) => {
+      if (enabled) {
+        setConfirmModalProps({
+          open: true,
+          title: "Use Favourites",
+          message:
+            "Favourited recipes that match the corresponding meal type (e.g. lunch/dinner) and scheduled time will replace the generated recipes in your meal plan.",
+          confirmText: "OK",
+          colorScheme: "bg-blue-600 hover:bg-blue-500",
+          onConfirm: closeConfirmModal,
+          cancelText: "",
+          onClose: () => { },
+          type: "info",
+        });
+      }
+      console.log("Toggle changed to", enabled);
+      setUseFavouriteRecipes(!enabled);
+    }, [setConfirmModalProps, closeConfirmModal, setUseFavouriteRecipes]);
 
     const handleGenerateMealPlan = async () => {
       setIsLoading(true);
       setMealPlan(null);
       setRecipes([]);
+      console.log("Setting isLoading: " + isLoading);
+
+      // Let the UI update (give React a tick)
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      // then proceed with the rest of your function
+
+      console.log("Set isLoading: " + isLoading);
 
       // when user not authorized, disallow user to regenerate meal plan for 5 mins
       let canUnAuthGenerate = true;
@@ -272,7 +272,7 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
         setMealPlan({
           ...generatedMealPlan,
           id: mealPlan?.id || 0,
-          clientId: clientData.Id,
+          clientId: clientId,
           startDate: startDate?.toISOString() || "",
           endDate: endDate?.toISOString() || "",
           autoLogMeals: true,
@@ -314,8 +314,8 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
     // set banner open when no meal plan preferences exist
     useEffect(() => {
       if (
-        clientData.Id &&
-        clientData.isStripeBasicActive &&
+        clientId &&
+        session?.user.isStripeBasicActive &&
         !mealPlanPreferences?.size &&
         !mealPlanPreferences?.plan.accept
       ) {
@@ -323,9 +323,11 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
       }
     }, []);
 
+    const clientId = Number(session?.user.clientId) || 0;
+
     return (
       <div >
-        {isBannedOpen && clientData.Id > 0 && (
+        {isBannedOpen && clientId > 0 && (
           <div className="mx-auto mb-2">
             <GlowyBanner
               title={"Note"}
@@ -338,7 +340,7 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
             />
           </div>
         )}
-        {isBugBannerOpen && clientData.Id > 0 && (
+        {isBugBannerOpen && clientId > 0 && (
           <div className="mx-auto mb-2">
             <GlowyBanner
               title={"WARNING"}
@@ -353,20 +355,6 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
         )}
 
         <div className="mx-auto p-4 flex flex-col items-center justify-center max-w-7xl min-h-screen">
-          {/* <ActionButton
-            onClick={printFn}
-            text="Print Meal Plan"
-            additionalClasses="top-20 right-14"
-          />
-
-          <ActionButton
-            onClick={handleEmailMealPlan}
-            disabled={emailLoading}
-            text="Email Meal Plan"
-            isLoading={emailLoading}
-            additionalClasses="top-32 right-14"
-          /> */}
-
           <h1 className="text-2xl font-bold p-4 text-gray-800">
             Plan Your Meals
           </h1>
@@ -400,7 +388,7 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
 
                 <div className="flex flex-col mt-4 space-y-4">
                   {/* Date Pickers */}
-                  {clientData.Id > 0 && clientData.isStripeBasicActive && (
+                  {clientId > 0 && session?.user.isStripeBasicActive && (
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <div className="flex justify-around space-x-4">
                         <DatePicker
@@ -446,7 +434,7 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
                       />
                     </div>
 
-                    {clientData.Id > 0 && clientData.isStripeBasicActive && (
+                    {clientId > 0 && session?.user.isStripeBasicActive && (
                       <div className="ml-4">
                         <ToggleInput
                           label="Favourites"
@@ -460,7 +448,7 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
                 </div>
               </div>
 
-              {clientData.Id > 0 && clientData.isStripeBasicActive && (
+              {clientId > 0 && session?.user.isStripeBasicActive && (
                 <div className="w-1/2">
                   <FilterRecipes
                     title="Filter Recipes"
@@ -516,8 +504,8 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
               </div>
 
               {/* Shopping List Table */}
-              {clientData.Id > 0 &&
-                clientData.isStripeBasicActive &&
+              {clientId > 0 &&
+                session?.user.isStripeBasicActive &&
                 mealPlan &&
                 recipes?.length > 0 && (
                   <div className="w-1/4 text-gray-800">
@@ -530,7 +518,7 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
                 )}
             </div>
 
-            {clientData.Id > 0 && clientData.isStripeBasicActive ? (
+            {clientId > 0 && session?.user.isStripeBasicActive ? (
               <span className="text-sm text-gray-500 ">
                 <Link
                   title="Edit Meal Preferences"
@@ -568,6 +556,8 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
 );
 
 export default MealPlanGenerator;
+
+MealPlanGenerator.displayName = "MealPlanGenerator";
 
 function runDelayForUnAuthorized(
   client: IClientInterface,
