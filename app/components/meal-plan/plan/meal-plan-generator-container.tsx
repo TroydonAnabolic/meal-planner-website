@@ -152,8 +152,6 @@ const MealPlanGeneratorContainer: React.FC<MealPlanGeneratorContainerProps> = ({
                     recipes={recipes}
                     setRecipes={setRecipes}
                     ref={componentRef}
-                    emailLoading={emailLoading}
-                    handleEmailMealPlan={handleEmailMealPlan}
                 />
             </>
         );
