@@ -77,8 +77,6 @@ export function mapParsedFoodToIngredient(
       foodId: hint.food.foodId,
       totalNutrients: {
         [Nutrients.ENERC_KCAL]: {
-          id: 0,
-          ingredientId: 0,
           label: Nutrients.ENERC_KCAL,
           quantity: hint.food.nutrients.ENERC_KCAL,
         },

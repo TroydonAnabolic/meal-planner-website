@@ -105,29 +105,29 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
       actionParam === UrlAction.Add ||
       action === "Search"
       ? [
-          {
-            name: "Search Ingredients",
-            href: "#",
-            current: activeTab === "Search Ingredients",
-          },
-          {
-            name: "Add Ingredients",
-            href: "#",
-            current: activeTab === "Add Ingredients",
-          },
-        ]
+        {
+          name: "Search Ingredients",
+          href: "#",
+          current: activeTab === "Search Ingredients",
+        },
+        {
+          name: "Add Ingredients",
+          href: "#",
+          current: activeTab === "Add Ingredients",
+        },
+      ]
       : [
-          {
-            name: "View Ingredient",
-            href: "#",
-            current: activeTab === "View Ingredient",
-          },
-          {
-            name: "Edit Ingredient",
-            href: "#",
-            current: activeTab === "Edit Ingredient",
-          },
-        ];
+        {
+          name: "View Ingredient",
+          href: "#",
+          current: activeTab === "View Ingredient",
+        },
+        {
+          name: "Edit Ingredient",
+          href: "#",
+          current: activeTab === "Edit Ingredient",
+        },
+      ];
   }, [activeTab, action, actionParam]);
 
   const handleEditIngredient = useCallback(() => {
@@ -296,13 +296,13 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
         if (
           ingredient.totalNutrients &&
           ingredient.totalNutrients[
-            nutrient.tag as unknown as keyof INutrients
+          nutrient.tag as unknown as keyof INutrients
           ] &&
           acc
         ) {
           acc[nutrient.tag as unknown as keyof INutrients] =
             ingredient.totalNutrients[
-              nutrient.tag as unknown as keyof INutrients
+            nutrient.tag as unknown as keyof INutrients
             ];
         }
         return acc;
@@ -317,7 +317,7 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
 
     const ingredientDetails = JSON.stringify(ingredientToShare);
 
-    return `${baseUrl}/ingredient/?ingredient=${encodeURIComponent(
+    return `${baseUrl}/ingredient?ingredient=${encodeURIComponent(
       ingredientDetails
     )}`;
   };
@@ -328,14 +328,13 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
     .map((nutrient) => {
       const nutrientValue =
         ingredient.totalNutrients &&
-        (ingredient.totalNutrients as unknown as INutrients)[
+          (ingredient.totalNutrients as unknown as INutrients)[
           nutrient.tag as unknown as keyof INutrients
-        ]
-          ? ` ${nutrient.label} ${
-              (ingredient.totalNutrients as unknown as INutrients)[
-                nutrient.tag as unknown as keyof INutrients
-              ].quantity
-            } ${nutrient.unit}`
+          ]
+          ? ` ${nutrient.label} ${(ingredient.totalNutrients as unknown as INutrients)[
+            nutrient.tag as unknown as keyof INutrients
+          ].quantity
+          } ${nutrient.unit}`
           : ` ${nutrient.label} 0 ${nutrient.unit}`;
       return nutrientValue;
     })
@@ -374,30 +373,30 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
         // Pass Delete Button Props Only for View and Edit
         deleteButtonText={
           actionParam == (UrlAction.Edit || actionParam == UrlAction.View) &&
-          ingredient.id !== 0 &&
-          ingredient.foodId === null
+            ingredient.id !== 0 &&
+            ingredient.foodId === null
             ? deleteButtonText
             : undefined
         }
         onDelete={
           actionParam == (UrlAction.Edit || actionParam == UrlAction.View) &&
-          ingredient.id !== 0 &&
-          ingredient.foodId === null
+            ingredient.id !== 0 &&
+            ingredient.foodId === null
             ? onDelete
             : undefined
         }
         onClose={onClose} // Pass 'onClose' prop received from parent
         duplicateButtonText={
           actionParam == (UrlAction.Edit || actionParam == UrlAction.View) &&
-          ingredient.id !== 0 &&
-          ingredient.foodId === null
+            ingredient.id !== 0 &&
+            ingredient.foodId === null
             ? "Duplicate"
             : undefined
         }
         onDuplicate={
           actionParam == (UrlAction.Edit || actionParam == UrlAction.View) &&
-          ingredient.id !== 0 &&
-          ingredient.foodId === null
+            ingredient.id !== 0 &&
+            ingredient.foodId === null
             ? handleDuplicate
             : undefined
         }
@@ -488,7 +487,7 @@ const IngredientModalContent: React.FC<IngredientModalContentProps> = ({
                 <IngredientSearchResultsGrid
                   ingredients={searchResults}
                   onViewDetails={handleViewIngredientToAdd}
-                  //onAddIngredient={handleAddIngredientFromSearch}
+                //onAddIngredient={handleAddIngredientFromSearch}
                 />
               ) : (
                 <p className="text-sm text-gray-500">No ingredients found.</p>
