@@ -17,6 +17,7 @@ interface FooterNavigation {
 const footerNavigation: FooterNavigation = {
   solutions: [
     { name: "How It Works", href: "/how-it-works" },
+    { name: "Documentation", href: "/documentation" },
     { name: "Browse Foods", href: "/meal-planner/food/browse-food/" },
   ],
   support: [

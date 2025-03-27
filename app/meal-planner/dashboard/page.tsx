@@ -215,7 +215,7 @@ const DashboardPage: React.FC<DashboardProps> = async ({ searchParams }) => {
                         <span className="truncate">{meal.name}</span>
                         <span>
                           <span className="font-medium text-gray-900">
-                            {meal.nutrients![Nutrients.ENERC_KCAL].quantity}
+                            {meal.nutrients![Nutrients.ENERC_KCAL]?.quantity}
                           </span>
                         </span>
                         <time dateTime={`meal.timeScheduled`}>
@@ -294,7 +294,7 @@ const DashboardPage: React.FC<DashboardProps> = async ({ searchParams }) => {
                           <span className="font-medium text-gray-900">
                             {meal.nutrients![
                               Nutrients.ENERC_KCAL
-                            ].quantity.toFixed(1)}
+                            ]?.quantity.toFixed(1)}
                           </span>
                         </td>
                         {/* <td className="hidden whitespace-nowrap px-6 py-4 text-sm text-gray-500 md:block">
