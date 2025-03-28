@@ -61,7 +61,7 @@ const jobOpenings = [
   // },
 ];
 
-const page = () => {
+const AboutUsPage = () => {
   return (
     <main className="relative isolate max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
       <div className="relative isolate -z-10 overflow-hidden bg-gradient-to-b from-indigo-100/20 pt-14">
@@ -223,4 +223,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default AboutUsPage;
