@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { IMealInterface, IMealNutrients } from "@/models/interfaces/meal/Meal";
 
 // Replace with your credentials
 const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_CLIENT_ID;
@@ -13,7 +14,7 @@ const SCOPES = "https://www.googleapis.com/auth/calendar.events";
 declare const gapi: any;
 declare const google: any;
 
-const GoogleCalendarSync: React.FC<{ meals: any[]; mealPlanStart: string; mealPlanEnd: string; onDone?: () => void; }> = ({ meals, mealPlanStart, mealPlanEnd, onDone }) => {
+const GoogleCalendarSync: React.FC<{ meals: IMealInterface[]; mealPlanStart: string; mealPlanEnd: string; onDone?: () => void; }> = ({ meals, mealPlanStart, mealPlanEnd, onDone }) => {
     const { data: session } = useSession();
     const [gapiLoaded, setGapiLoaded] = useState(false);
     const [gisLoaded, setGisLoaded] = useState(false);
@@ -94,7 +95,7 @@ const GoogleCalendarSync: React.FC<{ meals: any[]; mealPlanStart: string; mealPl
                     dateTime: new Date(new Date(meal.timeScheduled).getTime() + 60 * 60 * 1000).toISOString(), // assuming 1 hour duration
                     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                 },
-                description: formatTotalNutrients(meal.totalNutrients),
+                description: formatTotalNutrients(meal.nutrients),
             };
 
             try {
@@ -111,7 +112,7 @@ const GoogleCalendarSync: React.FC<{ meals: any[]; mealPlanStart: string; mealPl
         if (onDone) onDone();
     };
 
-    const formatTotalNutrients = (nutrients: any): string => {
+    const formatTotalNutrients = (nutrients: IMealNutrients | undefined): string => {
         if (!nutrients) return "";
         // Format the nutrient data into a neat multiline string
         return Object.keys(nutrients)
@@ -120,7 +121,7 @@ const GoogleCalendarSync: React.FC<{ meals: any[]; mealPlanStart: string; mealPl
     };
 
     return (
-        <div className="mt-4">
+        <div className="">
             {isAuthorized ? (
                 <p>Calendar synced!</p>
             ) : (

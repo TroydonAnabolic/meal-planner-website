@@ -266,7 +266,7 @@ const MealPlan: React.FC<MealPlanProps> = ({
 
         {showCalendarSync && (
           <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
-            <div className="bg-white rounded-md p-4 max-w-md w-full">
+            <div className="bg-white rounded-md p-4 max-w-md">
               <GoogleCalendarSync
                 meals={selectedMealPlan.meals || []}
                 mealPlanStart={selectedMealPlan.startDate}
