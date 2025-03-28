@@ -1,4 +1,3 @@
-import { Nutrients } from "@/constants/constants-enums";
 import {
   IIngredient,
   INutrients,
@@ -46,14 +45,13 @@ export default async function ShareIngredientPage({
               {nutrientFields.map((nutrient) => (
                 <li key={nutrient.tag} className="flex flex-col">
                   {ingredient.totalNutrients &&
-                  (ingredient.totalNutrients as unknown as INutrients)[
+                    (ingredient.totalNutrients as unknown as INutrients)[
                     nutrient.tag as unknown as keyof INutrients
-                  ]
-                    ? ` ${nutrient.label} ${
-                        (ingredient.totalNutrients as unknown as INutrients)[
-                          nutrient.tag as unknown as keyof INutrients
-                        ].quantity
-                      } ${nutrient.unit}`
+                    ]
+                    ? ` ${nutrient.label} ${(ingredient.totalNutrients as unknown as INutrients)[
+                      nutrient.tag as unknown as keyof INutrients
+                    ].quantity
+                    } ${nutrient.unit}`
                     : ` ${nutrient.label} 0 ${nutrient.unit}`}
                 </li>
               ))}

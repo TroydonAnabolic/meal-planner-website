@@ -10,6 +10,7 @@ import dayjs from "dayjs";
 import { ConfirmActionModalProps } from "../../ui/modals/confirm-action-modal";
 import ReactDOMServer from "react-dom/server";
 import { getLocalTimeFromUtc } from "@/util/date-util";
+import GoogleCalendarSync from "./google-calendar-sync";
 
 interface MealPlanProps {
   mealPlanData: IMealPlan[] | undefined;
@@ -42,9 +43,9 @@ const MealPlan: React.FC<MealPlanProps> = ({
       message: "",
       confirmText: "",
       colorScheme: "",
-      onConfirm: () => {},
+      onConfirm: () => { },
       cancelText: "",
-      onClose: () => {},
+      onClose: () => { },
       type: "primary",
     });
 
@@ -60,6 +61,7 @@ const MealPlan: React.FC<MealPlanProps> = ({
   const [selectedMealPlan, setSelectedMealPlan] = useState<IMealPlan>(
     initialMealPlan || defaultMealPlan
   );
+  const [showCalendarSync, setShowCalendarSync] = useState(false);
 
   // Memoized fetch function
   // TODO: Test if it needs to convert to local time inside this function
@@ -110,8 +112,8 @@ const MealPlan: React.FC<MealPlanProps> = ({
         initialMealPlan.id === 0
           ? "New Meal Plan"
           : `${dayjs(initialMealPlan.startDate).format("DD/MM/YYYY")} - ${dayjs(
-              initialMealPlan.endDate
-            ).format("DD/MM/YYYY")}`
+            initialMealPlan.endDate
+          ).format("DD/MM/YYYY")}`
       );
     }
   }, [mealPlanData, mealPlans]);
@@ -172,7 +174,7 @@ const MealPlan: React.FC<MealPlanProps> = ({
           });
         },
         cancelText: "",
-        onClose: () => {},
+        onClose: () => { },
         type: "primary",
       });
     } catch (error) {
@@ -214,6 +216,27 @@ const MealPlan: React.FC<MealPlanProps> = ({
     </button>
   );
 
+  const handleSyncCalendar = () => {
+    // Set confirm modal props prompting: "Do you want to sync your meal plan with Google Calendar?"
+    setConfirmModalProps({
+      open: true,
+      title: "Sync with Google Calendar",
+      message: "Do you want to sync your meal plan with your calendar?",
+      confirmText: "Yes",
+      cancelText: "Cancel",
+      onConfirm: () => {
+        setShowCalendarSync(true);
+        // Close the modal after confirmation
+        setConfirmModalProps((prev) => ({ ...prev, open: false }));
+      },
+      onClose: () => {
+        setConfirmModalProps((prev) => ({ ...prev, open: false }));
+      },
+      colorScheme: "bg-blue-600 hover:bg-blue-700",
+      type: "primary",
+    });
+  };
+
   const MealPlanContainer = () => {
     return (
       <div className="relative">
@@ -230,6 +253,15 @@ const MealPlan: React.FC<MealPlanProps> = ({
           isLoading={emailLoading}
           additionalClasses="top-32 right-14"
         />
+
+        {showCalendarSync && (
+          <GoogleCalendarSync
+            meals={selectedMealPlan.meals || []}
+            mealPlanStart={selectedMealPlan.startDate}
+            mealPlanEnd={selectedMealPlan.endDate}
+            onDone={() => setShowCalendarSync(false)}
+          />
+        )}
 
         <MealPlanSection
           //    initialMealPlan={initialMealPlan}
