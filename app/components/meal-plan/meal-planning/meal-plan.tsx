@@ -216,17 +216,19 @@ const MealPlan: React.FC<MealPlanProps> = ({
     </button>
   );
 
+  // In your MealPlan.tsx
+
   const handleSyncCalendar = () => {
-    // Set confirm modal props prompting: "Do you want to sync your meal plan with Google Calendar?"
     setConfirmModalProps({
       open: true,
       title: "Sync with Google Calendar",
-      message: "Do you want to sync your meal plan with your calendar?",
-      confirmText: "Yes",
+      message:
+        "Do you want to sync your meal plan with your calendar? This will prompt you to authorize the app.",
+      confirmText: "Sync",
       cancelText: "Cancel",
       onConfirm: () => {
+        // When confirmed, hide the confirm modal and show the GoogleCalendarSync modal
         setShowCalendarSync(true);
-        // Close the modal after confirmation
         setConfirmModalProps((prev) => ({ ...prev, open: false }));
       },
       onClose: () => {
@@ -243,7 +245,7 @@ const MealPlan: React.FC<MealPlanProps> = ({
         <ActionButton
           onClick={() => printFn()}
           text="Print Meal Plan"
-          additionalClasses="top-20 right-14"
+          additionalClasses="top-20 right-14 margin-top-6"
         />
 
         <ActionButton
@@ -254,13 +256,25 @@ const MealPlan: React.FC<MealPlanProps> = ({
           additionalClasses="top-32 right-14"
         />
 
+        <ActionButton
+          onClick={handleSyncCalendar}
+          text="Sync with Calendar"
+          additionalClasses="top-44 right-14"
+        />
+
+        {/* // In MealPlan.tsx, below your other code, render a modal for GoogleCalendarSync when showCalendarSync is true */}
+
         {showCalendarSync && (
-          <GoogleCalendarSync
-            meals={selectedMealPlan.meals || []}
-            mealPlanStart={selectedMealPlan.startDate}
-            mealPlanEnd={selectedMealPlan.endDate}
-            onDone={() => setShowCalendarSync(false)}
-          />
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
+            <div className="bg-white rounded-md p-4 max-w-md w-full">
+              <GoogleCalendarSync
+                meals={selectedMealPlan.meals || []}
+                mealPlanStart={selectedMealPlan.startDate}
+                mealPlanEnd={selectedMealPlan.endDate}
+                onDone={() => setShowCalendarSync(false)}
+              />
+            </div>
+          </div>
         )}
 
         <MealPlanSection

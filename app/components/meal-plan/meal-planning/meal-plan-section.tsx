@@ -273,8 +273,7 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
                     </LocalizationProvider>
                   </div>
 
-                  <div className="bg-blue-100 p-4 shadow-md">
-                    {" "}
+                  <div className="bg-blue-100 p-4 shadow-md w-80">
                     <ToggleInput
                       label="Setup Auto Logging"
                       subLabel="Setup automatic meal logging. This will automatically log your meals once the hour has passed. Enabled by default."
@@ -348,10 +347,10 @@ const MealPlanSection = forwardRef<HTMLDivElement, MealPlanSectionProps>(
               {formResult ? (
                 <div
                   className={`p-4 rounded-md ${formResult.success
-                      ? "bg-green-100 text-green-800"
-                      : formResult?.errors?.loading
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-red-100 text-red-800"
+                    ? "bg-green-100 text-green-800"
+                    : formResult?.errors?.loading
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-red-100 text-red-800"
                     }`}
                 >
                   {formResult.success
