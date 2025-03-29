@@ -1,23 +1,21 @@
-import MealPlanGeneratorContainer from "@/app/components/meal-plan/plan/meal-plan-generator-container";
-import { auth } from "@/auth";
-import { getClient } from "@/lib/server-side/client";
-import { initializeClientSettings } from "@/util/client-settings-util";
+import React, { Suspense } from "react";
+import PlanMealGeneratorContent from "@/app/components/meal-plan/plan/plan-meal-generator-content";
 import { Metadata } from "next";
-import React from "react";
 
 type Props = {};
 
 const PlanMealPage = async (props: Props) => {
-  const session = await auth();
-  const clientData = await getClient(session?.user.userId as string);
-  //const mealPlan = await getMealPlanByClientId(clientData.Id);
-
-  initializeClientSettings(clientData);
-
   return (
-    <>
-      <MealPlanGeneratorContainer clientData={clientData} />
-    </>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div>Loading meal plan generator...</div>
+        </div>
+      }
+    >
+      {/* This component will not render until getClient (and auth) complete */}
+      <PlanMealGeneratorContent />
+    </Suspense>
   );
 };
 
@@ -27,6 +25,3 @@ export const metadata: Metadata = {
   title: "Meal Planner - Plan",
   description: "Generate personalized meal plans easily.",
 };
-function getMealPlanByClientId(Id: number) {
-  throw new Error("Function not implemented.");
-}

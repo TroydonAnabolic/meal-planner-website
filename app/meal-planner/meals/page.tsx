@@ -1,21 +1,33 @@
-import MealsGrid from "@/app/components/meals/meals-grid";
-import { auth } from "@/auth";
-import { getClient } from "@/lib/server-side/client";
-import { getMealsByClientId } from "@/lib/meal";
+import React, { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { Metadata } from "next";
-import React from "react";
 
-const MealsPage = async () => {
-  const session = await auth();
-  const clientId = session?.user.clientId as unknown as number;
-  const mealsData = await getMealsByClientId(clientId);
-  // const diet = await fetchAllClientDiets(clientId);
-  const client = await getClient(session?.user.userId!);
+// Dynamically import the MealsContent server component
+const MealsContent = dynamic(
+  () => import("@/app/components/meals/meals-content"),
+  {
+    ssr: true,
+    loading: () => (
+      <div className="p-4 flex items-center justify-center min-h-screen">
+        Loading meals...
+      </div>
+    ),
+  }
+);
 
+const MealsPage = () => {
   return (
-    <>
-      <MealsGrid mealsData={mealsData} client={client!} />
-    </>
+    <div className="flex items-center justify-center min-h-screen">
+      <Suspense
+        fallback={
+          <div className="p-4 flex items-center justify-center min-h-screen">
+            Loading meals...
+          </div>
+        }
+      >
+        <MealsContent />
+      </Suspense>
+    </div>
   );
 };
 

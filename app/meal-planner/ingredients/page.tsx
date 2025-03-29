@@ -1,24 +1,33 @@
-import IngredientsGrid from "@/app/components/ingredients/ingredients-grid";
-import RecipesGrid from "@/app/components/recipes/recipes-grid";
-import { auth } from "@/auth";
-import { getRecipesByClientId } from "@/lib/recipe";
-import { getIngredientsByClientId } from "@/lib/server-side/ingredients";
+import React, { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { Metadata } from "next";
-import React from "react";
 
-const IngredientsPage = async () => {
-  const session = await auth();
-  const clientId = session?.user.clientId as unknown as number;
-  //const recipeData = await getRecipesByClientId(clientId);
-  const ingredientsData = await getIngredientsByClientId(clientId);
+// Dynamically import the IngredientsContent async component
+const IngredientsContent = dynamic(
+  () => import("@/app/components/ingredients/ingredients-content"),
+  {
+    ssr: true,
+    loading: () => (
+      <div className="p-4 flex items-center justify-center min-h-screen">
+        Loading ingredients...
+      </div>
+    ),
+  }
+);
+
+const IngredientsPage = () => {
   return (
-    <>
-      <IngredientsGrid
-        ingredientsData={ingredientsData}
-        clientId={clientId}
-        userId={session?.user.userId!}
-      />
-    </>
+    <div className="flex items-center justify-center min-h-screen">
+      <Suspense
+        fallback={
+          <div className="p-4 flex items-center justify-center min-h-screen">
+            Loading ingredients...
+          </div>
+        }
+      >
+        <IngredientsContent />
+      </Suspense>
+    </div>
   );
 };
 

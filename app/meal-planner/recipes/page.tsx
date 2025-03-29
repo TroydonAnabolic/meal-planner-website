@@ -1,22 +1,27 @@
-import RecipesGrid from "@/app/components/recipes/recipes-grid";
-import { auth } from "@/auth";
-import { getRecipesByClientId } from "@/lib/recipe";
+import React, { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { Metadata } from "next";
-import React from "react";
 
-const RecipesPage = async () => {
-  const session = await auth();
-  const clientId = session?.user.clientId as unknown as number;
-  const recipeData = await getRecipesByClientId(clientId);
+// Dynamically import the RecipesContent server component
+const RecipesContent = dynamic(
+  () => import("@/app/components/recipes/recipes-content"),
+  {
+    ssr: true,
+    loading: () => (
+      <div className="p-4 flex items-center justify-center min-h-screen">
+        Loading recipes...
+      </div>
+    ),
+  }
+);
 
+const RecipesPage = () => {
   return (
-    <>
-      <RecipesGrid
-        recipesData={recipeData}
-        clientId={clientId}
-        userId={session?.user.userId!}
-      />
-    </>
+    <div className="flex items-center justify-center min-h-screen">
+      <Suspense fallback={<div className="p-4">Loading recipes...</div>}>
+        <RecipesContent />
+      </Suspense>
+    </div>
   );
 };
 

@@ -7,7 +7,7 @@ import { Session } from "next-auth";
 // Lazy load MealsSection as a server component
 const MealsSection = dynamic(
   () => import("@/app/components/meal-plan/dashboard/meal-section"),
-  { ssr: true, loading: () => <p>Loading meals...</p> }
+  { ssr: true, loading: () => <div className="flex items-center justify-center min-h-screen">Loading dashboard...</div> }
 );
 
 type DashboardProps = {
@@ -25,7 +25,13 @@ const DashboardPage: React.FC<DashboardProps> = async ({ searchParams }) => {
         {/* Header content */}
       </div>
 
-      <Suspense fallback={<div>Loading meals section...</div>}>
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center min-h-screen">
+            <div>Loading dashboard...</div>
+          </div>
+        }
+      >
         <MealsSection clientId={clientId} searchParams={searchParams} />
       </Suspense>
     </main>

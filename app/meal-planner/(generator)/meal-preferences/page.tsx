@@ -8,10 +8,15 @@ export const metadata: Metadata = {
 };
 
 const MealPreferencesPage = async () => {
-  // Header and footer can be rendered immediately
   return (
     <>
-      <Suspense fallback={<div>Loading meal preferences...</div>}>
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center min-h-screen">
+            <div>Loading meal preferences...</div>
+          </div>
+        }
+      >
         {/* MealPreferencesContent handles getClient & data fetching */}
         <MealPreferencesContent />
       </Suspense>
