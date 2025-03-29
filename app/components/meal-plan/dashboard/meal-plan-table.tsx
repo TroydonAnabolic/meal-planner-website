@@ -1,4 +1,3 @@
-"use client";
 import React from "react";
 import Link from "next/link";
 import { Nutrients } from "@/constants/constants-enums";
@@ -18,9 +17,9 @@ const MealPlanTable: React.FC<MealPlanTableProps> = ({
     getPageLink,
 }) => {
     // To count re-renders in a client component using useRef
-    const renderCount = React.useRef(0);
-    renderCount.current++;
-    console.log("MealPlanTable renders:", renderCount.current);
+    // const renderCount = React.useRef(0);
+    // renderCount.current++;
+    // console.log("MealPlanTable renders:", renderCount.current);
 
     return (
         <div className="hidden sm:block">

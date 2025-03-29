@@ -1,4 +1,3 @@
-"use client"; // Note: DashboardPage might be a server component, but you can mix in Suspense boundaries
 import React, { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { Metadata } from "next";
