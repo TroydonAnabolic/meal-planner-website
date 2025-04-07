@@ -27,6 +27,8 @@ import {
   EmailIcon,
 } from "react-share";
 import { macros, nutrientFields } from "@/util/nutrients";
+import ToggleInput from "../ui/inputs/toggle-input";
+import { fetchRecipesByClientId } from "@/lib/client-side/recipe";
 
 dayjs.extend(customParseFormat);
 
@@ -67,6 +69,9 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [showShareIcons, setShowShareIcons] = useState(false);
+  // New state to toggle between local search and Edamam search
+  const [useLocalRecipes, setUseLocalRecipes] = useState<boolean>(false);
+  const clientId = recipe.clientId || 0; // Replace with your actual clientId
 
   const searchParams = useSearchParams();
   // Extract search parameters
@@ -243,8 +248,8 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     setRecipe(recipe);
     setSearchResults([]);
     const params = new URLSearchParams(window.location.search);
-    params.set("action", UrlAction.View);
-    actionParam = UrlAction.View;
+    params.set("action", UrlAction.Add);
+    actionParam = UrlAction.Add;
   };
 
   /**
@@ -261,7 +266,18 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     setSearchError(null);
 
     try {
-      const results = await fetchEdamamRecipes(searchQuery);
+      let results: IRecipeInterface[] = [];
+      if (useLocalRecipes) {
+        // Local search using getRecipesByClientId
+        const localRecipes = await fetchRecipesByClientId(clientId);
+        // Optionally filter the local recipes by searchQuery locally
+        results = localRecipes?.filter((r) =>
+          r.label.toLowerCase().includes(searchQuery.toLowerCase())
+        ) || [];
+      } else {
+        // Use Edamam API
+        results = await fetchEdamamRecipes(searchQuery);
+      }
       setSearchResults(results);
     } catch (error) {
       console.error("Error fetching recipes:", error);
@@ -269,7 +285,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
     } finally {
       setIsSearching(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, useLocalRecipes, clientId]);
 
   /**
    * useEffect hook to debounce the search input.
@@ -375,8 +391,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
   const shareDescriptionLong = `I found this recipe on Meal Planner: ${recipe.label} ${nutrientDetails}`;
   actionParam = searchParams.get("action");
 
-  const showActionButton =
-    action !== "View" && recipe.ingredients.every((i) => i.foodId === "");
+  const showActionButton = recipe.ingredients.every((i) => i.foodId === "");
 
   const showDeleteOrDupBtn =
     actionParam == (UrlAction.Edit || actionParam == UrlAction.View) &&
@@ -392,7 +407,7 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
       <FormModal
         dialogTitle={getDialogTitle()}
         dialogDescription={getDialogDescription()}
-        buttonText={showActionButton ? action : undefined}
+        buttonText={showActionButton ? actionParam!.charAt(0).toUpperCase() + actionParam!.slice(1) : undefined}
         open={open}
         setOpen={setOpen}
         formAction={showActionButton ? () => recipeAction(recipe) : undefined}
@@ -458,6 +473,15 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
         {activeTab === "Search Recipes" && action === "Search" ? (
           // Find New Recipe Tab Content
           <div className="space-y-6 py-6">
+            <div className="mb-4">
+              <ToggleInput
+                label="Use Saved Recipes"
+                subLabel="Search from your saved recipes"
+                enabled={useLocalRecipes}
+                onChange={setUseLocalRecipes}
+              />
+            </div>
+
             {/* Search Bar */}
             <div>
               <label

@@ -6,7 +6,7 @@ import {
   addRecipe,
   deleteRecipe as removeRecipe,
   updateRecipe as update,
-} from "@/lib/recipe";
+} from "@/lib/server-side/recipe";
 import {
   IRecipeInterface,
   RecipeNutrients,

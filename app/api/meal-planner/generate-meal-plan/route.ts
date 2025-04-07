@@ -7,7 +7,7 @@ import {
   getMatchingRecipe,
 } from "@/lib/server-side/meal-plan-generator";
 import { MealType } from "@/constants/constants-enums";
-import { getRecipesByClientId } from "@/lib/recipe";
+import { getRecipesByClientId } from "@/lib/server-side/recipe";
 import {
   getEdamamMealPlan,
   getRecipesFromUris,

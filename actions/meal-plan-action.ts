@@ -7,7 +7,7 @@ import { fetchRecipesFromUris } from "@/lib/client-side/edamam";
 import { generateRecipesForMealPlan } from "@/lib/client-side/meal-plan";
 import { addMealPlanMeals } from "@/lib/meal";
 import { addMealPlan, updateMealPlan } from "@/lib/meal-plan";
-import { addMealPlanRecipes } from "@/lib/recipe";
+import { addMealPlanRecipes } from "@/lib/server-side/recipe";
 import {
   IMealPlan,
   Section,

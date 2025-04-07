@@ -7,7 +7,10 @@ import { generateMealsForPlan } from "@/util/meal-generator-util";
 import { IMealPlan } from "@/models/interfaces/diet/meal-plan";
 import { addMealPlan, updateMealPlan } from "@/lib/meal-plan";
 import { addMealPlanMeals, updateMealPlanMeals } from "@/lib/meal";
-import { addMealPlanRecipes, updateMealPlanRecipes } from "@/lib/recipe";
+import {
+  addMealPlanRecipes,
+  updateMealPlanRecipes,
+} from "@/lib/server-side/recipe";
 import { getEnumKeyByValue, getEnumKeysByValues } from "@/util/enum-util";
 import { DayOfTheWeek, MealType } from "@/constants/constants-enums";
 import { IMealInterface } from "@/models/interfaces/meal/Meal";

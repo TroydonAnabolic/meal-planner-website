@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { IRecipeInterface } from "@/models/interfaces/recipe/recipe";
-import { addMealPlanRecipes } from "@/lib/recipe";
+import { addMealPlanRecipes } from "@/lib/server-side/recipe";
 
 export async function POST(request: NextRequest) {
   try {

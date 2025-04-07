@@ -1,6 +1,6 @@
 // app/api/recipes/[mealPlanId]/route.ts
 
-import { getRecipesByMealPlanId } from "@/lib/recipe";
+import { getRecipesByMealPlanId } from "@/lib/server-side/recipe";
 import { NextResponse } from "next/server";
 
 export async function GET(

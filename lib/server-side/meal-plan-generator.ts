@@ -13,7 +13,7 @@ import {
 } from "@/util/date-util";
 import { reUseRecipes, formatUri } from "@/util/meal-generator-util";
 import { getMealTypeAndTime } from "@/util/meal-utils";
-import { getRecipesByClientId } from "../recipe";
+import { getRecipesByClientId } from "./recipe";
 import { getEdamamMealPlan, getRecipesFromUris } from "./edamam";
 
 dayjs.extend(timezone); // Extend dayjs with the timezone plugin

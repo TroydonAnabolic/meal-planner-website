@@ -1,7 +1,7 @@
 import React from "react";
 import RecipesGrid from "@/app/components/recipes/recipes-grid";
 import { auth } from "@/auth";
-import { getRecipesByClientId } from "@/lib/recipe";
+import { getRecipesByClientId } from "@/lib/server-side/recipe";
 
 const RecipesContent = async () => {
     const session = await auth();

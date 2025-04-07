@@ -13,9 +13,9 @@ const instance = axios.create({
   baseURL: BACKEND_URL_LIVE,
   headers: APIM_HEADERS,
 });
-
 export async function GET(request: Request) {
-  const { clientId } = await request.json();
+  const { searchParams } = new URL(request.url);
+  const clientId = searchParams.get("clientId");
 
   if (!clientId) {
     return NextResponse.json({ message: "Missing clientId" }, { status: 400 });
