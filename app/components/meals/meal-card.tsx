@@ -98,9 +98,8 @@ const MealCard: React.FC<MealCardProps> = ({
                 {macro.icon}
                 <span className={`text-xs mt-1 ${macro.className}`}>
                   {meal.nutrients && meal.nutrients[macro.tag]
-                    ? `${meal.nutrients[macro.tag].quantity.toFixed(0)}${
-                        macro.unit
-                      }`
+                    ? `${meal.nutrients[macro.tag].quantity.toFixed(0)}${macro.unit
+                    }`
                     : "0g"}
                 </span>
               </div>
