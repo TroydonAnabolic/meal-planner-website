@@ -7,7 +7,7 @@ import { ChevronRightIcon } from "@heroicons/react/24/outline";
 
 type RecipeSearchResultsGridProps = {
   recipes: IRecipeInterface[];
-  onViewDetails: (recipe: IRecipeInterface) => void;
+  onViewDetails?: (recipe: IRecipeInterface) => void;
 };
 
 const RecipeSearchResultsGrid: React.FC<RecipeSearchResultsGridProps> = ({
@@ -38,17 +38,20 @@ const RecipeSearchResultsGrid: React.FC<RecipeSearchResultsGridProps> = ({
               {recipe.label}
             </h3>
             <p className="mt-1 text-sm text-gray-500">{recipe.source}</p>
-            <div className="mt-4 flex items-center justify-between">
-              {/* View Details Button */}
-              <button
-                type="button"
-                onClick={() => onViewDetails(recipe)}
-                className="inline-flex items-center rounded-md border border-transparent bg-gray-100 px-2 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                aria-label={`View details for ${recipe.label}`}
-              >
-                <ChevronRightIcon className="h-5 w-5" />
-              </button>
-            </div>
+            {/* View Details Button */}
+            {onViewDetails && (
+              <div className="mt-4 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => onViewDetails(recipe)}
+                  className="inline-flex items-center rounded-md border border-transparent bg-gray-100 px-2 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  aria-label={`View details for ${recipe.label}`}
+                >
+                  <ChevronRightIcon className="h-5 w-5" />
+                </button>
+              </div>
+            )}
+
           </div>
         </div>
       ))}

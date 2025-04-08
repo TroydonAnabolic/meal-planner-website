@@ -274,6 +274,14 @@ const RecipeModalContent: React.FC<RecipeModalContentProps> = ({
         results = localRecipes?.filter((r) =>
           r.label.toLowerCase().includes(searchQuery.toLowerCase())
         ) || [];
+
+        // Add mealPlanId if available
+        if (mealTypeParam) {
+          for (const result of results) {
+            result.mealPlanId = parseInt(mealPlanIdParam!, 10);
+          }
+        }
+
       } else {
         // Use Edamam API
         results = await fetchEdamamRecipes(searchQuery);
