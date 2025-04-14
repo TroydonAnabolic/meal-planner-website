@@ -1,7 +1,7 @@
 "use client";
 import { IClientInterface } from "@/models/interfaces/client/client";
 import { IMealPlanPreferences } from "@/models/interfaces/client/meal-planner-preferences";
-import React, { forwardRef, useCallback, useEffect, useState } from "react";
+import React, { forwardRef, useCallback, useEffect, useState, useTransition } from "react";
 import ActionPanelButton from "../../action-panel/action-panel-button";
 import Image from "next/image";
 import ConfirmActionModal, {
@@ -78,6 +78,10 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
         defaultMealPlanPreference
       );
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    let loading = false;
+    const [loaderKey, setLoaderKey] = useState<number>(0);
+    const [isPending, startTransition] = useTransition();
+
     const [useFavouriteRecipes, setUseFavouriteRecipes] =
       useState<boolean>(true);
     const [isBannedOpen, setIsBannedOpen] = useState<boolean>(true);
@@ -195,12 +199,13 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
     }, [setConfirmModalProps, closeConfirmModal, setUseFavouriteRecipes]);
 
     const handleGenerateMealPlan = async () => {
+      loading = true;
       setIsLoading(true);
       setMealPlan(null);
       setRecipes([]);
       console.log("Setting isLoading: " + isLoading);
-
       // Let the UI update (give React a tick)
+      setLoaderKey((prev) => prev + 1);
       await new Promise((resolve) => setTimeout(resolve, 50));
       // then proceed with the rest of your function
 
@@ -256,48 +261,52 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
         setIsLoading(false);
         return;
       }
-
       // fetch meal plan, this will have recipes attached to it
-      try {
-        const { generatedMealPlan, favouriteRecipes, fetchedRecipes } =
-          await startGenerateMealPlanAndRecipes(
-            endDate,
-            startDate,
-            mealPlanPreferences,
-            excluded,
-            useFavouriteRecipes,
-            clientData
-          );
+      // Use transition to defer heavy work
+      startTransition(async () => {
+        try {
+          const generatorResp =
+            await startGenerateMealPlanAndRecipes(
+              endDate,
+              startDate,
+              mealPlanPreferences,
+              excluded,
+              useFavouriteRecipes,
+              clientData
+            );
 
-        setMealPlan({
-          ...generatedMealPlan,
-          id: mealPlan?.id || 0,
-          clientId: clientId,
-          startDate: startDate?.toISOString() || "",
-          endDate: endDate?.toISOString() || "",
-          autoLogMeals: true,
-        });
+          const generatedMealPlan = generatorResp.generatedMealPlan;
+          const fetchedRecipes = generatorResp.fetchedRecipes;
 
-        setRecipes(fetchedRecipes);
-      } catch (error: any) {
-        console.error("Failed to generate meal plan:", error);
-        setConfirmModalProps((prev) => ({
-          ...prev,
-          open: true,
-          title: "Error",
-          message: error.message,
-          confirmText: "OK",
-          type: "error",
-          onConfirm: () => {
-            closeConfirmModal();
-          },
-          cancelText: "",
-          onCancel: () => { },
-          colorScheme: "bg-red-600 hover:bg-red-500",
-        }));
-      } finally {
-        setIsLoading(false);
-      }
+          setMealPlan({
+            ...generatedMealPlan,
+            id: mealPlan?.id || 0,
+            clientId: clientId,
+            startDate: startDate?.toISOString() || "",
+            endDate: endDate?.toISOString() || "",
+            autoLogMeals: true,
+          });
+          setRecipes(fetchedRecipes);
+        } catch (error: any) {
+          console.error("Failed to generate meal plan:", error);
+          setConfirmModalProps((prev) => ({
+            ...prev,
+            open: true,
+            title: "Error",
+            message: error.message,
+            confirmText: "OK",
+            type: "error",
+            onConfirm: () => {
+              closeConfirmModal();
+            },
+            cancelText: "",
+            onCancel: () => { },
+            colorScheme: "bg-red-600 hover:bg-red-500",
+          }));
+        } finally {
+          setIsLoading(false);
+        }
+      });
     };
 
     const handleStartDateChange = (date: Dayjs | null) => {
@@ -382,7 +391,13 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
                   }
                   buttonText="Generate Meal Plan"
                   //    disabled={isBannedOpen}
-                  onClick={handleGenerateMealPlan}
+                  onClick={async () => {
+                    setIsLoading(true);
+                    loading = true;
+                    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+                    handleGenerateMealPlan();
+                  }}
                   icon={<PrecisionManufacturingIcon />}
                 />
 
@@ -496,7 +511,7 @@ const MealPlanGenerator = forwardRef<HTMLDivElement, MealPlanGeneratorProps>(
                     {/* Loading Indicator */}
                     {isLoading && (
                       <div className="flex justify-center my-6">
-                        <FoodLoader />
+                        <FoodLoader key={loaderKey} />
                       </div>
                     )}
                   </EmptyStateDashedBorders>

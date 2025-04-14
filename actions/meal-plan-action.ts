@@ -1,5 +1,4 @@
 "use server";
-
 import mealPlan from "@/app/components/meal-plan/meal-planning/meal-plan";
 import { DayOfTheWeek, MealType } from "@/constants/constants-enums";
 import { ROUTES } from "@/constants/routes";

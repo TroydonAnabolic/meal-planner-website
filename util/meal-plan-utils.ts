@@ -19,7 +19,7 @@ export const generateEmptySelections = (
         ? process.env.NEXT_PUBLIC_DOMAIN_PROD
         : process.env.NEXT_PUBLIC_DOMAIN_DEV;
 
-    return `https://${host}/recipes/${mealType.toLowerCase()}-${uuidv4()}`;
+    return `${host}/recipes/${mealType.toLowerCase()}-${uuidv4()}`;
   };
   // const createHref = (mealType: string) => {
   //   return `https:api//${window.location.origin}/recipes/${mealType.toLowerCase()}-${uuidv4()}`;
