@@ -71,12 +71,16 @@ const IngredientCard: React.FC<IngredientCardProps> = ({
       <div className="flex flex-1 flex-col p-4">
         {/* Ingredient Label and "View Details" Button */}
         <div className="flex justify-between items-center">
+          <h3 className="text-sm font-medium text-gray-900">
+            {ingredient.food}
+          </h3>
           <button
             onClick={handleClickView}
             className="bg-indigo-600 text-white px-2 py-1 rounded-md text-xs hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             View Details
           </button>
+
         </div>
 
         {/* Macros */}

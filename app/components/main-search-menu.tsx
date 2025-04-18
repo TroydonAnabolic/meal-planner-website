@@ -79,6 +79,7 @@ const MainSearchMenu: React.FC<MainSearchMenuProps> = ({ setSidebarOpen }) => {
                     session?.user.profilePicUrl ||
                     "/avatar/default-profile-pic.svg"
                   }
+                  priority
                   className="h-10 w-10"
                   style={{ borderRadius: "50%" }}
                 />

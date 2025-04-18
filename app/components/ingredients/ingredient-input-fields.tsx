@@ -118,15 +118,15 @@ const IngredientInputFields: React.FC<IngredientInputFieldsProps> = ({
               <div className="mt-4 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
                 <div>
                   <label
-                    htmlFor="label"
+                    htmlFor="food"
                     className="block text-sm font-medium text-gray-700"
                   >
                     Label
                   </label>
                   <div className="mt-1">
                     <input
-                      id="label"
-                      name="label"
+                      id="food"
+                      name="food"
                       type="text"
                       placeholder="Ingredient Name"
                       value={ingredient.food}
