@@ -7,6 +7,9 @@ import { GeneratorResponse } from "@/models/interfaces/edamam/meal-planner/meal-
 import { v4 as uuidv4 } from "uuid"; // Ensure uuid is installed: npm install uuid
 import { macros } from "@/util/nutrients";
 import dayjs, { Dayjs } from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat);
+
 import {
   extractRecipeIdFromUri,
 } from "@/util/meal-generator-util";
@@ -146,10 +149,9 @@ const RecipeList: React.FC<RecipeListProps> = ({
       const updatedRecipe: IRecipeInterface = {
         ...cellRecipe,
         mealPlanId,
-        // Optionally, update timeScheduled & mealTypeKey based on current cell context.
       };
       // Save the recipe via your API call
-      const savedRecipe = await storeMealPlanRecipes([updatedRecipe]);
+      const savedRecipe = await storeMealPlanRecipes([...recipes, updatedRecipe]);
       console.log("Recipe saved for cell", cellKey, ":", savedRecipe);
       // Optionally clear the cell selection after saving:
       setSelectedRecipeMap((prev) => {
@@ -209,10 +211,7 @@ const RecipeList: React.FC<RecipeListProps> = ({
                       recipeItem.mealTypeKey.some((k) =>
                         mealType.toLowerCase().includes(k)
                       ) &&
-                      (
-                        (!recipeItem.isFavourite && recipeScheduledTime === currentScheduledTime) ||
-                        recipeItem.isFavourite
-                      )
+                      recipeScheduledTime === currentScheduledTime
                     ) {
                       recipe = recipeItem;
                       break;
@@ -277,30 +276,49 @@ const RecipeList: React.FC<RecipeListProps> = ({
                             </Link>
                           </div>
                         </div>
-                      ) : allowEmptyRows && mode === "edit" ? (
+                      ) : allowEmptyRows && mode === "edit" && !recipe ? (
                         <div className="mb-4">
-                          <RecipeDropdown
-                            clientId={(mealPlan as IMealPlan).clientId || 0}
-                            onSelect={(r) => {
-                              r.timeScheduled = days[dayIndex]?.dateTime ? new Date(days[dayIndex].dateTime) : new Date();
-                              r.mealTypeKey = [mealType.toLowerCase()];
-                              setSelectedRecipeMap((prev) => ({ ...prev, [cellKey]: r }));
-                            }}
-                          />
-                          {selectedRecipeMap[cellKey] && (
+
+                          {selectedRecipeMap[cellKey] ? (
                             <div className="mt-2 text-sm text-gray-600">
                               Selected: {selectedRecipeMap[cellKey].label}
-                              <div className="mt-4 flex justify-end">
+                              <div className="mt-4 flex justify-end space-x-2">
                                 <button
                                   type="button"
                                   onClick={() => handleSaveForCell(cellKey)}
-                                  disabled={isSaving || !selectedRecipeMap[cellKey] || !selectedRecipeMap[cellKey].label}
+                                  disabled={
+                                    isSaving ||
+                                    !selectedRecipeMap[cellKey] ||
+                                    !selectedRecipeMap[cellKey].label
+                                  }
                                   className="rounded-md bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                                 >
-                                  {isSaving ? "Saving..." : "Save Recipe"}
+                                  {isSaving ? "Saving..." : "Save"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setSelectedRecipeMap((prev) => {
+                                      const newMap = { ...prev };
+                                      delete newMap[cellKey];
+                                      return newMap;
+                                    })
+                                  }
+                                  className="rounded-md bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                >
+                                  Clear
                                 </button>
                               </div>
                             </div>
+                          ) : (
+                            <RecipeDropdown
+                              clientId={(mealPlan as IMealPlan).clientId || 0}
+                              onSelect={(r) => {
+                                r.timeScheduled = dayjs(days[dayIndex].dateTime, "DD/MM/YYYY HH:mm A").toDate();
+                                r.mealTypeKey = [mealType.toLowerCase()];
+                                setSelectedRecipeMap((prev) => ({ ...prev, [cellKey]: r }));
+                              }}
+                            />
                           )}
                         </div>
                       ) : (

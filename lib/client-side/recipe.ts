@@ -54,7 +54,7 @@ export async function storeMealPlanRecipes(
     });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch recipes");
+      throw new Error("Failed to store recipes");
     }
 
     const recipes: IRecipeInterface[] = await response.json();
@@ -78,7 +78,7 @@ export async function saveMealPlanRecipes(
     });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch recipes");
+      throw new Error("Failed to save recipes");
     }
 
     const recipes: IRecipeInterface[] = await response.json();

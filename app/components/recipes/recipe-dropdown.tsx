@@ -49,7 +49,7 @@ const RecipeDropdown: React.FC<RecipeDropdownProps> = ({ clientId, onSelect }) =
         <div className="relative">
             <input
                 type="text"
-                placeholder="Search local recipes..."
+                placeholder="Search recipes..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="block w-full rounded-md border border-gray-300 p-2 text-gray-800"
@@ -65,7 +65,11 @@ const RecipeDropdown: React.FC<RecipeDropdownProps> = ({ clientId, onSelect }) =
                     {recipes.map((recipe) => (
                         <li
                             key={recipe.uri}
-                            className="flex items-center p-2 hover:bg-gray-50"
+                            onClick={() => {
+                                console.log("onSelect fired with recipe:", recipe);
+                                onSelect(recipe);
+                            }}
+                            className="flex items-center p-2 hover:bg-gray-50 cursor-pointer"
                         >
                             <div className="relative h-12 w-12 flex-shrink-0">
                                 {recipe.image ? (
@@ -84,13 +88,6 @@ const RecipeDropdown: React.FC<RecipeDropdownProps> = ({ clientId, onSelect }) =
                                     {recipe.label}
                                 </p>
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => onSelect(recipe)}
-                                className="ml-3 rounded-md bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-700"
-                            >
-                                Select
-                            </button>
                         </li>
                     ))}
                 </ul>
