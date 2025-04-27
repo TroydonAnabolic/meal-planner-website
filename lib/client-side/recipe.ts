@@ -64,3 +64,27 @@ export async function storeMealPlanRecipes(
     console.error("Error storing recipes:", error);
   }
 }
+
+export async function saveMealPlanRecipes(
+  recipesToAdd: IRecipeInterface[]
+): Promise<IRecipeInterface[] | undefined> {
+  try {
+    const response = await fetch(`/api/recipes/update-meal-plan-recipes`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(recipesToAdd), // Send data in the body
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch recipes");
+    }
+
+    const recipes: IRecipeInterface[] = await response.json();
+
+    return recipes;
+  } catch (error) {
+    console.error("Error storing recipes:", error);
+  }
+}
